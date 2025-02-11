@@ -6,10 +6,11 @@ import { validateEnv } from './config/env.config';
 import { envPaths } from './common/constants/env-path.constant';
 import { appConfig } from './config/app.config';
 import { ConfigModule } from '@nestjs/config';
+import { xenditConfig } from './config/xendit.config';
+import { LoggerModule } from './modules/shared/logger/logger.module';
 
 @Module({
   imports: [
-    PaymentModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: envPaths[process.env.NODE_ENV || 'development'],
@@ -18,8 +19,10 @@ import { ConfigModule } from '@nestjs/config';
         allowUnknown: false,
         abortEarly: true,
       },
-      load: [appConfig],
+      load: [appConfig, xenditConfig],
     }),
+    PaymentModule,
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
