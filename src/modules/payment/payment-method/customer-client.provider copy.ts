@@ -1,10 +1,10 @@
 import { Provider } from '@nestjs/common';
 import { Xendit } from 'xendit-node';
 
-export const XenditInvoiceClientProvider: Provider = {
-  provide: 'XENDIT_INVOICE_CLIENT',
+export const XenditCustomerClientProvider: Provider = {
+  provide: 'XENDIT_CUSTOMER_CLIENT',
   useFactory: (xenditClient: Xendit) => {
-    return xenditClient.Invoice;
+    return xenditClient.Customer;
   },
   inject: ['XENDIT_CLIENT'],
 };
