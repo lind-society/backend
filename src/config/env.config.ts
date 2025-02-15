@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Max,
   Min,
@@ -14,7 +15,12 @@ import { Environment } from 'src/common/enums/environment.enum';
 
 export class EnvironmentVariables {
   @IsEnum(Environment)
+  @IsOptional()
   NODE_ENV!: Environment;
+
+  @IsString()
+  @IsOptional()
+  API_VERSION!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -23,6 +29,7 @@ export class EnvironmentVariables {
   @IsNumber()
   @Min(0)
   @Max(65535)
+  @IsOptional()
   PORT!: number;
 
   @IsString()

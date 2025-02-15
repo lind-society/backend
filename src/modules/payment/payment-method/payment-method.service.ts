@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CustomerApi } from 'xendit-node/customer/apis';
+import { CustomerRequest } from 'xendit-node/customer/models';
 import { PaymentMethodApi } from 'xendit-node/payment_method/apis';
 import { PaymentMethodParameters } from 'xendit-node/payment_method/models';
 
@@ -33,4 +34,29 @@ export class PaymentMethodService {
 
     // process needed value of other payload based on the payment type
   }
+
+  //   async createCustomer(payload: any) {
+  //     const customer = await this.customerClient.createCustomer();
+
+  //     CustomerRequestTypeEnum: {
+  //       Individual: "INDIVIDUAL";
+  //       Business
+
+  //     const customerData:CustomerRequest = {
+  //       clientName: 'sam';
+  //       referenceId: 'merchant-id';
+  //       type: CustomerRequestTypeEnum;
+  //       individualDetail: IndividualDetail;
+  //       businessDetail: BusinessDetail;
+  //       description: string;
+  //       email: string;
+  //       mobileNumber: string;
+  //       phoneNumber: string;
+  //       addresses: AddressRequest[];
+  //       identityAccounts: IdentityAccountRequest[];
+  //       kycDocuments: KYCDocumentRequest[];
+  //       metadata: object;
+  //     }
+  //   }
+  // }
 }
