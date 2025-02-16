@@ -5,7 +5,7 @@ import { InvoiceCallback } from 'xendit-node/invoice/models';
   Referring to xendit SDK docs : https://github.com/xendit/xendit-node?tab=readme-ov-file#documentation
   Available features in SDK :
     1. Balance          (Implemented, Done)     -> https://github.com/xendit/xendit-node/blob/master/docs/Balance.md
-    2. Customer         (Implemented, Ongoing)  -> https://github.com/xendit/xendit-node/blob/master/docs/Customer.md
+    2. Customer         (Implemented, Done)  -> https://github.com/xendit/xendit-node/blob/master/docs/Customer.md
     3. Invoice          (Implemented, Done)     -> https://github.com/xendit/xendit-node/blob/master/docs/Invoice.md
     4. Payment Method   (Implemented, Ongoing)  -> https://github.com/xendit/xendit-node/blob/master/docs/PaymentMethod.md
     5. Payment Request  (Implemented, Ongoing)  -> https://github.com/xendit/xendit-node/blob/master/docs/PaymentRequest.md

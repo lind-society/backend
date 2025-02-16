@@ -3,11 +3,11 @@ import { PaymentRequestService } from './payment-request.service';
 import { PaymentRequestParameters } from 'xendit-node/payment_request/models';
 import { CreatePaymentRequestRequest } from 'xendit-node/payment_request/apis';
 
-@Controller('payment-request')
+@Controller('payment/payment-request')
 export class PaymentRequestController {
   constructor(private readonly paymentRequestService: PaymentRequestService) {}
 
-  @Post('')
+  @Post()
   async createPaymentRequest(
     @Headers() headers: CreatePaymentRequestRequest,
     @Body() payload: PaymentRequestParameters,

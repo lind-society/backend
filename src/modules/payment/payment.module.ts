@@ -6,11 +6,18 @@ import { InvoiceModule } from './invoice/invoice.module';
 import { PaymentMethodModule } from './payment-method/payment-method.module';
 import { PaymentRequestModule } from './payment-request/payment-request.module';
 import { BalanceModule } from './balance/balance.module';
+import { CustomerModule } from './customer/customer.module';
 
 @Module({
   controllers: [PaymentController],
   providers: [PaymentService, XenditClientProvider],
   exports: [PaymentService, XenditClientProvider],
-  imports: [InvoiceModule, PaymentMethodModule, PaymentRequestModule, BalanceModule],
+  imports: [
+    InvoiceModule,
+    PaymentMethodModule,
+    PaymentRequestModule,
+    BalanceModule,
+    CustomerModule,
+  ],
 })
 export class PaymentModule {}
