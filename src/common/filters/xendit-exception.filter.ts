@@ -15,14 +15,14 @@ export class XenditExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    console.error('🔥 Xendit API Error:', exception);
+    console.error('Xendit API Error:', exception);
 
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    // 🔹 Transform Xendit Error into `HttpResponse` format
+    // Transform Xendit Error into `HttpResponse` format
     if (exception?.response?.error_code && exception?.response?.message) {
       return response.status(HttpStatus.BAD_REQUEST).json(
         new HttpResponse({
@@ -34,7 +34,7 @@ export class XenditExceptionFilter implements ExceptionFilter {
       );
     }
 
-    // 🔹 Default Handling for other errors
+    // Default Handling for other errors
     return response.status(status).json(
       new HttpResponse({
         code: status,

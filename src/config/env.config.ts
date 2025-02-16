@@ -35,6 +35,30 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   XENDIT_SECRET_KEY!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DB_TYPE!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DB_HOST!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DB_PORT!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DB_USER!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DB_PASSWORD!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DB_NAME!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {

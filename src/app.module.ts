@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PaymentModule } from './modules/payment/payment.module';
 import { validateEnv } from './config/env.config';
 import { envPaths } from './common/constants/env-path.constant';
 import { appConfig } from './config/app.config';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { xenditConfig } from './config/xendit.config';
 import { LoggerModule } from './modules/shared/logger/logger.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { databaseConfig } from './config/database.config';
 
 @Module({
   imports: [
@@ -19,9 +20,14 @@ import { LoggerModule } from './modules/shared/logger/logger.module';
         allowUnknown: false,
         abortEarly: true,
       },
-      load: [appConfig, xenditConfig],
+      load: [appConfig, databaseConfig, xenditConfig],
     }),
-    PaymentModule,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        ...configService.get('database'),
+      }),
+    }),
     LoggerModule,
   ],
   controllers: [AppController],

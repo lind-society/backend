@@ -26,7 +26,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    console.error('🔥 Exception:', exception);
+    console.error('HTTP Exception:', exception);
 
     if (exception?.response?.error_code && exception?.response?.message) {
       return this.xenditExceptionFilter.catch(exception, host);
@@ -68,7 +68,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       );
     }
 
-    // 🔹 Default Error Handling
+    // Default Error Handling
     return httpAdapter.reply(
       response,
       new HttpResponse({
