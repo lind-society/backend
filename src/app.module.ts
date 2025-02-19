@@ -9,6 +9,7 @@ import { xenditConfig } from './config/xendit.config';
 import { LoggerModule } from './modules/shared/logger/logger.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConfig } from './config/database.config';
+import { BlogModule } from './modules/blog/blog.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { databaseConfig } from './config/database.config';
       }),
     }),
     LoggerModule,
+    BlogModule,
   ],
   controllers: [AppController],
   providers: [AppService],
