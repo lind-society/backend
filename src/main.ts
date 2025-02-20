@@ -5,7 +5,7 @@ import { winstonConfig } from './config/winston-logger.config';
 import { ConfigService } from '@nestjs/config';
 import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 import { WinstonLoggerService } from './modules/shared/logger/logger.service';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { HttpExceptionFilter } from './common/filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

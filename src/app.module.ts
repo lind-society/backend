@@ -9,7 +9,7 @@ import { xenditConfig } from './config/xendit.config';
 import { LoggerModule } from './modules/shared/logger/logger.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConfig } from './config/database.config';
-import { ActivityModule } from './modules/activity/activity.module';
+import { FacilityModule } from './modules/facility/facility.module';
 
 @Module({
   imports: [
@@ -30,7 +30,7 @@ import { ActivityModule } from './modules/activity/activity.module';
       }),
     }),
     LoggerModule,
-    ActivityModule,
+    FacilityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
