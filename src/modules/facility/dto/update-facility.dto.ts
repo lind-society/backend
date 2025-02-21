@@ -27,7 +27,7 @@ export class UpdateFacilityDto extends PartialType(CreateFacilityDto) {
   readonly description?: any | null;
 }
 
-export class UpdateRoleSuccessResponse
+export class UpdateFacilitySuccessResponse
   extends HttpResponseDefaultProps
   implements HttpResponseOptions<FacilityWithRelationsDto>
 {

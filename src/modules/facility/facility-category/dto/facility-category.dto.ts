@@ -1,3 +1,10 @@
+import {
+  IsDate,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { FacilityCategory } from 'src/database/entities/facility-category.entity';
 import { FacilityDto } from 'src/modules/facility/dto/facility.dto';
 
@@ -13,10 +20,24 @@ export interface IFacilityCategoryWithRelationsDto
 }
 
 export class FacilityCategoryDto implements IFacilityCategoryDto {
+  @IsUUID()
+  @IsNotEmpty()
   readonly id!: string;
+
+  @IsString()
+  @IsNotEmpty()
   readonly name!: string;
+
+  @IsDate()
+  @IsNotEmpty()
   readonly createdAt!: Date;
+
+  @IsDate()
+  @IsOptional()
   readonly updatedAt!: Date | null;
+
+  @IsDate()
+  @IsOptional()
   readonly deletedAt!: Date | null;
 }
 
