@@ -28,6 +28,8 @@ import { BlogModule } from './modules/blog/blog.module';
       }),
     }),
     LoggerModule,
+    BlogModule,
+    FacilityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
