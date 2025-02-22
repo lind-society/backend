@@ -1,4 +1,4 @@
-import { DefaultHttpStatus } from 'src/common/enums/default-http-status.enum';
+import { DefaultHttpStatus } from 'src/common/enums';
 
 /**
  * @description This project uses the JSend API specification.

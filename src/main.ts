@@ -1,11 +1,11 @@
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { WinstonModule } from 'nest-winston';
-import { winstonConfig } from './config/winston-logger.config';
-import { ConfigService } from '@nestjs/config';
 import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { WinstonModule } from 'nest-winston';
+import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters';
+import { winstonConfig } from './config/winston-logger.config';
 import { WinstonLoggerService } from './modules/shared/logger/logger.service';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
