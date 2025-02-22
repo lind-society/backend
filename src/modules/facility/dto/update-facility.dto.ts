@@ -1,13 +1,19 @@
 import { HttpStatus } from '@nestjs/common';
 import { PartialType } from '@nestjs/mapped-types';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { CreateFacilityDto } from './create-facility.dto';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { FacilityWithRelationsDto } from './facility.dto';
+import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { DefaultHttpStatus } from 'src/common/enums';
-import { FacilityWithRelationsDto } from './facility.dto';
 
 export class UpdateFacilityDto extends PartialType(CreateFacilityDto) {
   @IsString()
@@ -25,6 +31,11 @@ export class UpdateFacilityDto extends PartialType(CreateFacilityDto) {
   // fill with json
   @IsOptional()
   readonly description?: any | null;
+
+  @IsArray()
+  @IsUUID('all', { each: true })
+  @IsOptional()
+  readonly categoryIds?: string[] | null;
 }
 
 export class UpdateFacilitySuccessResponse

@@ -8,29 +8,41 @@ import {
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { Response } from 'express';
-import { HttpResponse } from 'src/modules/shared/dto/http-response.dto';
-import { DefaultHttpStatus } from '../enums/default-http-status.enum';
-import { ValidationExceptionResponse } from 'src/modules/shared/dto/validation-exception-response.dto';
 import { XenditExceptionFilter } from './xendit-exception.filter';
+import { DefaultHttpStatus } from '../enums';
+import {
+  HttpResponse,
+  ValidationExceptionResponse,
+} from 'src/modules/shared/dto';
+import { QueryFailedError } from 'typeorm';
+import { TypeOrmExceptionFilter } from './typeorm-exception.filter';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  private xenditExceptionFilter: XenditExceptionFilter;
+  private xenditExceptionFilter = new XenditExceptionFilter();
+  private typeOrmExceptionFilter = new TypeOrmExceptionFilter();
 
-  constructor(private readonly httpAdapterHost: HttpAdapterHost) {
-    this.xenditExceptionFilter = new XenditExceptionFilter();
-  }
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
   catch(exception: HttpException | any, host: ArgumentsHost) {
     const { httpAdapter } = this.httpAdapterHost;
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    console.error('HTTP Exception:', exception);
+    if (exception instanceof QueryFailedError) {
+      console.error('Typeorm / Database error');
+      console.error('========================\n');
+      return this.typeOrmExceptionFilter.catch(exception, host);
+    }
 
     if (exception?.response?.error_code && exception?.response?.message) {
+      console.error('Xendit API error');
+      console.error('================\n');
       return this.xenditExceptionFilter.catch(exception, host);
     }
+
+    console.error('HTTP Exception');
+    console.error(exception);
 
     const status =
       exception instanceof HttpException

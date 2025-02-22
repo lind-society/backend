@@ -1,19 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateFacilityCategoryDto } from './dto/create-facility-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FacilityCategory } from 'src/database/entities/facility-category.entity';
-import { Repository } from 'typeorm';
-import { FacilityCategoryDto } from './dto';
-import { UpdateFacilityDto } from '../dto';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
-import { PaginateResponseDataProps } from 'src/modules/shared/dto/paginated-response.dto';
-import { paginateResponseMapper } from 'src/common/helpers/paginate-response-mapper.helper';
+import { Repository } from 'typeorm';
+import {
+  CreateFacilityCategoryDto,
+  FacilityCategoryDto,
+  FacilityCategoryWithRelationsDto,
+} from './dto';
+import { UpdateFacilityDto } from '../dto';
+import { paginateResponseMapper } from 'src/common/helpers';
+import { FacilityCategory } from 'src/database/entities';
+import { PaginateResponseDataProps } from 'src/modules/shared/dto';
 
 @Injectable()
 export class FacilityCategoryService {
   constructor(
     @InjectRepository(FacilityCategory)
-    private facilityCateogryRepository: Repository<FacilityCategoryDto>,
+    private facilityCateogryRepository: Repository<FacilityCategory>,
   ) {}
   async create(
     payload: CreateFacilityCategoryDto,
@@ -26,7 +29,7 @@ export class FacilityCategoryService {
   async findAll(
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<FacilityCategoryDto[]>> {
-    const paginatedFacilityCategories = await paginate(
+    const paginatedFacilityCategory = await paginate(
       query,
       this.facilityCateogryRepository,
       {
@@ -34,16 +37,34 @@ export class FacilityCategoryService {
         defaultSortBy: [['createdAt', 'DESC']],
         defaultLimit: 10,
         searchableColumns: ['name'],
+        relations: { facilityCategories: { facility: true } },
       },
     );
 
-    return paginateResponseMapper(paginatedFacilityCategories);
+    const mappedFacilityCategoryData: FacilityCategoryDto[] =
+      paginatedFacilityCategory.data.map(
+        ({ facilityCategories, ...facilityData }) => ({
+          ...facilityData,
+          facilites: facilityCategories.map((pivot) => ({
+            pivotId: pivot.id,
+            ...pivot.facility,
+          })),
+        }),
+      );
+
+    return paginateResponseMapper(
+      paginatedFacilityCategory,
+      mappedFacilityCategoryData,
+    );
   }
 
-  async findOne(id: string): Promise<FacilityCategoryDto> {
+  async findOne(id: string): Promise<FacilityCategoryWithRelationsDto> {
     const facilityCategory = await this.facilityCateogryRepository.findOne({
       where: {
         id,
+      },
+      relations: {
+        facilityCategories: { facility: true },
       },
     });
 
@@ -51,7 +72,15 @@ export class FacilityCategoryService {
       throw new NotFoundException('facility category not found');
     }
 
-    return facilityCategory;
+    const { facilityCategories, ...facilityCategoryData } = facilityCategory;
+
+    return {
+      ...facilityCategoryData,
+      facilites: facilityCategory.facilityCategories.map((pivot) => ({
+        pivotId: pivot.id,
+        ...pivot.facility,
+      })),
+    };
   }
 
   async update(

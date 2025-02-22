@@ -1,18 +1,7 @@
-import { Facility } from 'src/database/entities/facility.entity';
-import { FacilityCategoryDto } from '../facility-category/dto/facility-category.dto';
+import { Facility } from 'src/database/entities';
+import { FacilityCategoryDto } from '../facility-category/dto';
 
-export interface IFacilityDto
-  extends Pick<
-    Facility,
-    | 'id'
-    | 'name'
-    | 'icon'
-    | 'additionalPrice'
-    | 'description'
-    | 'createdAt'
-    | 'updatedAt'
-    | 'deletedAt'
-  > {}
+export interface IFacilityDto extends Omit<Facility, 'facilityCategories'> {}
 
 export interface IFacilityWithRelationsDto extends IFacilityDto {
   categories?: FacilityCategoryDto[];
@@ -33,5 +22,5 @@ export class FacilityWithRelationsDto
   extends FacilityDto
   implements IFacilityWithRelationsDto
 {
-  readonly categories?: FacilityDto[];
+  readonly categories?: FacilityCategoryDto[];
 }

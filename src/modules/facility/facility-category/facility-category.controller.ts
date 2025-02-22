@@ -8,23 +8,22 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { FacilityCategoryService } from './facility-category.service';
 import {
   CreateFacilityCategoryDto,
   CreateFacilityCategorySuccessResponse,
-} from './dto/create-facility-category.dto';
-import { Paginate, PaginateQuery } from 'nestjs-paginate';
-import {
-  FacilityCategoryIdDto,
+  FacilityCategoryParamsDto,
   GetFacilityCategoriesSuccessResponse,
-  GetFacilityCategorysDtoPaginateQuery,
+  GetFacilityCategoriesPaginateDto,
   GetFacilityCategorySuccessResponse,
-} from './dto/get-facility-category.dto';
+  UpdateFacilityCategorySuccessResponse,
+  UpdateFacilityCategoryDto,
+} from './dto';
 import { UpdateFacilityDto } from '../dto';
-import { UpdateFacilityCategorySuccessResponse } from './dto';
-import { DeleteResponse } from 'src/modules/shared/dto/delete-response.dto';
+import { DeleteResponse } from 'src/modules/shared/dto';
 
-@Controller('facility/category')
+@Controller('facility-category')
 export class FacilityCategoryController {
   constructor(
     private readonly facilityCategoryService: FacilityCategoryService,
@@ -45,20 +44,11 @@ export class FacilityCategoryController {
   }
 
   @Get()
-  async findAll(
-    @Query() query: GetFacilityCategorysDtoPaginateQuery,
-    @Paginate() paginateQuery: PaginateQuery
-  ) {
-    console.log('woi');
+  async findAll(@Paginate() query: PaginateQuery) {
     try {
-      console.log(query);
-      console.log(paginateQuery);
-      const facilityCategories = await this.facilityCategoryService.findAll({
-        ...query,
-        ...paginateQuery,
-      });
+      const categories = await this.facilityCategoryService.findAll(query);
 
-      return new GetFacilityCategoriesSuccessResponse(facilityCategories);
+      return new GetFacilityCategoriesSuccessResponse(categories);
     } catch (error) {
       console.error(error);
 
@@ -67,7 +57,7 @@ export class FacilityCategoryController {
   }
 
   @Get(':id')
-  async findOne(@Param() params: FacilityCategoryIdDto) {
+  async findOne(@Param() params: FacilityCategoryParamsDto) {
     try {
       const facilityCategory = await this.facilityCategoryService.findOne(
         params.id,
@@ -83,8 +73,8 @@ export class FacilityCategoryController {
 
   @Patch(':id')
   async update(
-    @Param() params: FacilityCategoryIdDto,
-    @Body() updateFacilityDto: UpdateFacilityDto,
+    @Param() params: FacilityCategoryParamsDto,
+    @Body() updateFacilityDto: UpdateFacilityCategoryDto,
   ) {
     const facilityCategory = await this.facilityCategoryService.update(
       params.id,
@@ -95,7 +85,7 @@ export class FacilityCategoryController {
   }
 
   @Delete(':id')
-  async remove(@Param() params: FacilityCategoryIdDto) {
+  async remove(@Param() params: FacilityCategoryParamsDto) {
     try {
       await this.facilityCategoryService.remove(params.id);
 

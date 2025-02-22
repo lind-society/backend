@@ -1,5 +1,5 @@
 import { Paginated } from 'nestjs-paginate';
-import { PaginateResponseDataProps } from 'src/modules/shared/dto/paginated-response.dto';
+import { PaginateResponseDataProps } from 'src/modules/shared/dto';
 
 export function paginateResponseMapper<T, U extends Array<any> | undefined>(
   data: Paginated<T>,
@@ -21,6 +21,11 @@ export function paginateResponseMapper<T, U extends Array<any> | undefined>(
       itemsPerPage: data.meta.itemsPerPage,
       totalItems: data.meta.totalItems,
       totalPages: data.meta.totalPages,
+      sortBy: data.meta.sortBy as any, // Ensure sortBy is included
+      searchBy: data.meta.searchBy as any, // Include searchable columns
+      search: data.meta.search,
+      select: data.meta.select,
+      filter: data.meta.filter,
     },
   };
 }

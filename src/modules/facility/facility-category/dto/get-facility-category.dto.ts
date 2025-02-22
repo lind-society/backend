@@ -1,4 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
@@ -9,56 +10,31 @@ import {
   IsUUID,
 } from 'class-validator';
 import { PaginateQuery } from 'nestjs-paginate';
-import { PaginateResponseDefaultDataProps } from 'src/modules/shared/dto/paginated-response.dto';
 import { FacilityCategoryDto } from './facility-category.dto';
+import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { DefaultHttpStatus } from 'src/common/enums';
-import { Type } from 'class-transformer';
+import { PaginateResponseDefaultDataProps } from 'src/modules/shared/dto';
 
-export class FacilityCategoryIdDto {
+export class FacilityCategoryParamsDto {
   @IsUUID()
   @IsNotEmpty()
   id!: string;
 }
 
-export interface IGetFacilityCategoryDtoPaginateQuery
-  extends Pick<PaginateQuery, 'limit' | 'page' | 'search'> {}
-
-export class GetFacilityCategorysDtoPaginateQuery
-  implements IGetFacilityCategoryDtoPaginateQuery
-{
-  @IsInt()
-  @IsNumber()
-  @Type(() => Number)
-  @IsOptional()
-  readonly limit?: number = 10;
-
-  @IsPositive()
-  @IsInt()
-  @IsNumber()
-  @Type(() => Number)
-  @IsOptional()
-  readonly page?: number = 1;
-
-  @IsString()
-  @IsOptional()
-  readonly search?: string;
-}
-
-export class GetFacilityCategoryPaginateDto extends PaginateResponseDefaultDataProps {
+export class GetFacilityCategoriesPaginateDto extends PaginateResponseDefaultDataProps {
   readonly data!: FacilityCategoryDto[];
 }
 
 export class GetFacilityCategoriesSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<GetFacilityCategoryPaginateDto>
+  implements HttpResponseOptions<GetFacilityCategoriesPaginateDto>
 {
-  readonly data: GetFacilityCategoryPaginateDto;
+  readonly data: GetFacilityCategoriesPaginateDto;
 
-  constructor(data: GetFacilityCategoryPaginateDto) {
+  constructor(data: GetFacilityCategoriesPaginateDto) {
     super({
       code: HttpStatus.OK,
       message: 'get facility categories success',

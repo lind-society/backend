@@ -1,17 +1,18 @@
+import { HttpStatus } from '@nestjs/common';
 import {
   IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
-import { HttpStatus } from '@nestjs/common';
-import { DefaultHttpStatus } from 'src/common/enums/default-http-status.enum';
+import { FacilityWithRelationsDto } from './facility.dto';
+import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { FacilityWithRelationsDto } from './facility.dto';
 
 export class CreateFacilityDto {
   @IsString()
@@ -29,9 +30,14 @@ export class CreateFacilityDto {
   // fill with json
   @IsOptional()
   readonly description?: any | null;
+
+  @IsArray()
+  @IsUUID('all', { each: true })
+  @IsOptional()
+  readonly categoryIds?: string[] | null;
 }
 
-export class CreateRoleSuccessResponse
+export class CreateFacilitySuccessResponse
   extends HttpResponseDefaultProps
   implements HttpResponseOptions<FacilityWithRelationsDto>
 {

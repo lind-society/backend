@@ -1,11 +1,11 @@
-import { IsNotEmpty, IsString } from 'class-validator';
 import { HttpStatus } from '@nestjs/common';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { FacilityCategoryDto } from './facility-category.dto';
+import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { FacilityCategoryDto } from './facility-category.dto';
-import { DefaultHttpStatus } from 'src/common/enums';
 
 export class CreateFacilityCategoryDto {
   @IsString()

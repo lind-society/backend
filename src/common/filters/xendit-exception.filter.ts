@@ -6,16 +6,14 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { HttpResponse } from 'src/modules/shared/dto/http-response.dto';
-import { DefaultHttpStatus } from '../enums/default-http-status.enum';
+import { HttpResponse } from 'src/modules/shared/dto';
+import { DefaultHttpStatus } from '../enums';
 
 @Catch()
 export class XenditExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-
-    console.error('Xendit API Error:', exception);
 
     const status =
       exception instanceof HttpException

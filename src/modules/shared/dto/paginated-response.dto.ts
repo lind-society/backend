@@ -3,14 +3,21 @@ export class PaginateResponseMetaProps {
   readonly totalItems!: number;
   readonly currentPage!: number;
   readonly totalPages!: number;
+  readonly sortBy!: unknown;
+  readonly searchBy!: unknown;
+  readonly search!: string;
+  readonly select!: string[];
+  readonly filter?: {
+    [column: string]: string | string[];
+  };
 }
 
 export class PaginateResponseLinksProps {
-  readonly first!: string | null;
-  readonly previous!: string | null;
+  readonly first?: string | null;
+  readonly previous?: string | null;
   readonly current!: string;
-  readonly next!: string | null;
-  readonly last!: string | null;
+  readonly next?: string | null;
+  readonly last?: string | null;
 }
 
 export class PaginateResponseDefaultDataProps {

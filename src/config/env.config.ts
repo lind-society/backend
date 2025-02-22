@@ -10,8 +10,8 @@ import {
   validateSync,
 } from 'class-validator';
 import { config, DotenvConfigOptions } from 'dotenv';
-import { envPaths } from 'src/common/constants/env-path.constant';
-import { Environment } from 'src/common/enums/environment.enum';
+import { envPaths } from 'src/common/constants';
+import { Environment } from 'src/common/enums';
 
 export class EnvironmentVariables {
   @IsEnum(Environment)

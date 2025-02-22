@@ -1,13 +1,14 @@
 import { HttpStatus } from '@nestjs/common';
-import { HttpResponseDefaultProps } from './http-response.dto';
+import { HttpResponse } from './http-response.dto';
 import { DefaultHttpStatus } from 'src/common/enums';
 
-export class DeleteResponse extends HttpResponseDefaultProps {
+export class DeleteResponse extends HttpResponse {
   constructor(message: string) {
     super({
       status: DefaultHttpStatus.Success,
       message,
-      code: HttpStatus.NO_CONTENT,
+      code: HttpStatus.OK,
+      data: null,
     });
   }
 }

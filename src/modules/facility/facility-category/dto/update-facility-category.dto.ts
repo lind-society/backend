@@ -1,15 +1,15 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsOptional, IsString } from 'class-validator';
-import { FacilityCategoryDto } from './facility-category.dto';
-import { CreateFacilityCategoryDto } from './create-facility-category.dto';
 import { PartialType } from '@nestjs/mapped-types';
+import { IsOptional, IsString } from 'class-validator';
+import { CreateFacilityCategoryDto } from './create-facility-category.dto';
+import { FacilityCategoryDto } from './facility-category.dto';
+import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { DefaultHttpStatus } from 'src/common/enums';
 
-export class UpdateFacilityCategoryDtoPayload extends PartialType(
+export class UpdateFacilityCategoryDto extends PartialType(
   CreateFacilityCategoryDto,
 ) {
   @IsString()

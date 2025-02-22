@@ -5,8 +5,8 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { FacilityCategory } from 'src/database/entities/facility-category.entity';
-import { FacilityDto } from 'src/modules/facility/dto/facility.dto';
+import { FacilityCategory } from 'src/database/entities';
+import { FacilityDto } from 'src/modules/facility/dto';
 
 export interface IFacilityCategoryDto
   extends Pick<
@@ -39,6 +39,13 @@ export class FacilityCategoryDto implements IFacilityCategoryDto {
   @IsDate()
   @IsOptional()
   readonly deletedAt!: Date | null;
+}
+
+export class FacilityCategoryWithRelationsDto
+  extends FacilityCategoryDto
+  implements IFacilityCategoryDto
+{
+  readonly facilites?: FacilityDto[];
 }
 
 export class FacilityCategoryWithFacilityCategoryPivotIdDto extends FacilityCategoryDto {

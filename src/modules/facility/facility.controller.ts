@@ -1,34 +1,95 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { FacilityService } from './facility.service';
-import { CreateFacilityDto } from './dto/create-facility.dto';
-import { UpdateFacilityDto } from './dto/update-facility.dto';
+import {
+  CreateFacilityDto,
+  CreateFacilitySuccessResponse,
+  GetFacilitiesDto,
+  GetFacilitiesSuccessResponse,
+  GetFacilityParamsDto,
+  GetFacilitySuccessResponse,
+  UpdateFacilityDto,
+  UpdateFacilitySuccessResponse,
+} from './dto';
+import { DeleteResponse } from '../shared/dto';
 
 @Controller('facility')
 export class FacilityController {
   constructor(private readonly facilityService: FacilityService) {}
 
   @Post()
-  create(@Body() createFacilityDto: CreateFacilityDto) {
-    return this.facilityService.create(createFacilityDto);
+  async create(@Body() payload: CreateFacilityDto) {
+    try {
+      const facility = await this.facilityService.create(payload);
+
+      return new CreateFacilitySuccessResponse(facility);
+    } catch (error) {
+      console.error(error);
+
+      throw error;
+    }
   }
 
   @Get()
-  findAll() {
-    return this.facilityService.findAll();
+  async findAll(
+    @Paginate() query: PaginateQuery,
+    @Body() payload: GetFacilitiesDto,
+  ) {
+    try {
+      const facilities = await this.facilityService.findAll(query, payload);
+
+      return new GetFacilitiesSuccessResponse(facilities);
+    } catch (error) {
+      console.error(error);
+
+      throw error;
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.facilityService.findOne(+id);
+  async findOne(@Param() params: GetFacilityParamsDto) {
+    try {
+      const facility = await this.facilityService.findOne(params.id);
+
+      return new GetFacilitySuccessResponse(facility);
+    } catch (error) {
+      console.error(error);
+
+      throw error;
+    }
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFacilityDto: UpdateFacilityDto) {
-    return this.facilityService.update(+id, updateFacilityDto);
+  async update(
+    @Param() params: GetFacilityParamsDto,
+    @Body() updateFacilityDto: UpdateFacilityDto,
+  ) {
+    const facility = await this.facilityService.update(
+      params.id,
+      updateFacilityDto,
+    );
+
+    return new UpdateFacilitySuccessResponse(facility);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.facilityService.remove(+id);
+  async remove(@Param() params: GetFacilityParamsDto) {
+    try {
+      await this.facilityService.remove(params.id);
+
+      return new DeleteResponse('delete facility success');
+    } catch (error) {
+      console.error(error);
+
+      throw error;
+    }
   }
 }
