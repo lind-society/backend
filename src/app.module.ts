@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { validateEnv } from './config/env.config';
-import { envPaths } from './common/constants/env-path.constant';
-import { appConfig } from './config/app.config';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { xenditConfig } from './config/xendit.config';
+import { envPaths } from './common/constants';
+import { appConfig, databaseConfig, validateEnv, xenditConfig } from './config';
 import { LoggerModule } from './modules/shared/logger/logger.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { databaseConfig } from './config/database.config';
+import { FacilityModule } from './modules/facility/facility.module';
 
 @Module({
   imports: [
@@ -29,6 +27,7 @@ import { databaseConfig } from './config/database.config';
       }),
     }),
     LoggerModule,
+    FacilityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

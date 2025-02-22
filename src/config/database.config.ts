@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
-import { envValues } from './env-values.config';
-import { Environment } from 'src/common/enums/environment.enum';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
+import { envValues } from './env-values.config';
+import { Environment } from 'src/common/enums';
 
 const { DB_TYPE, DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER, NODE_ENV } =
   envValues;

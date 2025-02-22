@@ -1,7 +1,7 @@
-import { Environment } from 'src/common/enums/environment.enum';
-import { envValues } from 'src/config/env-values.config';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
+import { Environment } from 'src/common/enums';
+import { envValues } from 'src/config';
 
 const { DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_TYPE, DB_USER, NODE_ENV } =
   envValues;
