@@ -7,13 +7,13 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { CreateFacilityDto } from './create-facility.dto';
-import { FacilityWithRelationsDto } from './facility.dto';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
+import { CreateFacilityDto } from './create-facility.dto';
+import { FacilityWithRelationsDto } from './facility.dto';
 
 export class UpdateFacilityDto extends PartialType(CreateFacilityDto) {
   @IsString()

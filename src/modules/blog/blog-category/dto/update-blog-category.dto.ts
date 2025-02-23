@@ -6,27 +6,25 @@ import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { CreateFacilityCategoryDto } from './create-facility-category.dto';
-import { FacilityCategoryDto } from './facility-category.dto';
+import { BlogCategoryDto } from './blog-category.dto';
+import { CreateBlogCategoryDto } from './create-blog-category.dto';
 
-export class UpdateFacilityCategoryDto extends PartialType(
-  CreateFacilityCategoryDto,
-) {
+export class UpdateBlogCategoryDto extends PartialType(CreateBlogCategoryDto) {
   @IsString()
   @IsOptional()
   readonly name?: string;
 }
 
-export class UpdateFacilityCategorySuccessResponse
+export class UpdateBlogCategorySuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<FacilityCategoryDto>
+  implements HttpResponseOptions<BlogCategoryDto>
 {
-  readonly data: FacilityCategoryDto;
+  readonly data: BlogCategoryDto;
 
-  constructor(data: FacilityCategoryDto) {
+  constructor(data: BlogCategoryDto) {
     super({
       code: HttpStatus.OK,
-      message: 'update facility category success',
+      message: 'update blog category success',
       status: DefaultHttpStatus.Success,
     });
 

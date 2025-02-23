@@ -1,13 +1,12 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
-  HttpException,
+  Catch,
+  ExceptionFilter,
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { QueryFailedError } from 'typeorm';
 import { HttpResponse } from 'src/modules/shared/dto';
+import { QueryFailedError } from 'typeorm';
 import { DefaultHttpStatus } from '../enums';
 import { PostgreSqlErrorCode } from '../enums/postgresql-error-code.enum';
 import { sanitizePostgresqlErrorResponse } from '../helpers/sanitize-postgresql-error-response.helper';

@@ -8,10 +8,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Facility } from './facility.entity';
 import { FacilityCategory } from './facility-category.entity';
+import { Facility } from './facility.entity';
 
-@Entity()
+@Entity({ name: 'facilities_facility_categories' })
 export class FacilityCategoryPivot {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

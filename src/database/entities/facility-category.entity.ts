@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { FacilityCategoryPivot } from './facility-category-pivot.entity';
 
-@Entity()
+@Entity({ name: 'facility_categories' })
 export class FacilityCategory {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

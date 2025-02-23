@@ -8,14 +8,14 @@ import {
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { Response } from 'express';
-import { XenditExceptionFilter } from './xendit-exception.filter';
-import { DefaultHttpStatus } from '../enums';
 import {
   HttpResponse,
   ValidationExceptionResponse,
 } from 'src/modules/shared/dto';
 import { QueryFailedError } from 'typeorm';
+import { DefaultHttpStatus } from '../enums';
 import { TypeOrmExceptionFilter } from './typeorm-exception.filter';
+import { XenditExceptionFilter } from './xendit-exception.filter';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {

@@ -1,23 +1,12 @@
 import { HttpStatus } from '@nestjs/common';
-import {
-  IsArray,
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
-  IsUUID,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { PaginateQuery } from 'nestjs-paginate';
-import { FacilityDto } from './facility.dto';
+import { IsArray, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
+import { FacilityDto } from './facility.dto';
 
 export class GetFacilityParamsDto {
   @IsUUID()
@@ -29,7 +18,7 @@ export class GetFacilitiesDto {
   @IsArray()
   @IsUUID('all', { each: true })
   @IsOptional()
-  categoryIds!: string[];
+  categoryIds?: string[];
 }
 
 export class GetFacilityPaginateDto extends PaginateResponseDefaultDataProps {
