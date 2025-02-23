@@ -7,12 +7,12 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { FacilityWithRelationsDto } from './facility.dto';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
+import { FacilityWithRelationsDto } from './facility.dto';
 
 export class CreateFacilityDto {
   @IsString()

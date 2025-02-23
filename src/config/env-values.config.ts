@@ -1,5 +1,5 @@
-import { envConfig, EnvironmentVariables } from './env.config';
 import { Environment } from 'src/common/enums';
+import { envConfig, EnvironmentVariables } from './env.config';
 
 envConfig();
 

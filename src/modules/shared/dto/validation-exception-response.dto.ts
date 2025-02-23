@@ -1,9 +1,9 @@
 import { HttpStatus } from '@nestjs/common';
+import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from './http-response.dto';
-import { DefaultHttpStatus } from 'src/common/enums';
 
 export class ValidationExceptionResponseData {
   readonly field!: string;

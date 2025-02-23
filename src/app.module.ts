@@ -5,9 +5,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envPaths } from './common/constants';
 import { appConfig, databaseConfig, validateEnv, xenditConfig } from './config';
-import { LoggerModule } from './modules/shared/logger/logger.module';
-import { FacilityModule } from './modules/facility/facility.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { FacilityModule } from './modules/facility/facility.module';
+import { LoggerModule } from './modules/shared/logger/logger.module';
 
 @Module({
   imports: [

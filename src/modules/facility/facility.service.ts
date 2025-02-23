@@ -16,6 +16,7 @@ import {
   FacilityCategory,
   FacilityCategoryPivot,
 } from 'src/database/entities';
+import { FacilityCategoryDto } from './facility-category/dto';
 
 @Injectable()
 export class FacilityService {
@@ -30,23 +31,29 @@ export class FacilityService {
   ) {}
 
   private async _validateCategories(
-    categoryIds: string[],
-  ): Promise<FacilityCategory[]> {
+    facilityCategoryIds: string[],
+  ): Promise<FacilityCategoryDto[]> {
     const validCategories = await this.facilityCategoryRepository.find({
       where: {
-        id: In(categoryIds),
+        id: In(facilityCategoryIds),
       },
     });
+
+    if (validCategories.length === 0) {
+      throw new NotFoundException(
+        `Facility Categories not found for IDs: ${facilityCategoryIds.join(', ')}`,
+      );
+    }
 
     // Compare input category ids and valid category ids
     const validCategoryIds = validCategories.map((category) => category.id);
     const invalidIds = validCategoryIds.filter(
-      (id) => !categoryIds.includes(id),
+      (id) => !facilityCategoryIds.includes(id),
     );
 
     if (invalidIds.length > 0) {
       throw new NotFoundException(
-        `Permissions not found for IDs: ${invalidIds.join(', ')}`,
+        `Facility Categories not found for IDs: ${invalidIds.join(', ')}`,
       );
     }
 
@@ -162,7 +169,6 @@ export class FacilityService {
     id: string,
     payload: UpdateFacilityDto,
   ): Promise<FacilityWithRelationsDto> {
-    console.log({ payload });
     await this.findOne(id);
 
     await this.dataSource.transaction(async (manager) => {

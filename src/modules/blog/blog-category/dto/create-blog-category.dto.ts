@@ -5,24 +5,24 @@ import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { FacilityCategoryDto } from './facility-category.dto';
+import { BlogCategoryDto } from './blog-category.dto';
 
-export class CreateFacilityCategoryDto {
+export class CreateBlogCategoryDto {
   @IsString()
   @IsNotEmpty()
   readonly name!: string;
 }
 
-export class CreateFacilityCategorySuccessResponse
+export class CreateBlogCategorySuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<FacilityCategoryDto>
+  implements HttpResponseOptions<BlogCategoryDto>
 {
-  readonly data: FacilityCategoryDto;
+  readonly data: BlogCategoryDto;
 
-  constructor(data: FacilityCategoryDto) {
+  constructor(data: BlogCategoryDto) {
     super({
       code: HttpStatus.CREATED,
-      message: 'create facility category success',
+      message: 'create blog category success',
       status: DefaultHttpStatus.Success,
     });
 

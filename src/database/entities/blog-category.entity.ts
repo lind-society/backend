@@ -7,30 +7,18 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FacilityCategoryPivot } from './facility-category-pivot.entity';
+import { Blog } from './blog.entity';
 
-@Entity({ name: 'facilities' })
-export class Facility {
+@Entity({ name: 'blog_categories' })
+export class BlogCategory {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ unique: true })
   name!: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  icon!: string | null;
-
-  @Column({ name: 'additional_price', type: 'decimal', nullable: true })
-  additionalPrice!: number | null;
-
-  @Column({ type: 'jsonb', nullable: true })
-  description!: any | null;
-
-  @OneToMany(
-    () => FacilityCategoryPivot,
-    (facilityCategoryPivot) => facilityCategoryPivot.facility,
-  )
-  facilityCategories!: FacilityCategoryPivot[];
+  @OneToMany(() => Blog, (blog) => blog.category)
+  blogs: Blog[];
 
   @CreateDateColumn({
     name: 'created_at',
