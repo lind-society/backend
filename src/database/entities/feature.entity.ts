@@ -7,21 +7,27 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FacilityCategoryPivot } from './facility-category-pivot.entity';
+import { PropertyFeaturePivot } from './property-feature-pivot.entity';
 
-@Entity({ name: 'facility_categories' })
-export class FacilityCategory {
+@Entity({ name: 'features' })
+export class Feature {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ unique: true })
+  @Column()
   name!: string;
 
+  @Column({ nullable: true })
+  icon!: string | null;
+
+  @Column({ type: 'varchar', array: true, nullable: true })
+  list!: string[] | null;
+
   @OneToMany(
-    () => FacilityCategoryPivot,
-    (facilityCategoryPivot) => facilityCategoryPivot.facilityCategory,
+    () => PropertyFeaturePivot,
+    (propertyFacilityPivot) => propertyFacilityPivot.feature,
   )
-  facilityCategories!: FacilityCategoryPivot[];
+  propertyFeatures!: PropertyFeaturePivot[];
 
   @CreateDateColumn({
     name: 'created_at',

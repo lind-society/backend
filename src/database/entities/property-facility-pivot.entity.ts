@@ -8,35 +8,31 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FacilityCategory } from './facility-category.entity';
 import { Facility } from './facility.entity';
+import { Property } from './property.entity';
 
-@Entity({ name: 'facilities_facility_categories' })
-export class FacilityCategoryPivot {
+@Entity({ name: 'property_facility_pivot' })
+export class PropertyFacilityPivot {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => Facility, (facility) => facility.facilityCategories, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'facility_id' })
-  facility!: Facility;
+  @Column({ name: 'property_id', type: 'uuid' })
+  propertyId!: string;
 
   @Column({ name: 'facility_id', type: 'uuid' })
   facilityId!: string;
 
-  @ManyToOne(
-    () => FacilityCategory,
-    (facilityCategory) => facilityCategory.facilityCategories,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
-  @JoinColumn({ name: 'facility_category_id' })
-  facilityCategory!: FacilityCategory;
+  @ManyToOne(() => Property, (property) => property.propertyFacilities, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'property_id' })
+  property!: Property;
 
-  @Column({ name: 'facility_category_id', type: 'uuid' })
-  facilityCategoryId!: string;
+  @ManyToOne(() => Facility, (facility) => facility.propertyFacilities, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'facility_id' })
+  facility!: Facility;
 
   @CreateDateColumn({
     name: 'created_at',

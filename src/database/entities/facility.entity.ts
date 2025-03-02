@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FacilityCategoryPivot } from './facility-category-pivot.entity';
+import { PropertyFacilityPivot } from './property-facility-pivot.entity';
 
 @Entity({ name: 'facilities' })
 export class Facility {
@@ -17,20 +17,17 @@ export class Facility {
   @Column()
   name!: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ nullable: true })
   icon!: string | null;
 
-  @Column({ name: 'additional_price', type: 'decimal', nullable: true })
-  additionalPrice!: number | null;
-
-  @Column({ type: 'jsonb', nullable: true })
-  description!: any | null;
+  @Column({ nullable: true })
+  description!: string | null;
 
   @OneToMany(
-    () => FacilityCategoryPivot,
-    (facilityCategoryPivot) => facilityCategoryPivot.facility,
+    () => PropertyFacilityPivot,
+    (propertyFacilityPivot) => propertyFacilityPivot.facility,
   )
-  facilityCategories!: FacilityCategoryPivot[];
+  propertyFacilities!: PropertyFacilityPivot[];
 
   @CreateDateColumn({
     name: 'created_at',

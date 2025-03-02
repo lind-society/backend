@@ -8,31 +8,31 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { BlogCategory } from './blog-category.entity';
+import { Additional } from './additional.entity';
 
-@Entity({ name: 'blogs' })
-export class Blog {
+@Entity({ name: 'medias' })
+export class Media {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
-  title!: string;
+  @Column({ nullable: true })
+  photo!: string | null;
 
-  @Column({ type: 'text' })
-  content!: string;
+  @Column({ nullable: true })
+  video!: string | null;
 
-  @Column({ name: 'author_id', type: 'uuid', nullable: true })
-  authorId!: string | null;
+  @Column({ name: 'video_360', nullable: true })
+  video360!: string | null;
 
-  @Column({ name: 'category_id', type: 'uuid', nullable: true })
-  categoryId!: string | null;
+  @Column({ name: 'additional_id', nullable: true })
+  additionalId!: string | null;
 
-  @ManyToOne(() => BlogCategory, {
-    onDelete: 'SET NULL',
-    nullable: false,
+  @ManyToOne(() => Additional, (additional) => additional.media, {
+    onDelete: 'CASCADE',
+    nullable: true,
   })
-  @JoinColumn({ name: 'category_id' })
-  category!: BlogCategory;
+  @JoinColumn({ name: 'additional_id' })
+  additional!: Additional;
 
   @CreateDateColumn({
     name: 'created_at',
