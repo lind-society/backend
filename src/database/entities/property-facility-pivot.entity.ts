@@ -22,6 +22,9 @@ export class PropertyFacilityPivot {
   @Column({ name: 'facility_id', type: 'uuid' })
   facilityId!: string;
 
+  @Column({ type: 'text', nullable: true })
+  description!: string | null;
+
   @ManyToOne(() => Property, (property) => property.propertyFacilities, {
     onDelete: 'CASCADE',
   })

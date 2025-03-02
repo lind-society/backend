@@ -5,7 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envPaths } from './common/constants';
 import { appConfig, databaseConfig, validateEnv, xenditConfig } from './config';
-// import { BlogModule } from './modules/blog/blog.module';
+import { BlogModule } from './modules/blog/blog.module';
+import { PropertyModule } from './modules/property/property.module';
 import { LoggerModule } from './modules/shared/logger/logger.module';
 
 @Module({
@@ -27,7 +28,8 @@ import { LoggerModule } from './modules/shared/logger/logger.module';
       }),
     }),
     LoggerModule,
-    // BlogModule,
+    BlogModule,
+    PropertyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

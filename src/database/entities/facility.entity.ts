@@ -20,9 +20,6 @@ export class Facility {
   @Column({ nullable: true })
   icon!: string | null;
 
-  @Column({ nullable: true })
-  description!: string | null;
-
   @OneToMany(
     () => PropertyFacilityPivot,
     (propertyFacilityPivot) => propertyFacilityPivot.facility,

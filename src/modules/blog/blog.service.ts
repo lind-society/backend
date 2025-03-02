@@ -36,7 +36,6 @@ export class BlogService {
   }
 
   async create(payload: CreateBlogDto): Promise<BlogWithRelationsDto> {
-    console.log(payload);
     await this._validateCategory(payload.categoryId);
 
     const createdBlog = this.blogRepository.create(payload);

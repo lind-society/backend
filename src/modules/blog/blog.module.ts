@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Blog, BlogCategory } from 'src/database/entities';
-import { BlogCategoryModule } from './blog-category/blog-category.module';
 import { BlogController } from './blog.controller';
 import { BlogService } from './blog.service';
+import { BlogCategoryModule } from './category/blog-category.module';
 
 @Module({
   controllers: [BlogController],
