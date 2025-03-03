@@ -1,5 +1,5 @@
 import { Blog } from 'src/database/entities';
-import { BlogCategoryDto } from '../blog-category/dto';
+import { BlogCategoryDto } from '../category/dto';
 
 export interface IBlogDto extends Omit<Blog, 'category'> {}
 

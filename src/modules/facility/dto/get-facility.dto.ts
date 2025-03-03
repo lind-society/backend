@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsArray, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -15,10 +15,9 @@ export class GetFacilityParamsDto {
 }
 
 export class GetFacilitiesDto {
-  @IsArray()
-  @IsUUID('all', { each: true })
+  @IsUUID()
   @IsOptional()
-  categoryIds?: string[];
+  propertyId?: string;
 }
 
 export class GetFacilityPaginateDto extends PaginateResponseDefaultDataProps {

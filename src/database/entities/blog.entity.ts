@@ -24,15 +24,15 @@ export class Blog {
   @Column({ name: 'author_id', type: 'uuid', nullable: true })
   authorId!: string | null;
 
+  @Column({ name: 'category_id', type: 'uuid', nullable: true })
+  categoryId!: string | null;
+
   @ManyToOne(() => BlogCategory, {
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
     nullable: false,
   })
   @JoinColumn({ name: 'category_id' })
   category!: BlogCategory;
-
-  @Column({ name: 'category_id', type: 'uuid', nullable: false })
-  categoryId!: string;
 
   @CreateDateColumn({
     name: 'created_at',

@@ -1,0 +1,73 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { paginateResponseMapper } from 'src/common/helpers';
+import { Feature } from 'src/database/entities';
+import { Repository } from 'typeorm';
+import { PaginateResponseDataProps } from '../shared/dto';
+import {
+  CreateFeatureDto,
+  FeatureDto,
+  FeatureWithRelationsDto,
+  UpdateFeatureDto,
+} from './dto';
+
+@Injectable()
+export class FeatureService {
+  constructor(
+    @InjectRepository(Feature)
+    private featureRepository: Repository<Feature>,
+  ) {}
+  async create(payload: CreateFeatureDto): Promise<FeatureDto> {
+    const feature = this.featureRepository.create(payload);
+
+    return await this.featureRepository.save(feature);
+  }
+
+  async findAll(
+    query: PaginateQuery,
+  ): Promise<PaginateResponseDataProps<FeatureWithRelationsDto[]>> {
+    const paginatedFeatureCategory = await paginate(
+      query,
+      this.featureRepository,
+      {
+        sortableColumns: ['createdAt'],
+        defaultSortBy: [['createdAt', 'DESC']],
+        defaultLimit: 10,
+      },
+    );
+
+    return paginateResponseMapper(paginatedFeatureCategory);
+  }
+
+  async findOne(id: string): Promise<FeatureWithRelationsDto> {
+    const feature = await this.featureRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!feature) {
+      throw new NotFoundException('feature not found');
+    }
+
+    return feature;
+  }
+
+  async update(
+    id: string,
+    payload: UpdateFeatureDto,
+  ): Promise<FeatureWithRelationsDto> {
+    await this.findOne(id);
+
+    await this.update(id, payload);
+
+    return await this.findOne(id);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.findOne(id);
+
+    await this.remove(id);
+  }
+}

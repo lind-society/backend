@@ -1,143 +1,41 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
-import { DataSource, In, Repository } from 'typeorm';
+import { paginateResponseMapper } from 'src/common/helpers';
+import { Facility } from 'src/database/entities';
+import { Repository } from 'typeorm';
+import { PaginateResponseDataProps } from '../shared/dto';
 import {
   CreateFacilityDto,
   FacilityDto,
   FacilityWithRelationsDto,
-  GetFacilitiesDto,
   UpdateFacilityDto,
 } from './dto';
-import { PaginateResponseDataProps } from '../shared/dto';
-import { paginateResponseMapper } from 'src/common/helpers';
-import {
-  Facility,
-  FacilityCategory,
-  FacilityCategoryPivot,
-} from 'src/database/entities';
-import { FacilityCategoryDto } from './facility-category/dto';
 
 @Injectable()
 export class FacilityService {
   constructor(
-    private dataSource: DataSource,
     @InjectRepository(Facility)
     private facilityRepository: Repository<Facility>,
-    @InjectRepository(FacilityCategory)
-    private facilityCategoryRepository: Repository<FacilityCategory>,
-    @InjectRepository(FacilityCategoryPivot)
-    private facilityCategoryPivotRepository: Repository<FacilityCategoryPivot>,
   ) {}
 
-  private async _validateCategories(
-    facilityCategoryIds: string[],
-  ): Promise<FacilityCategoryDto[]> {
-    const validCategories = await this.facilityCategoryRepository.find({
-      where: {
-        id: In(facilityCategoryIds),
-      },
-    });
+  async create(payload: CreateFacilityDto): Promise<FacilityDto> {
+    const createdFacility = this.facilityRepository.create(payload);
 
-    if (validCategories.length === 0) {
-      throw new NotFoundException(
-        `Facility Categories not found for IDs: ${facilityCategoryIds.join(', ')}`,
-      );
-    }
-
-    // Compare input category ids and valid category ids
-    const validCategoryIds = validCategories.map((category) => category.id);
-    const invalidIds = validCategoryIds.filter(
-      (id) => !facilityCategoryIds.includes(id),
-    );
-
-    if (invalidIds.length > 0) {
-      throw new NotFoundException(
-        `Facility Categories not found for IDs: ${invalidIds.join(', ')}`,
-      );
-    }
-
-    return validCategories;
-  }
-
-  private async _getAllFacilityRelatedCategory(
-    facilityId: string,
-  ): Promise<FacilityCategoryPivot[]> {
-    const initialFacilityCategoryPivot =
-      await this.facilityCategoryPivotRepository.find({
-        where: {
-          facilityId,
-        },
-      });
-
-    return initialFacilityCategoryPivot;
-  }
-
-  async create(payload: CreateFacilityDto): Promise<FacilityWithRelationsDto> {
-    const facility = await this.dataSource.transaction(async (manager) => {
-      const createdFacility = manager.create(
-        this.facilityRepository.target,
-        payload,
-      );
-
-      await this.facilityRepository.save(createdFacility);
-
-      if (payload.categoryIds && payload.categoryIds.length > 0) {
-        const validcategories = await this._validateCategories(
-          payload.categoryIds,
-        );
-
-        const facilityCategoryPivot = validcategories.map(
-          (facilityCategory) => ({
-            facility: createdFacility,
-            facilityCategory,
-          }),
-        );
-
-        const createdFacilityCategoryPivot = manager.create(
-          this.facilityCategoryPivotRepository.target,
-          facilityCategoryPivot,
-        );
-
-        await manager.save(createdFacilityCategoryPivot);
-      }
-
-      return createdFacility;
-    });
-
-    return facility;
+    return await this.facilityRepository.save(createdFacility);
   }
 
   async findAll(
     query: PaginateQuery,
-    payload: GetFacilitiesDto,
-  ): Promise<PaginateResponseDataProps<FacilityDto[]>> {
-    const whereCondition = payload.categoryIds?.length
-      ? { facilityCategories: { facilityCategoryId: In(payload.categoryIds) } }
-      : undefined;
-
+  ): Promise<PaginateResponseDataProps<FacilityWithRelationsDto[]>> {
     const paginatedFacility = await paginate(query, this.facilityRepository, {
       sortableColumns: ['createdAt'],
       defaultSortBy: [['createdAt', 'DESC']],
       defaultLimit: 10,
       searchableColumns: ['name'],
-      where: whereCondition,
-      relations: {
-        facilityCategories: { facilityCategory: true },
-      },
     });
 
-    const mappedFacilityData: FacilityDto[] = paginatedFacility.data.map(
-      ({ facilityCategories, ...facilityData }) => ({
-        ...facilityData,
-        categories: facilityCategories.map((pivot) => ({
-          pivotId: pivot.id,
-          ...pivot.facilityCategory,
-        })),
-      }),
-    ) as FacilityWithRelationsDto[];
-
-    return paginateResponseMapper(paginatedFacility, mappedFacilityData);
+    return paginateResponseMapper(paginatedFacility);
   }
 
   async findOne(id: string): Promise<FacilityWithRelationsDto> {
@@ -145,24 +43,13 @@ export class FacilityService {
       where: {
         id,
       },
-      relations: {
-        facilityCategories: { facilityCategory: true },
-      },
     });
 
     if (!facility) {
       throw new NotFoundException(`facility not found`);
     }
 
-    const { facilityCategories, ...facilityData } = facility;
-
-    return {
-      ...facilityData,
-      categories: facility.facilityCategories.map((pivot) => ({
-        pivotId: pivot.id,
-        ...pivot.facilityCategory,
-      })),
-    };
+    return facility;
   }
 
   async update(
@@ -171,57 +58,7 @@ export class FacilityService {
   ): Promise<FacilityWithRelationsDto> {
     await this.findOne(id);
 
-    await this.dataSource.transaction(async (manager) => {
-      await manager.update(this.facilityRepository.target, id, {
-        name: payload.name,
-      });
-
-      const updatedFacility = await manager.findOne(
-        this.facilityRepository.target,
-        {
-          where: {
-            id,
-          },
-        },
-      );
-
-      if (payload.categoryIds && Array.isArray(payload.categoryIds)) {
-        const initialFacilityCategoryPivot =
-          await this._getAllFacilityRelatedCategory(id);
-
-        if (
-          initialFacilityCategoryPivot &&
-          initialFacilityCategoryPivot.length > 0
-        ) {
-          await manager.delete(
-            this.facilityCategoryPivotRepository.target,
-            initialFacilityCategoryPivot,
-          );
-
-          if (payload.categoryIds.length > 0) {
-            const validcategories = await this._validateCategories(
-              payload.categoryIds,
-            );
-
-            const facilityCategoryPivot = validcategories.map(
-              (facilityCategory) => ({
-                facility: updatedFacility,
-                facilityCategory,
-              }),
-            );
-
-            const updatedFacilityCategoryPivot = manager.create(
-              this.facilityCategoryPivotRepository.target,
-              facilityCategoryPivot,
-            );
-
-            await manager.save(updatedFacilityCategoryPivot);
-          }
-        }
-      }
-
-      return updatedFacility;
-    });
+    await this.facilityRepository.update(id, payload);
 
     return await this.findOne(id);
   }

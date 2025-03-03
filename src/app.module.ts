@@ -7,6 +7,7 @@ import { envPaths } from './common/constants';
 import { appConfig, databaseConfig, validateEnv, xenditConfig } from './config';
 import { BlogModule } from './modules/blog/blog.module';
 import { FacilityModule } from './modules/facility/facility.module';
+import { PropertyModule } from './modules/property/property.module';
 import { LoggerModule } from './modules/shared/logger/logger.module';
 
 @Module({
@@ -30,6 +31,7 @@ import { LoggerModule } from './modules/shared/logger/logger.module';
     LoggerModule,
     BlogModule,
     FacilityModule,
+    PropertyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

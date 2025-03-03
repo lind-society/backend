@@ -1,18 +1,16 @@
 import { Facility } from 'src/database/entities';
-import { FacilityCategoryDto } from '../facility-category/dto';
+import { PropertyDto } from 'src/modules/property/dto/property.dto';
 
-export interface IFacilityDto extends Omit<Facility, 'facilityCategories'> {}
+export interface IFacilityDto extends Omit<Facility, 'propertyFacilities'> {}
 
 export interface IFacilityWithRelationsDto extends IFacilityDto {
-  categories?: FacilityCategoryDto[];
+  properties?: PropertyDto[];
 }
 
 export class FacilityDto implements IFacilityDto {
   readonly id!: string;
   readonly name!: string;
   readonly icon!: string;
-  readonly additionalPrice!: number;
-  readonly description!: any;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
   readonly deletedAt!: Date | null;
@@ -22,5 +20,5 @@ export class FacilityWithRelationsDto
   extends FacilityDto
   implements IFacilityWithRelationsDto
 {
-  readonly categories?: FacilityCategoryDto[];
+  readonly properties?: PropertyDto[];
 }

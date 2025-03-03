@@ -1,19 +1,13 @@
 import { HttpStatus } from '@nestjs/common';
 import { PartialType } from '@nestjs/mapped-types';
-import {
-  IsArray,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
 import { CreateFacilityDto } from './create-facility.dto';
-import { FacilityWithRelationsDto } from './facility.dto';
+import { FacilityDto } from './facility.dto';
 
 export class UpdateFacilityDto extends PartialType(CreateFacilityDto) {
   @IsString()
@@ -23,28 +17,15 @@ export class UpdateFacilityDto extends PartialType(CreateFacilityDto) {
   @IsString()
   @IsOptional()
   readonly icon?: string | null;
-
-  @IsNumber()
-  @IsOptional()
-  readonly additionalPrice?: number | null;
-
-  // fill with json
-  @IsOptional()
-  readonly description?: any | null;
-
-  @IsArray()
-  @IsUUID('all', { each: true })
-  @IsOptional()
-  readonly categoryIds?: string[] | null;
 }
 
 export class UpdateFacilitySuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<FacilityWithRelationsDto>
+  implements HttpResponseOptions<FacilityDto>
 {
-  readonly data: FacilityWithRelationsDto;
+  readonly data: FacilityDto;
 
-  constructor(data: FacilityWithRelationsDto) {
+  constructor(data: FacilityDto) {
     super({
       code: HttpStatus.OK,
       message: 'update facility success',

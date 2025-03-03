@@ -1,24 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Facility } from 'src/database/entities';
 import { FacilityController } from './facility.controller';
 import { FacilityService } from './facility.service';
-import {
-  Facility,
-  FacilityCategory,
-  FacilityCategoryPivot,
-} from 'src/database/entities';
-import { FacilityCategoryModule } from './facility-category/facility-category.module';
 
 @Module({
   controllers: [FacilityController],
   providers: [FacilityService],
-  imports: [
-    TypeOrmModule.forFeature([
-      Facility,
-      FacilityCategory,
-      FacilityCategoryPivot,
-    ]),
-    FacilityCategoryModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Facility])],
+  exports: [FacilityService],
 })
 export class FacilityModule {}

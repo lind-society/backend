@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
@@ -30,7 +31,6 @@ export class BlogController {
 
   @Post()
   async create(@Body() payload: CreateBlogDto) {
-    console.log('payload');
     const blog = await this.blogService.create(payload);
 
     return new CreateBlogSuccessResponse(blog);
@@ -47,21 +47,24 @@ export class BlogController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const blog = await this.blogService.findOne(id);
 
     return new GetBlogSuccessResponse(blog);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() payload: UpdateBlogDto) {
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: UpdateBlogDto,
+  ) {
     const blog = await this.blogService.update(id, payload);
 
     return new UpdateBlogSuccessResponse(blog);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.blogService.remove(id);
 
     return new DeleteResponse('delete blog success');

@@ -12,7 +12,6 @@ import { DeleteResponse } from '../shared/dto';
 import {
   CreateFacilityDto,
   CreateFacilitySuccessResponse,
-  GetFacilitiesDto,
   GetFacilitiesSuccessResponse,
   GetFacilityParamsDto,
   GetFacilitySuccessResponse,
@@ -33,11 +32,8 @@ export class FacilityController {
   }
 
   @Get()
-  async findAll(
-    @Paginate() query: PaginateQuery,
-    @Body() payload: GetFacilitiesDto,
-  ) {
-    const facilities = await this.facilityService.findAll(query, payload);
+  async findAll(@Paginate() query: PaginateQuery) {
+    const facilities = await this.facilityService.findAll(query);
 
     return new GetFacilitiesSuccessResponse(facilities);
   }
