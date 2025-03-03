@@ -18,7 +18,7 @@ export class GetPropertyPaginateDto extends PaginateResponseDefaultDataProps {
   readonly data!: PropertyWithRelationsDto[];
 }
 
-export class GetPropertysSuccessResponse
+export class GetPropertiesSuccessResponse
   extends HttpResponseDefaultProps
   implements HttpResponseOptions<GetPropertyPaginateDto>
 {
