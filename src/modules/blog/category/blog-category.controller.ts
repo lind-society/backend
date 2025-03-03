@@ -4,12 +4,14 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { DeleteResponse } from 'src/modules/shared/dto';
 import { BlogCategoryService } from './blog-category.service';
 import {
-  BlogCategoryParamsDto,
   CreateBlogCategoryDto,
   CreateBlogCategorySuccessResponse,
   GetBlogCategoriesSuccessResponse,
@@ -17,8 +19,6 @@ import {
   UpdateBlogCategoryDto,
   UpdateBlogCategorySuccessResponse,
 } from './dto';
-import { Paginate, PaginateQuery } from 'nestjs-paginate';
-import { DeleteResponse } from 'src/modules/shared/dto';
 
 @Controller('blog-categories')
 export class BlogCategoryController {
@@ -39,19 +39,19 @@ export class BlogCategoryController {
   }
 
   @Get(':id')
-  async findOne(@Param() params: BlogCategoryParamsDto) {
-    const blogCategory = await this.blogCategoryService.findOne(params.id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const blogCategory = await this.blogCategoryService.findOne(id);
 
     return new GetBlogCategorySuccessResponse(blogCategory);
   }
 
   @Patch(':id')
   async update(
-    @Param() params: BlogCategoryParamsDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBlogDto: UpdateBlogCategoryDto,
   ) {
     const blogCategory = await this.blogCategoryService.update(
-      params.id,
+      id,
       updateBlogDto,
     );
 
@@ -59,8 +59,8 @@ export class BlogCategoryController {
   }
 
   @Delete(':id')
-  async remove(@Param() params: BlogCategoryParamsDto) {
-    await this.blogCategoryService.remove(params.id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.blogCategoryService.remove(id);
 
     return new DeleteResponse('delete blog category success');
   }

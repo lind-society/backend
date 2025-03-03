@@ -1,16 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { paginateResponseMapper } from 'src/common/helpers';
 import { BlogCategory } from 'src/database/entities';
+import { UpdateFacilityDto } from 'src/modules/facility/dto';
+import { PaginateResponseDataProps } from 'src/modules/shared/dto';
 import { Repository } from 'typeorm';
 import {
   BlogCategoryDto,
   BlogCategoryWithRelationsDto,
   CreateBlogCategoryDto,
 } from './dto';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
-import { PaginateResponseDataProps } from 'src/modules/shared/dto';
-import { paginateResponseMapper } from 'src/common/helpers';
-import { UpdateFacilityDto } from 'src/modules/facility/dto';
 
 @Injectable()
 export class BlogCategoryService {
@@ -26,7 +26,7 @@ export class BlogCategoryService {
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<BlogCategoryDto[]>> {
+  ): Promise<PaginateResponseDataProps<BlogCategoryWithRelationsDto[]>> {
     const paginatedBlogCategory = await paginate(
       query,
       this.blogCateogryRepository,
@@ -39,18 +39,7 @@ export class BlogCategoryService {
       },
     );
 
-    const mappedBlogCategoryData: BlogCategoryDto[] =
-      paginatedBlogCategory.data.map(({ blogs, ...blogCategory }) => ({
-        ...blogCategory,
-        blogs: blogs.map((blog) => ({
-          ...blog,
-        })),
-      }));
-
-    return paginateResponseMapper(
-      paginatedBlogCategory,
-      mappedBlogCategoryData,
-    );
+    return paginateResponseMapper(paginatedBlogCategory);
   }
 
   async findOne(id: string): Promise<BlogCategoryWithRelationsDto> {
@@ -88,7 +77,7 @@ export class BlogCategoryService {
     return await this.findOne(id);
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<void> {
     await this.findOne(id);
 
     await this.blogCateogryRepository.delete(id);

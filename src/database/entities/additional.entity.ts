@@ -32,7 +32,7 @@ export class Additional {
   description!: string | null;
 
   @OneToMany(() => Media, (media) => media.additional, { cascade: true })
-  media!: Media[];
+  medias!: Media[];
 
   @OneToMany(
     () => PropertyAdditionalPivot,

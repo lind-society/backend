@@ -27,7 +27,7 @@ export class Media {
   @Column({ name: 'additional_id', nullable: true })
   additionalId!: string | null;
 
-  @ManyToOne(() => Additional, (additional) => additional.media, {
+  @ManyToOne(() => Additional, (additional) => additional.medias, {
     onDelete: 'CASCADE',
     nullable: true,
   })

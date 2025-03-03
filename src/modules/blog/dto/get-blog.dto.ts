@@ -1,18 +1,12 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { IsOptional, IsUUID } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
-import { BlogDto } from './blog.dto';
-
-export class GetBlogParamsDto {
-  @IsUUID()
-  @IsNotEmpty()
-  id!: string;
-}
+import { BlogWithRelationsDto } from './blog.dto';
 
 export class GetBlogsDto {
   @IsUUID()
@@ -21,7 +15,7 @@ export class GetBlogsDto {
 }
 
 export class GetBlogPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: BlogDto[];
+  readonly data!: BlogWithRelationsDto[];
 }
 
 export class GetBlogsSuccessResponse
@@ -43,11 +37,11 @@ export class GetBlogsSuccessResponse
 
 export class GetBlogSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<BlogDto>
+  implements HttpResponseOptions<BlogWithRelationsDto>
 {
-  readonly data: BlogDto;
+  readonly data: BlogWithRelationsDto;
 
-  constructor(data: BlogDto) {
+  constructor(data: BlogWithRelationsDto) {
     super({
       code: HttpStatus.OK,
       message: 'get blog success',

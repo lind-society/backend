@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AdditionalModule } from './additional/additional.module';
-import { FacilityModule } from './facility/facility.module';
-import { FeatureModule } from './feature/feature.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Property } from 'src/database/entities';
 import { PropertyController } from './property.controller';
 import { PropertyService } from './property.service';
 
 @Module({
   controllers: [PropertyController],
   providers: [PropertyService],
-  imports: [AdditionalModule, FacilityModule, FeatureModule],
+  imports: [TypeOrmModule.forFeature([Property])],
 })
 export class PropertyModule {}

@@ -14,7 +14,7 @@ export class CreateBlogDto {
 
   @IsString()
   @IsNotEmpty()
-  readonly content?: string | null;
+  readonly content!: string;
 
   // Should be not null (updated when adding admin entity)
   @IsUUID()

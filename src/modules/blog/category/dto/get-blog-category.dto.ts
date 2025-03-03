@@ -1,5 +1,4 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsNotEmpty, IsUUID } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -7,12 +6,6 @@ import {
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
 import { BlogCategoryDto } from './blog-category.dto';
-
-export class BlogCategoryParamsDto {
-  @IsUUID()
-  @IsNotEmpty()
-  id!: string;
-}
 
 export class GetBlogCategoriesPaginateDto extends PaginateResponseDefaultDataProps {
   readonly data!: BlogCategoryDto[];

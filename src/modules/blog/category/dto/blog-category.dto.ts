@@ -8,14 +8,10 @@ import {
 import { BlogCategory } from 'src/database/entities';
 import { BlogDto } from '../../dto';
 
-export interface IBlogCategoryDto
-  extends Pick<
-    BlogCategory,
-    'id' | 'name' | 'createdAt' | 'updatedAt' | 'deletedAt'
-  > {}
+export interface IBlogCategoryDto extends Omit<BlogCategory, 'blogs'> {}
 
 export interface IBlogCategoryWithRelationsDto extends IBlogCategoryDto {
-  facilities: BlogDto[];
+  blogs: BlogDto[];
 }
 
 export class BlogCategoryDto implements IBlogCategoryDto {

@@ -3,10 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Blog, BlogCategory } from 'src/database/entities';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
-  BlogDto,
   BlogWithRelationsDto,
   CreateBlogDto,
   GetBlogsDto,
@@ -16,7 +15,6 @@ import {
 @Injectable()
 export class BlogService {
   constructor(
-    private dataSource: DataSource,
     @InjectRepository(Blog)
     private blogRepository: Repository<Blog>,
     @InjectRepository(BlogCategory)
@@ -46,7 +44,7 @@ export class BlogService {
   async findAll(
     query: PaginateQuery,
     payload: GetBlogsDto,
-  ): Promise<PaginateResponseDataProps<BlogDto[]>> {
+  ): Promise<PaginateResponseDataProps<BlogWithRelationsDto[]>> {
     const whereCondition = payload.categoryId
       ? { categoryId: payload.categoryId }
       : undefined;
@@ -62,14 +60,7 @@ export class BlogService {
       },
     });
 
-    const mappedBlogData: BlogDto[] = paginatedBlog.data.map(
-      ({ category, ...blogData }) => ({
-        ...blogData,
-        category,
-      }),
-    ) as BlogWithRelationsDto[];
-
-    return paginateResponseMapper(paginatedBlog, mappedBlogData);
+    return paginateResponseMapper(paginatedBlog);
   }
 
   async findOne(id: string): Promise<BlogWithRelationsDto> {
@@ -106,7 +97,7 @@ export class BlogService {
     return await this.findOne(id);
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<void> {
     await this.findOne(id);
 
     await this.blogRepository.delete(id);
