@@ -3,36 +3,31 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Additional } from './additional.entity';
 
-@Entity({ name: 'medias' })
-export class Media {
+export enum Currency {
+  IDR = 'idr',
+  USD = 'usd',
+}
+
+@Entity({ name: 'currency_converters' })
+export class CurrencyConverter {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ nullable: true })
-  photo!: string | null;
+  @Column({ type: 'enum', enum: Currency })
+  from!: Currency;
+
+  @Column({ type: 'enum', enum: Currency })
+  to!: Currency;
+
+  @Column()
+  value!: string;
 
   @Column({ nullable: true })
-  video!: string | null;
-
-  @Column({ name: 'video_360', nullable: true })
-  video360!: string | null;
-
-  @Column({ name: 'additional_id', nullable: true })
-  additionalId!: string | null;
-
-  @ManyToOne(() => Additional, (additional) => additional.medias, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinColumn({ name: 'additional_id' })
-  additional!: Additional;
+  description!: string | null;
 
   @CreateDateColumn({
     name: 'created_at',

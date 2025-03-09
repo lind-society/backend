@@ -11,6 +11,9 @@ export class FeatureDto implements IFeatureDto {
   readonly id!: string;
   readonly name!: string;
   readonly icon!: string | null;
+  readonly free!: boolean;
+  readonly price!: number | null;
+  readonly priceCurrency!: string | null;
   readonly list!: string[] | null;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;

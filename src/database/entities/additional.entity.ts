@@ -7,13 +7,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Media } from './media.entity';
 import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
 
 export enum AdditionalType {
   Bedrooms = 'bedrooms',
-  IndoorArea = 'indoor area',
-  OutdoorArea = 'outdoor area',
+  IndoorAreas = 'indoor areas',
+  OutdoorAreas = 'outdoor areas',
   MorePictures = 'more pictures',
 }
 
@@ -31,8 +30,8 @@ export class Additional {
   @Column({ type: 'text', nullable: true })
   description!: string | null;
 
-  @OneToMany(() => Media, (media) => media.additional, { cascade: true })
-  medias!: Media[];
+  @Column({ type: 'varchar', array: true, nullable: true })
+  photos!: string[] | null;
 
   @OneToMany(
     () => PropertyAdditionalPivot,

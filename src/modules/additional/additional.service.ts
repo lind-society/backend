@@ -34,7 +34,6 @@ export class AdditionalService {
         sortableColumns: ['createdAt'],
         defaultSortBy: [['createdAt', 'DESC']],
         defaultLimit: 10,
-        relations: { medias: true },
       },
     );
 
@@ -45,9 +44,6 @@ export class AdditionalService {
     const additional = await this.additionalRepository.findOne({
       where: {
         id,
-      },
-      relations: {
-        medias: true,
       },
     });
 

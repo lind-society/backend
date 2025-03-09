@@ -20,6 +20,15 @@ export class Feature {
   @Column({ nullable: true })
   icon!: string | null;
 
+  @Column()
+  free!: boolean;
+
+  @Column({ name: 'price_currency', nullable: true })
+  priceCurrency!: string | null;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  price!: number | null;
+
   @Column({ type: 'varchar', array: true, nullable: true })
   list!: string[] | null;
 

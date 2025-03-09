@@ -1,5 +1,6 @@
 import {
   OwnershipType,
+  PlaceNearby,
   Property,
   PropertyAdditionalPivot,
   PropertyFacilityPivot,
@@ -21,19 +22,24 @@ export interface IPropertyWithRelationsDto extends IPropertyDto {
 export class PropertyDto implements IPropertyDto {
   readonly id!: string;
   readonly name!: string;
-  readonly description!: string | null;
-  readonly location!: string | null;
-  readonly areaSize!: number;
+  readonly secondaryName!: string | null;
+  readonly price!: number | null;
+  readonly discount!: number | null;
+  readonly priceAfterDiscount!: number | null;
   readonly ownershipType!: OwnershipType;
-  readonly price!: number;
+  readonly highlight!: string | null;
   readonly address!: string | null;
   readonly country!: string | null;
   readonly state!: string | null;
   readonly city!: string | null;
-  readonly placeNearby!: string[] | null;
   readonly postalCode!: string | null;
   readonly mapLink!: string | null;
+  readonly placeNearby!: PlaceNearby[] | null;
+  readonly photos!: string[];
+  readonly videos!: string[];
+  readonly video360s!: string[];
   readonly soldStatus!: boolean;
+  readonly ownerId!: string;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
   readonly deletedAt!: Date | null;

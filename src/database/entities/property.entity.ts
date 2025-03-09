@@ -16,6 +16,11 @@ export enum OwnershipType {
   Freehold = 'freehold',
 }
 
+export class PlaceNearby {
+  name!: string;
+  distance!: number;
+}
+
 @Entity({ name: 'properties' })
 export class Property {
   @PrimaryGeneratedColumn('uuid')
@@ -24,26 +29,33 @@ export class Property {
   @Column()
   name!: string;
 
-  @Column({ type: 'text', nullable: true })
-  description!: string | null;
+  @Column({ name: 'secondary_name', nullable: true })
+  secondaryName!: string | null;
 
-  @Column({ nullable: true })
-  location!: string | null;
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  price!: number | null;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  discount!: number | null;
 
   @Column({
-    name: 'area_size',
+    name: 'price_after_discount',
     type: 'decimal',
     precision: 10,
     scale: 2,
+    generatedType: 'STORED',
+    asExpression:
+      'COALESCE(price, 0) - (COALESCE(price, 0) * COALESCE(discount, 0) / 100)',
     nullable: true,
   })
-  areaSize!: number | null;
+  priceAfterDiscount!: number | null;
 
   @Column({ name: 'ownership_type', type: 'enum', enum: OwnershipType })
   ownershipType!: OwnershipType;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  price!: number | null;
+  // description
+  @Column({ type: 'text', nullable: true })
+  highlight!: string | null;
 
   @Column({ nullable: true })
   address!: string | null;
@@ -57,19 +69,27 @@ export class Property {
   @Column({ nullable: true })
   city!: string | null;
 
-  @Column({
-    name: 'place_nearby',
-    type: 'varchar',
-    array: true,
-    nullable: true,
-  })
-  placeNearby!: string[] | null;
-
   @Column({ name: 'postal_code', nullable: true })
   postalCode!: string | null;
 
   @Column({ name: 'map_link', nullable: true })
   mapLink!: string | null;
+
+  @Column({
+    name: 'place_nearby',
+    type: 'jsonb',
+    nullable: true,
+  })
+  placeNearby!: PlaceNearby[] | null;
+
+  @Column({ type: 'varchar', array: true, nullable: true })
+  photos!: string[] | null;
+
+  @Column({ type: 'varchar', array: true, nullable: true })
+  videos!: string[] | null;
+
+  @Column({ name: 'video_360', type: 'varchar', array: true, nullable: true })
+  video360s!: string[] | null;
 
   @Column({
     name: 'sold_status',
@@ -78,6 +98,10 @@ export class Property {
     nullable: false,
   })
   soldStatus!: boolean;
+
+  // Should be not nullable, adjusted after adding owner entities
+  @Column({ name: 'owner_id', nullable: true })
+  ownerId: string | null;
 
   @OneToMany(
     () => PropertyFacilityPivot,

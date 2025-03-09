@@ -9,6 +9,11 @@ import {
 } from 'typeorm';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
 
+export enum FacilityType {
+  Main = 'main',
+  Optional = 'optional',
+}
+
 @Entity({ name: 'facilities' })
 export class Facility {
   @PrimaryGeneratedColumn('uuid')
@@ -19,6 +24,13 @@ export class Facility {
 
   @Column({ nullable: true })
   icon!: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: FacilityType,
+    default: FacilityType.Optional,
+  })
+  type!: FacilityType;
 
   @OneToMany(
     () => PropertyFacilityPivot,
