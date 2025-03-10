@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
-import { paginateResponseMapper } from 'src/common/helpers';
+import { groupAndSort, paginateResponseMapper } from 'src/common/helpers';
 import {
   Additional,
   Feature,
@@ -33,14 +33,25 @@ export class PropertyService {
         'propertyFacilities',
         'propertyFeatures',
       ]),
-      additionals: property.propertyAdditionals.map(({ id, additional }) => ({
-        pivotId: id,
-        ...additional,
-      })),
-      facilities: property.propertyFacilities.map(({ id, facility }) => ({
-        pivotId: id,
-        ...facility,
-      })),
+
+      additionals: groupAndSort(
+        property.propertyAdditionals.map(({ id, additional }) => ({
+          pivotId: id,
+          ...additional,
+        })),
+        'type',
+        'name',
+      ),
+
+      facilities: groupAndSort(
+        property.propertyFacilities.map(({ id, facility }) => ({
+          pivotId: id,
+          ...facility,
+        })),
+        'type',
+        'name',
+      ),
+
       features: property.propertyFeatures.map(({ id, feature }) => ({
         pivotId: id,
         ...feature,

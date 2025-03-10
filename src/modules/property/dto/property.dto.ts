@@ -1,10 +1,10 @@
 import {
-  OwnershipType,
-  PlaceNearby,
   Property,
   PropertyAdditionalPivot,
   PropertyFacilityPivot,
   PropertyFeaturePivot,
+  PropertyOwnershipType,
+  PropertyPlaceNearby,
 } from 'src/database/entities';
 
 export interface IPropertyDto
@@ -26,7 +26,7 @@ export class PropertyDto implements IPropertyDto {
   readonly price!: number | null;
   readonly discount!: number | null;
   readonly priceAfterDiscount!: number | null;
-  readonly ownershipType!: OwnershipType;
+  readonly ownershipType!: PropertyOwnershipType;
   readonly highlight!: string | null;
   readonly address!: string | null;
   readonly country!: string | null;
@@ -34,7 +34,7 @@ export class PropertyDto implements IPropertyDto {
   readonly city!: string | null;
   readonly postalCode!: string | null;
   readonly mapLink!: string | null;
-  readonly placeNearby!: PlaceNearby[] | null;
+  readonly placeNearby!: PropertyPlaceNearby[] | null;
   readonly photos!: string[];
   readonly videos!: string[];
   readonly video360s!: string[];

@@ -14,7 +14,10 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
-import { OwnershipType, PlaceNearby } from 'src/database/entities';
+import {
+  PropertyOwnershipType,
+  PropertyPlaceNearby,
+} from 'src/database/entities';
 import { CreateAdditionalDto } from 'src/modules/additional/dto';
 import { CreateFeatureDto } from 'src/modules/feature/dto';
 import {
@@ -24,7 +27,7 @@ import {
 import { CreatePropertyFacililtyDto } from './create-property-facility.dto';
 import { PropertyWithRelationsDto } from './property.dto';
 
-export class PlaceNearbyDto extends PlaceNearby {
+export class PropertyPlaceNearbyDto extends PropertyPlaceNearby {
   @IsString()
   @IsOptional()
   name: string | null;
@@ -67,9 +70,9 @@ export class CreatePropertyDto {
   @IsOptional()
   readonly discount?: number;
 
-  @IsEnum(OwnershipType)
+  @IsEnum(PropertyOwnershipType)
   @IsNotEmpty()
-  readonly ownershipType!: OwnershipType;
+  readonly ownershipType!: PropertyOwnershipType;
 
   @IsString()
   @IsOptional()
@@ -101,9 +104,9 @@ export class CreatePropertyDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => PlaceNearbyDto)
+  @Type(() => PropertyPlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: PlaceNearbyDto[] | null;
+  readonly placeNearby?: PropertyPlaceNearbyDto[] | null;
 
   @IsArray()
   @IsString({ each: true })

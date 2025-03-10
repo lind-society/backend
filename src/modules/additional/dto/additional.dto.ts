@@ -2,7 +2,10 @@ import { Additional, AdditionalType } from 'src/database/entities';
 import { PropertyDto } from 'src/modules/property/dto/property.dto';
 
 export interface IAdditionalDto
-  extends Omit<Additional, 'medias' | 'propertyAdditionals'> {}
+  extends Omit<
+    Additional,
+    'medias' | 'propertyAdditionals' | 'villaAdditionals'
+  > {}
 
 export interface IAdditionalWithRelationsDto extends IAdditionalDto {
   properties?: PropertyDto[];

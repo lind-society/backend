@@ -7,11 +7,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PropertyFeaturePivot } from './property-feature-pivot.entity';
-import { VillaFeaturePivot } from './villa-feature-pivot.entity';
+import { VillaPolicyPivot } from './villa-policy-pivot.entity';
 
-@Entity({ name: 'features' })
-export class Feature {
+@Entity({ name: 'villa_policies' })
+export class VillaPolicy {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -21,29 +20,14 @@ export class Feature {
   @Column({ nullable: true })
   icon!: string | null;
 
-  @Column()
-  free!: boolean;
-
-  @Column({ name: 'price_currency', nullable: true })
-  priceCurrency!: string | null;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  price!: number | null;
-
   @Column({ type: 'varchar', array: true, nullable: true })
   list!: string[] | null;
 
   @OneToMany(
-    () => PropertyFeaturePivot,
-    (propertyFeaturePivot) => propertyFeaturePivot.feature,
+    () => VillaPolicyPivot,
+    (villaPolicyPivot) => villaPolicyPivot.villa,
   )
-  propertyFeatures!: PropertyFeaturePivot[];
-
-  @OneToMany(
-    () => VillaFeaturePivot,
-    (villaFeaturePivot) => villaFeaturePivot.feature,
-  )
-  villaFeatures!: VillaFeaturePivot[];
+  villaPolicies!: VillaPolicyPivot[];
 
   @CreateDateColumn({
     name: 'created_at',

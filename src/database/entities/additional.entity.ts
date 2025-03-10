@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
+import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
 
 export enum AdditionalType {
   Bedrooms = 'bedrooms',
@@ -38,6 +39,12 @@ export class Additional {
     (propertyAdditionalPivot) => propertyAdditionalPivot.additional,
   )
   propertyAdditionals!: PropertyAdditionalPivot[];
+
+  @OneToMany(
+    () => VillaAdditionalPivot,
+    (villaAdditionalPivot) => villaAdditionalPivot.additional,
+  )
+  villaAdditionals!: VillaAdditionalPivot[];
 
   @CreateDateColumn({
     name: 'created_at',

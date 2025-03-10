@@ -11,12 +11,12 @@ import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
 
-export enum OwnershipType {
+export enum PropertyOwnershipType {
   Leasehold = 'leasehold',
   Freehold = 'freehold',
 }
 
-export class PlaceNearby {
+export class PropertyPlaceNearby {
   name!: string;
   distance!: number;
 }
@@ -50,8 +50,8 @@ export class Property {
   })
   priceAfterDiscount!: number | null;
 
-  @Column({ name: 'ownership_type', type: 'enum', enum: OwnershipType })
-  ownershipType!: OwnershipType;
+  @Column({ name: 'ownership_type', type: 'enum', enum: PropertyOwnershipType })
+  ownershipType!: PropertyOwnershipType;
 
   // description
   @Column({ type: 'text', nullable: true })
@@ -80,7 +80,7 @@ export class Property {
     type: 'jsonb',
     nullable: true,
   })
-  placeNearby!: PlaceNearby[] | null;
+  placeNearby!: PropertyPlaceNearby[] | null;
 
   @Column({ type: 'varchar', array: true, nullable: true })
   photos!: string[] | null;
