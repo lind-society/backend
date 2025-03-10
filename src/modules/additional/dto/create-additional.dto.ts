@@ -1,11 +1,10 @@
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
-  ValidateNested,
 } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import { AdditionalType } from 'src/database/entities';
@@ -13,7 +12,6 @@ import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { CreateMediaDto } from '../media/dto/create-media.dto';
 import { AdditionalWithRelationsDto } from './additional.dto';
 
 export class CreateAdditionalDto {
@@ -29,10 +27,10 @@ export class CreateAdditionalDto {
   @IsOptional()
   readonly description?: string | null;
 
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => CreateMediaDto)
-  readonly medias?: CreateMediaDto[];
+  readonly photos?: string[];
 }
 
 export class CreateAdditionalSuccessResponse

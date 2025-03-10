@@ -1,5 +1,14 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -15,6 +24,23 @@ export class CreateFeatureDto {
   @IsString()
   @IsOptional()
   readonly icon?: string | null;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  readonly free?: boolean | null;
+
+  @IsString()
+  @IsOptional()
+  readonly priceCurrency?: string | null;
+
+  @Type(() => Number)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'price must be a valid number' },
+  )
+  @Min(0, { message: 'minimum price is 0' })
+  @IsOptional()
+  readonly price?: number | null;
 
   @IsArray()
   @IsString({ each: true })

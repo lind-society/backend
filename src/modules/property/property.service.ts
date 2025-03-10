@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
-import { paginateResponseMapper } from 'src/common/helpers';
+import { groupAndSort, paginateResponseMapper } from 'src/common/helpers';
 import {
   Additional,
   Feature,
@@ -33,14 +33,25 @@ export class PropertyService {
         'propertyFacilities',
         'propertyFeatures',
       ]),
-      additionals: property.propertyAdditionals.map(({ id, additional }) => ({
-        pivotId: id,
-        ...additional,
-      })),
-      facilities: property.propertyFacilities.map(({ id, facility }) => ({
-        pivotId: id,
-        ...facility,
-      })),
+
+      additionals: groupAndSort(
+        property.propertyAdditionals.map(({ id, additional }) => ({
+          pivotId: id,
+          ...additional,
+        })),
+        'type',
+        'name',
+      ),
+
+      facilities: groupAndSort(
+        property.propertyFacilities.map(({ id, facility }) => ({
+          pivotId: id,
+          ...facility,
+        })),
+        'type',
+        'name',
+      ),
+
       features: property.propertyFeatures.map(({ id, feature }) => ({
         pivotId: id,
         ...feature,
@@ -145,63 +156,54 @@ export class PropertyService {
   ): Promise<PropertyWithRelationsDto> {
     await this.findOne(id);
 
-    const updatedProperty = await this.datasource.transaction(
-      async (manager) => {
-        const { additionals, facilities, features, ...propertyData } = payload;
+    await this.datasource.transaction(async (manager) => {
+      const { additionals, facilities, features, ...propertyData } = payload;
 
-        const updatedProperty = await manager.update(
-          Property,
-          id,
-          propertyData,
+      const updatedProperty = await manager.update(Property, id, propertyData);
+
+      if (additionals) {
+        await manager.delete(PropertyAdditionalPivot, { propertyId: id });
+
+        const updatedAdditionals = await manager.save(Additional, additionals);
+
+        await manager.save(
+          PropertyAdditionalPivot,
+          updatedAdditionals.map((additional) => ({
+            propertyId: id,
+            additionalId: additional.id,
+          })),
         );
+      }
 
-        if (additionals) {
-          await manager.delete(PropertyAdditionalPivot, { propertyId: id });
+      if (facilities) {
+        await manager.delete(PropertyFacilityPivot, { propertyId: id });
 
-          const updatedAdditionals = await manager.save(
-            Additional,
-            additionals,
-          );
+        await manager.save(
+          PropertyFacilityPivot,
+          facilities.map((facility) => ({
+            propertyId: id,
+            facilityId: facility.facilityId,
+            description: facility.description,
+          })),
+        );
+      }
 
-          await manager.save(
-            PropertyAdditionalPivot,
-            updatedAdditionals.map((additional) => ({
-              propertyId: id,
-              additionalId: additional.id,
-            })),
-          );
-        }
+      if (features) {
+        await manager.delete(PropertyFeaturePivot, { propertyId: id });
 
-        if (facilities) {
-          await manager.delete(PropertyFacilityPivot, { propertyId: id });
+        const updatedFeatures = await manager.save(Feature, features);
 
-          await manager.save(
-            PropertyFacilityPivot,
-            facilities.map((facility) => ({
-              propertyId: id,
-              facilityId: facility.facilityId,
-              description: facility.description,
-            })),
-          );
-        }
+        await manager.save(
+          PropertyFeaturePivot,
+          updatedFeatures.map((feature) => ({
+            propertyId: id,
+            featureId: feature.id,
+          })),
+        );
+      }
 
-        if (features) {
-          await manager.delete(PropertyFeaturePivot, { propertyId: id });
-
-          const updatedFeatures = await manager.save(Feature, features);
-
-          await manager.save(
-            PropertyFeaturePivot,
-            updatedFeatures.map((feature) => ({
-              propertyId: id,
-              featureId: feature.id,
-            })),
-          );
-        }
-
-        return updatedProperty;
-      },
-    );
+      return updatedProperty;
+    });
 
     return this.findOne(id);
   }

@@ -3,36 +3,31 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Additional } from './additional.entity';
+import { VillaPolicyPivot } from './villa-policy-pivot.entity';
 
-@Entity({ name: 'medias' })
-export class Media {
+@Entity({ name: 'villa_policies' })
+export class VillaPolicy {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ nullable: true })
-  photo!: string | null;
+  @Column()
+  name!: string;
 
   @Column({ nullable: true })
-  video!: string | null;
+  icon!: string | null;
 
-  @Column({ name: 'video_360', nullable: true })
-  video360!: string | null;
+  @Column({ type: 'varchar', array: true, nullable: true })
+  list!: string[] | null;
 
-  @Column({ name: 'additional_id', nullable: true })
-  additionalId!: string | null;
-
-  @ManyToOne(() => Additional, (additional) => additional.medias, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinColumn({ name: 'additional_id' })
-  additional!: Additional;
+  @OneToMany(
+    () => VillaPolicyPivot,
+    (villaPolicyPivot) => villaPolicyPivot.villa,
+  )
+  villaPolicies!: VillaPolicyPivot[];
 
   @CreateDateColumn({
     name: 'created_at',

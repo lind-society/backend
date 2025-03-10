@@ -1,14 +1,12 @@
 import { HttpStatus } from '@nestjs/common';
 import { PartialType } from '@nestjs/mapped-types';
-import { Type } from 'class-transformer';
-import { IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import { AdditionalType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { UpdateMediaDto } from '../media/dto/update-media.dto';
 import { AdditionalWithRelationsDto } from './additional.dto';
 import { CreateAdditionalDto } from './create-additional.dto';
 
@@ -25,10 +23,10 @@ export class UpdateAdditionalDto extends PartialType(CreateAdditionalDto) {
   @IsOptional()
   readonly description?: string | null;
 
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => UpdateMediaDto)
-  readonly medias?: UpdateMediaDto[];
+  readonly photos?: string[];
 }
 
 export class UpdateAdditionalSuccessResponse

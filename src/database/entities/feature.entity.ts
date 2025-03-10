@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
+import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 
 @Entity({ name: 'features' })
 export class Feature {
@@ -20,14 +21,29 @@ export class Feature {
   @Column({ nullable: true })
   icon!: string | null;
 
+  @Column()
+  free!: boolean;
+
+  @Column({ name: 'price_currency', nullable: true })
+  priceCurrency!: string | null;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  price!: number | null;
+
   @Column({ type: 'varchar', array: true, nullable: true })
   list!: string[] | null;
 
   @OneToMany(
     () => PropertyFeaturePivot,
-    (propertyFacilityPivot) => propertyFacilityPivot.feature,
+    (propertyFeaturePivot) => propertyFeaturePivot.feature,
   )
   propertyFeatures!: PropertyFeaturePivot[];
+
+  @OneToMany(
+    () => VillaFeaturePivot,
+    (villaFeaturePivot) => villaFeaturePivot.feature,
+  )
+  villaFeatures!: VillaFeaturePivot[];
 
   @CreateDateColumn({
     name: 'created_at',
