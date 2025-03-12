@@ -6,34 +6,34 @@ import {
   HttpResponseOptions,
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
-import { FeatureDto } from './feature.dto';
+import { VillaPolicyDto } from './villa-policy.dto';
 
-export class GetFeatureParamsDto {
+export class GetVillaPolicyParamsDto {
   @IsUUID()
   @IsNotEmpty()
   id!: string;
 }
 
-export class GetFeaturesDto {
+export class GetVillaPolicysDto {
   @IsUUID()
   @IsOptional()
   additionalId?: string | null;
 }
 
-export class GetFeaturePaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: FeatureDto[];
+export class GetVillaPolicyPaginateDto extends PaginateResponseDefaultDataProps {
+  readonly data!: VillaPolicyDto[];
 }
 
-export class GetFeaturesSuccessResponse
+export class GetVillaPolicysSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<GetFeaturePaginateDto>
+  implements HttpResponseOptions<GetVillaPolicyPaginateDto>
 {
-  readonly data: GetFeaturePaginateDto;
+  readonly data: GetVillaPolicyPaginateDto;
 
-  constructor(data: GetFeaturePaginateDto) {
+  constructor(data: GetVillaPolicyPaginateDto) {
     super({
       code: HttpStatus.OK,
-      message: 'get features success',
+      message: 'get villa policies success',
       status: DefaultHttpStatus.Success,
     });
 
@@ -41,16 +41,16 @@ export class GetFeaturesSuccessResponse
   }
 }
 
-export class GetFeatureSuccessResponse
+export class GetVillaPolicySuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<FeatureDto>
+  implements HttpResponseOptions<VillaPolicyDto>
 {
-  readonly data: FeatureDto;
+  readonly data: VillaPolicyDto;
 
-  constructor(data: FeatureDto) {
+  constructor(data: VillaPolicyDto) {
     super({
       code: HttpStatus.OK,
-      message: 'get feature success',
+      message: 'get villa policy success',
       status: DefaultHttpStatus.Success,
     });
 

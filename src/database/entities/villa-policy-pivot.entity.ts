@@ -11,7 +11,7 @@ import {
 import { VillaPolicy } from './villa-policy.entity';
 import { Villa } from './villa.entity';
 
-@Entity({ name: 'villa_feature_pivot' })
+@Entity({ name: 'villa_policy_pivot' })
 export class VillaPolicyPivot {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -19,8 +19,8 @@ export class VillaPolicyPivot {
   @Column({ name: 'villa_id', type: 'uuid' })
   villaId!: string;
 
-  @Column({ name: 'feature_id', type: 'uuid' })
-  featureId!: string;
+  @Column({ name: 'policy_id', type: 'uuid' })
+  policyId!: string;
 
   @ManyToOne(() => Villa, (villa) => villa.villaPolicies, {
     onDelete: 'CASCADE',

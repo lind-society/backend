@@ -9,6 +9,7 @@ import { BlogModule } from './modules/blog/blog.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { PropertyModule } from './modules/property/property.module';
 import { LoggerModule } from './modules/shared/logger/logger.module';
+import { VillaModule } from './modules/villa/villa.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { LoggerModule } from './modules/shared/logger/logger.module';
     BlogModule,
     FacilityModule,
     PropertyModule,
+    VillaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

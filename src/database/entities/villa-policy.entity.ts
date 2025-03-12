@@ -25,7 +25,7 @@ export class VillaPolicy {
 
   @OneToMany(
     () => VillaPolicyPivot,
-    (villaPolicyPivot) => villaPolicyPivot.villa,
+    (villaPolicyPivot) => villaPolicyPivot.policy,
   )
   villaPolicies!: VillaPolicyPivot[];
 
