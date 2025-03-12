@@ -5,9 +5,9 @@ import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { FileDto } from './file.dto';
+import { FailedUploadFileDto, FileDto } from './file.dto';
 
-export class UploadFileDto {
+export class UploadFileRequestDto {
   @IsString()
   @IsNotEmpty()
   readonly key!: string;
@@ -17,13 +17,18 @@ export class UploadFileDto {
   readonly bucket?: string | null;
 }
 
+export class UploadFilesResponseDto {
+  successFiles: FileDto[];
+  failedFiles: FailedUploadFileDto[];
+}
+
 export class UploadFileSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<FileDto>
+  implements HttpResponseOptions<UploadFilesResponseDto>
 {
-  readonly data: FileDto;
+  readonly data: UploadFilesResponseDto;
 
-  constructor(data: FileDto) {
+  constructor(data: UploadFilesResponseDto) {
     super({
       code: HttpStatus.CREATED,
       message: 'upload file success',

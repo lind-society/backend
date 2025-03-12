@@ -1,10 +1,10 @@
 import { DeleteFileDto } from '../dto/delete-file.dto';
 import { FileDto } from '../dto/file.dto';
 import { GetFileUrlDto } from '../dto/get-file-url.dto';
-import { UploadFileDto } from '../dto/upload-file.dto';
+import { UploadFileRequestDto } from '../dto/upload-file.dto';
 
 export interface IStorageProvider {
-  uploadFile(payload: UploadFileDto): Promise<FileDto>;
+  uploadFile(payload: UploadFileRequestDto): Promise<FileDto>;
 
   deleteFile(payload: DeleteFileDto): Promise<void>;
 

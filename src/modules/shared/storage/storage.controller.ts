@@ -4,10 +4,10 @@ import {
   Delete,
   Get,
   Post,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { DeleteResponse } from '../dto';
 import { DeleteFileDto } from './dto/delete-file.dto';
 import {
@@ -15,7 +15,7 @@ import {
   GetFileUrlSuccessResponse,
 } from './dto/get-file-url.dto';
 import {
-  UploadFileDto,
+  UploadFileRequestDto,
   UploadFileSuccessResponse,
 } from './dto/upload-file.dto';
 import { IReceivedFile } from './interfaces/file-detail.interface';
@@ -26,19 +26,19 @@ export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files'))
   async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() payload: UploadFileDto,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() payload: UploadFileRequestDto,
   ) {
-    const receivedFile: IReceivedFile = {
+    const receivedFiles: IReceivedFile[] = files.map((file) => ({
       key: payload.key,
       file: file.buffer,
       mimeType: file.mimetype,
       originalName: file.originalname,
-    };
+    }));
 
-    const result = await this.storageService.uploadFile(receivedFile);
+    const result = await this.storageService.uploadFile(receivedFiles);
 
     return new UploadFileSuccessResponse(result);
   }
