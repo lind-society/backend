@@ -26,7 +26,7 @@ export class CreateFeatureDto {
   readonly icon?: string | null;
 
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   readonly free?: boolean | null;
 
   @IsString()

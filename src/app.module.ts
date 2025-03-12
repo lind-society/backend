@@ -4,11 +4,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envPaths } from './common/constants';
-import { appConfig, databaseConfig, validateEnv, xenditConfig } from './config';
+import {
+  appConfig,
+  databaseConfig,
+  gcpConfig,
+  storageConfig,
+  validateEnv,
+  xenditConfig,
+} from './config';
 import { BlogModule } from './modules/blog/blog.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { PropertyModule } from './modules/property/property.module';
 import { LoggerModule } from './modules/shared/logger/logger.module';
+import { StorageModule } from './modules/shared/storage/storage.module';
 import { VillaModule } from './modules/villa/villa.module';
 
 @Module({
@@ -21,7 +29,7 @@ import { VillaModule } from './modules/villa/villa.module';
         allowUnknown: false,
         abortEarly: true,
       },
-      load: [appConfig, databaseConfig, xenditConfig],
+      load: [appConfig, databaseConfig, gcpConfig, storageConfig, xenditConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -34,6 +42,7 @@ import { VillaModule } from './modules/villa/villa.module';
     FacilityModule,
     PropertyModule,
     VillaModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
