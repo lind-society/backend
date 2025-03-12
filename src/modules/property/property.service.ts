@@ -12,8 +12,9 @@ import {
   PropertyFacilityPivot,
   PropertyFeaturePivot,
 } from 'src/database/entities';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
+import { CreatePropertyFacililtyDto } from './dto';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { PropertyWithRelationsDto } from './dto/property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
@@ -61,7 +62,7 @@ export class PropertyService {
 
   async create(payload: CreatePropertyDto): Promise<PropertyWithRelationsDto> {
     const createdProperty = await this.datasource.transaction(
-      async (manager) => {
+      async (manager: EntityManager) => {
         const { additionals, facilities, features, ...propertyData } = payload;
 
         const createdProperty = await manager.save(Property, propertyData);
@@ -71,7 +72,7 @@ export class PropertyService {
 
         await manager.save(
           PropertyAdditionalPivot,
-          createdAdditionals.map((additional) => ({
+          createdAdditionals.map((additional: Additional) => ({
             propertyId: createdProperty.id,
             additionalId: additional.id,
           })),
@@ -79,7 +80,7 @@ export class PropertyService {
 
         await manager.save(
           PropertyFacilityPivot,
-          facilities.map((facility) => ({
+          facilities.map((facility: CreatePropertyFacililtyDto) => ({
             propertyId: createdProperty.id,
             facilityId: facility.facilityId,
             description: facility.description,
@@ -88,7 +89,7 @@ export class PropertyService {
 
         await manager.save(
           PropertyFeaturePivot,
-          createdFeatures.map((feature) => ({
+          createdFeatures.map((feature: Feature) => ({
             propertyId: createdProperty.id,
             featureId: feature.id,
           })),
@@ -156,7 +157,7 @@ export class PropertyService {
   ): Promise<PropertyWithRelationsDto> {
     await this.findOne(id);
 
-    await this.datasource.transaction(async (manager) => {
+    await this.datasource.transaction(async (manager: EntityManager) => {
       const { additionals, facilities, features, ...propertyData } = payload;
 
       const updatedProperty = await manager.update(Property, id, propertyData);
@@ -168,7 +169,7 @@ export class PropertyService {
 
         await manager.save(
           PropertyAdditionalPivot,
-          updatedAdditionals.map((additional) => ({
+          updatedAdditionals.map((additional: Additional) => ({
             propertyId: id,
             additionalId: additional.id,
           })),
@@ -180,7 +181,7 @@ export class PropertyService {
 
         await manager.save(
           PropertyFacilityPivot,
-          facilities.map((facility) => ({
+          facilities.map((facility: CreatePropertyFacililtyDto) => ({
             propertyId: id,
             facilityId: facility.facilityId,
             description: facility.description,
@@ -195,7 +196,7 @@ export class PropertyService {
 
         await manager.save(
           PropertyFeaturePivot,
-          updatedFeatures.map((feature) => ({
+          updatedFeatures.map((feature: Feature) => ({
             propertyId: id,
             featureId: feature.id,
           })),
