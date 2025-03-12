@@ -2,7 +2,7 @@ import { Storage } from '@google-cloud/storage';
 import { InternalServerErrorException, Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { StorageProvider } from 'src/common/enums';
-import { GCPStorageProvider } from './providers/gcp-storage.provider';
+import { GCPStorageProvider } from './providers';
 
 export const StorageFactory: Provider = {
   provide: 'STORAGE_PROVIDER',

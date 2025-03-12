@@ -9,16 +9,14 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { DeleteResponse } from '../dto';
-import { DeleteFileDto } from './dto/delete-file.dto';
 import {
+  DeleteFileDto,
   GetFileUrlDto,
   GetFileUrlSuccessResponse,
-} from './dto/get-file-url.dto';
-import {
   UploadFileRequestDto,
   UploadFileSuccessResponse,
-} from './dto/upload-file.dto';
-import { IReceivedFile } from './interfaces/file-detail.interface';
+} from './dto';
+import { IReceivedFile } from './interfaces';
 import { StorageService } from './storage.service';
 
 @Controller('storages')

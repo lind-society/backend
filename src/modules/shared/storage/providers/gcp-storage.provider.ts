@@ -1,10 +1,8 @@
 import { Storage } from '@google-cloud/storage';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DeleteFileDto } from '../dto/delete-file.dto';
-import { FileDto } from '../dto/file.dto';
-import { GetFileUrlDto } from '../dto/get-file-url.dto';
-import { IReceivedFile } from '../interfaces/file-detail.interface';
+import { DeleteFileDto, FileDto, GetFileUrlDto } from '../dto';
+import { IReceivedFile } from '../interfaces';
 import { IStorageProvider } from '../interfaces/storage.interface';
 
 @Injectable()

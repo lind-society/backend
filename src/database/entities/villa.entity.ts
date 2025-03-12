@@ -3,10 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Owner } from './owner.entity';
 import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
 import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
@@ -225,6 +228,12 @@ export class Villa {
     (villaPolicyPivot) => villaPolicyPivot.villa,
   )
   villaPolicies!: VillaPolicyPivot[];
+
+  @ManyToOne(() => Owner, (owner) => owner.villas, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'owner_id' })
+  owner!: Owner | null;
 
   @CreateDateColumn({
     name: 'created_at',

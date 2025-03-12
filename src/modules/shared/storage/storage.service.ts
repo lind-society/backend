@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { sanitizeString } from 'src/common/helpers/sanitize-string.helper';
-import { DeleteFileDto } from './dto/delete-file.dto';
-import { FileDto } from './dto/file.dto';
-import { GetFileUrlDto } from './dto/get-file-url.dto';
-import { UploadFilesResponseDto } from './dto/upload-file.dto';
-import { IReceivedFile } from './interfaces/file-detail.interface';
-import { IStorageProvider } from './interfaces/storage.interface';
+import { sanitizeString } from 'src/common/helpers';
+import {
+  DeleteFileDto,
+  FileDto,
+  GetFileUrlDto,
+  UploadFilesResponseDto,
+} from './dto';
+import { IReceivedFile, IStorageProvider } from './interfaces';
 
 @Injectable()
 export class StorageService {

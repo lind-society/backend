@@ -13,7 +13,11 @@ import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entit
 export interface IVillaDto
   extends Omit<
     Villa,
-    'villaFacilities' | 'villaFeatures' | 'villaAdditionals' | 'villaPolicies'
+    | 'villaFacilities'
+    | 'villaFeatures'
+    | 'villaAdditionals'
+    | 'villaPolicies'
+    | 'owner'
   > {}
 
 export interface IVillaWithRelationsDto extends IVillaDto {

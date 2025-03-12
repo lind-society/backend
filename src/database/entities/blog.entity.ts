@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Admin } from './admin.entity';
 import { BlogCategory } from './blog-category.entity';
 
 @Entity({ name: 'blogs' })
@@ -33,6 +34,12 @@ export class Blog {
   })
   @JoinColumn({ name: 'category_id' })
   category!: BlogCategory;
+
+  @ManyToOne(() => Admin, (admin) => admin.blogs, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'author_id' })
+  author!: Admin | null;
 
   @CreateDateColumn({
     name: 'created_at',

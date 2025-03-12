@@ -1,7 +1,7 @@
 import { Blog } from 'src/database/entities';
 import { BlogCategoryDto } from '../category/dto';
 
-export interface IBlogDto extends Omit<Blog, 'category'> {}
+export interface IBlogDto extends Omit<Blog, 'category' | 'author'> {}
 
 export interface IBlogWithRelationsDto extends IBlogDto {
   category: BlogCategoryDto;

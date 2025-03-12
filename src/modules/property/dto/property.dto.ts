@@ -10,7 +10,7 @@ import {
 export interface IPropertyDto
   extends Omit<
     Property,
-    'propertyFacilities' | 'propertyFeatures' | 'propertyAdditionals'
+    'propertyFacilities' | 'propertyFeatures' | 'propertyAdditionals' | 'owner'
   > {}
 
 export interface IPropertyWithRelationsDto extends IPropertyDto {

@@ -3,10 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Owner } from './owner.entity';
 import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
@@ -99,7 +102,6 @@ export class Property {
   })
   soldStatus!: boolean;
 
-  // Should be not nullable, adjusted after adding owner entities
   @Column({ name: 'owner_id', nullable: true })
   ownerId: string | null;
 
@@ -120,6 +122,12 @@ export class Property {
     (propertyAdditionalPivot) => propertyAdditionalPivot.property,
   )
   propertyAdditionals!: PropertyAdditionalPivot[];
+
+  @ManyToOne(() => Owner, (owner) => owner.properties, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'owner_id' })
+  owner!: Owner | null;
 
   @CreateDateColumn({
     name: 'created_at',
