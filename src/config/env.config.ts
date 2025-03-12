@@ -59,6 +59,22 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   DB_NAME!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  STORAGE_PROVIDER!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GCP_BUCKET_NAME!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GCP_KEY_FILE_PATH!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GCP_PROJECT_ID!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {
