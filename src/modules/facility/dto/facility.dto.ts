@@ -1,11 +1,13 @@
 import { Facility, FacilityType } from 'src/database/entities';
 import { PropertyDto } from 'src/modules/property/dto/property.dto';
+import { VillaDto } from 'src/modules/villa/dto';
 
 export interface IFacilityDto
   extends Omit<Facility, 'propertyFacilities' | 'villaFacilities'> {}
 
 export interface IFacilityWithRelationsDto extends IFacilityDto {
   properties?: PropertyDto[];
+  villas?: VillaDto[];
 }
 
 export class FacilityDto implements IFacilityDto {
@@ -23,4 +25,5 @@ export class FacilityWithRelationsDto
   implements IFacilityWithRelationsDto
 {
   readonly properties?: PropertyDto[];
+  readonly villas?: VillaDto[];
 }

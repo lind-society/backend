@@ -1,11 +1,13 @@
 import { Feature } from 'src/database/entities';
 import { PropertyDto } from 'src/modules/property/dto/property.dto';
+import { VillaDto } from 'src/modules/villa/dto';
 
 export interface IFeatureDto
   extends Omit<Feature, 'propertyFeatures' | 'villaFeatures'> {}
 
 export interface IFeatureWithRelationsDto extends IFeatureDto {
   properties?: PropertyDto[];
+  villas?: VillaDto[];
 }
 
 export class FeatureDto implements IFeatureDto {
@@ -26,4 +28,5 @@ export class FeatureWithRelationsDto
   implements IFeatureWithRelationsDto
 {
   readonly properties?: PropertyDto[];
+  readonly villas?: VillaDto[];
 }

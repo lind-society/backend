@@ -17,7 +17,11 @@ export class GetAdditionalParamsDto {
 export class GetAdditionalsDto {
   @IsUUID()
   @IsOptional()
-  additionalId?: string | null;
+  propertyId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  villaId?: string;
 }
 
 export class GetAdditionalPaginateDto extends PaginateResponseDefaultDataProps {

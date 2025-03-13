@@ -1,7 +1,8 @@
 import { HttpStatus } from '@nestjs/common';
 import { PartialType } from '@nestjs/mapped-types';
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
+import { VillaPolicyType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -14,14 +15,17 @@ export class UpdateVillaPolicyDto extends PartialType(CreateVillaPolicyDto) {
   @IsOptional()
   readonly name?: string | null;
 
+  @IsEnum(VillaPolicyType)
+  @IsOptional()
+  readonly type?: VillaPolicyType | null;
+
+  @IsString()
+  @IsOptional()
+  readonly description?: string | null;
+
   @IsString()
   @IsOptional()
   readonly icon?: string | null;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  readonly list?: string[] | null;
 }
 
 export class UpdateVillaPolicySuccessResponse

@@ -18,6 +18,10 @@ export class GetFacilitiesDto {
   @IsUUID()
   @IsOptional()
   propertyId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  villaId?: string;
 }
 
 export class GetFacilityPaginateDto extends PaginateResponseDefaultDataProps {

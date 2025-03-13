@@ -17,7 +17,7 @@ export class UpdateAdditionalDto extends PartialType(CreateAdditionalDto) {
 
   @IsEnum(AdditionalType)
   @IsOptional()
-  readonly type?: AdditionalType;
+  readonly type?: AdditionalType | null;
 
   @IsString()
   @IsOptional()

@@ -9,6 +9,11 @@ import {
 } from 'typeorm';
 import { VillaPolicyPivot } from './villa-policy-pivot.entity';
 
+export enum VillaPolicyType {
+  HouseRules = 'house rules',
+  PaymentTerms = 'payment terms',
+}
+
 @Entity({ name: 'villa_policies' })
 export class VillaPolicy {
   @PrimaryGeneratedColumn('uuid')
@@ -17,11 +22,14 @@ export class VillaPolicy {
   @Column()
   name!: string;
 
+  @Column({ type: 'enum', enum: VillaPolicyType })
+  type!: VillaPolicyType;
+
+  @Column({ type: 'text', nullable: true })
+  description!: string | null;
+
   @Column({ nullable: true })
   icon!: string | null;
-
-  @Column({ type: 'varchar', array: true, nullable: true })
-  list!: string[] | null;
 
   @OneToMany(
     () => VillaPolicyPivot,

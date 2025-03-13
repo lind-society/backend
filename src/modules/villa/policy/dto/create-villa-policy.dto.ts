@@ -1,6 +1,13 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
+import { VillaPolicyType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -12,14 +19,17 @@ export class CreateVillaPolicyDto {
   @IsNotEmpty()
   readonly name!: string;
 
+  @IsEnum(VillaPolicyType)
+  @IsNotEmpty()
+  readonly type!: VillaPolicyType;
+
+  @IsString()
+  @IsOptional()
+  readonly description?: string | null;
+
   @IsString()
   @IsOptional()
   readonly icon?: string | null;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  readonly list?: string[] | null;
 }
 
 export class CreateVillaPolicySuccessResponse

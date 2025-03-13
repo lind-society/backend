@@ -17,7 +17,11 @@ export class GetFeatureParamsDto {
 export class GetFeaturesDto {
   @IsUUID()
   @IsOptional()
-  additionalId?: string | null;
+  propertyId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  villaId?: string;
 }
 
 export class GetFeaturePaginateDto extends PaginateResponseDefaultDataProps {

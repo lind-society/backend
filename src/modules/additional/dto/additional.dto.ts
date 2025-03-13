@@ -1,14 +1,13 @@
 import { Additional, AdditionalType } from 'src/database/entities';
 import { PropertyDto } from 'src/modules/property/dto/property.dto';
+import { VillaDto } from 'src/modules/villa/dto';
 
 export interface IAdditionalDto
-  extends Omit<
-    Additional,
-    'medias' | 'propertyAdditionals' | 'villaAdditionals'
-  > {}
+  extends Omit<Additional, 'propertyAdditionals' | 'villaAdditionals'> {}
 
 export interface IAdditionalWithRelationsDto extends IAdditionalDto {
   properties?: PropertyDto[];
+  villas?: VillaDto[];
 }
 
 export class AdditionalDto implements IAdditionalDto {
@@ -27,4 +26,5 @@ export class AdditionalWithRelationsDto
   implements IAdditionalWithRelationsDto
 {
   readonly properties?: PropertyDto[];
+  readonly villas?: VillaDto[];
 }
