@@ -24,6 +24,11 @@ async function bootstrap() {
 
   app.setGlobalPrefix(`api/${apiVersion}`);
 
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+  });
+
   app.useGlobalFilters(new HttpExceptionFilter(httpAdapterHost));
 
   app.useGlobalPipes(
