@@ -9,7 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
-import { DeleteResponse } from 'src/modules/shared/dto';
+import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
 import { BlogCategoryService } from './blog-category.service';
 import {
   CreateBlogCategoryDto,

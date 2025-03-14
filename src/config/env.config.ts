@@ -75,6 +75,22 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   GCP_PROJECT_ID!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  JWT_AT_SECRET!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  JWT_RT_SECRET!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  JWT_AT_EXPIRE!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  JWT_RT_EXPIRE!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {

@@ -8,6 +8,7 @@ import {
   appConfig,
   databaseConfig,
   gcpConfig,
+  jwtConfig,
   storageConfig,
   validateEnv,
   xenditConfig,
@@ -32,7 +33,14 @@ import { VillaModule } from './modules/villa/villa.module';
         allowUnknown: false,
         abortEarly: true,
       },
-      load: [appConfig, databaseConfig, gcpConfig, storageConfig, xenditConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        gcpConfig,
+        jwtConfig,
+        storageConfig,
+        xenditConfig,
+      ],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],

@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { DefaultHttpStatus } from 'src/common/enums';
-import { HttpResponse } from './http-response.dto';
+import { HttpResponse } from '../http-response.dto';
 
 export class DeleteResponse extends HttpResponse {
   constructor(message: string) {

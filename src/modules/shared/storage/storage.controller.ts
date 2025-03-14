@@ -8,7 +8,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { DeleteResponse } from '../dto';
+import { DeleteResponse } from '../dto/custom-responses';
 import {
   DeleteFileDto,
   GetFileUrlDto,
