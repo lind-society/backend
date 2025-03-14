@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Facility } from 'src/database/entities';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
   CreateFacilityDto,
@@ -18,6 +22,23 @@ export class FacilityService {
     @InjectRepository(Facility)
     private facilityRepository: Repository<Facility>,
   ) {}
+
+  async validateFaciliies(facilityIds: string[]): Promise<void> {
+    const validFaciliies = await this.facilityRepository.find({
+      where: { id: In(facilityIds) },
+    });
+
+    if (validFaciliies.length !== facilityIds.length) {
+      const validFacilityIds = validFaciliies.map((facility) => facility.id);
+      const invalidFacilityIds = facilityIds.filter(
+        (id) => !validFacilityIds.includes(id),
+      );
+
+      throw new BadRequestException(
+        `invalid facility ids: ${invalidFacilityIds.join(', ')}`,
+      );
+    }
+  }
 
   async create(payload: CreateFacilityDto): Promise<FacilityDto> {
     const createdFacility = this.facilityRepository.create(payload);
