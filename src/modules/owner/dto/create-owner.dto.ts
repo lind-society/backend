@@ -1,1 +1,67 @@
-export class CreateOwnerDto {}
+import { HttpStatus } from '@nestjs/common';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsNumberString,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { DefaultHttpStatus } from 'src/common/enums';
+import { OwnerStatus, OwnerType } from 'src/database/entities';
+import {
+  HttpResponseDefaultProps,
+  HttpResponseOptions,
+} from 'src/modules/shared/dto';
+import { OwnerDto } from './owner.dto';
+
+export class CreateOwnerDto {
+  @IsString()
+  @IsNotEmpty()
+  readonly name!: string;
+
+  @IsEnum(OwnerType)
+  @IsNotEmpty()
+  readonly type!: OwnerType;
+
+  @IsString()
+  @IsOptional()
+  readonly companyName!: string | null;
+
+  @IsEmail()
+  @IsNotEmpty()
+  readonly email!: string;
+
+  @IsNumberString()
+  @IsNotEmpty()
+  readonly phoneNumber!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly address!: string;
+
+  @IsString()
+  @IsOptional()
+  readonly website!: string | null;
+
+  @IsEnum(OwnerStatus)
+  @IsNotEmpty()
+  readonly status!: OwnerStatus;
+}
+
+export class CreateOwnerSuccessResponse
+  extends HttpResponseDefaultProps
+  implements HttpResponseOptions<OwnerDto>
+{
+  readonly data: OwnerDto;
+
+  constructor(data: OwnerDto) {
+    super({
+      code: HttpStatus.CREATED,
+      message: 'create owner success',
+      status: DefaultHttpStatus.Success,
+    });
+
+    this.data = data;
+  }
+}

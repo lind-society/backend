@@ -77,8 +77,6 @@ export class BlogService {
       throw new NotFoundException('blog not found');
     }
 
-    console.log(blog);
-
     return blog;
   }
 
