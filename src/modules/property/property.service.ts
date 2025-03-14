@@ -13,6 +13,8 @@ import {
   PropertyFeaturePivot,
 } from 'src/database/entities';
 import { DataSource, EntityManager, Repository } from 'typeorm';
+import { FacilityService } from '../facility/facility.service';
+import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { CreatePropertyFacililtyDto } from './dto';
 import { CreatePropertyDto } from './dto/create-property.dto';
@@ -25,6 +27,8 @@ export class PropertyService {
     private datasource: DataSource,
     @InjectRepository(Property)
     private propertyRepository: Repository<Property>,
+    private facilityService: FacilityService,
+    private ownerService: OwnerService,
   ) {}
 
   private mapPropertyData(property: Property) {
@@ -61,10 +65,12 @@ export class PropertyService {
   }
 
   async create(payload: CreatePropertyDto): Promise<PropertyWithRelationsDto> {
+    const { additionals, facilities, features, ...propertyData } = payload;
+
+    await this.validatePayload(propertyData.ownerId, facilities);
+
     const createdProperty = await this.datasource.transaction(
       async (manager: EntityManager) => {
-        const { additionals, facilities, features, ...propertyData } = payload;
-
         const createdProperty = await manager.save(Property, propertyData);
 
         const createdAdditionals = await manager.save(Additional, additionals);
@@ -155,11 +161,13 @@ export class PropertyService {
     id: string,
     payload: UpdatePropertyDto,
   ): Promise<PropertyWithRelationsDto> {
+    const { additionals, facilities, features, ...propertyData } = payload;
+
     await this.findOne(id);
 
-    await this.datasource.transaction(async (manager: EntityManager) => {
-      const { additionals, facilities, features, ...propertyData } = payload;
+    await this.validatePayload(propertyData.ownerId, facilities);
 
+    await this.datasource.transaction(async (manager: EntityManager) => {
       const updatedProperty = await manager.update(Property, id, propertyData);
 
       if (additionals) {
@@ -213,5 +221,20 @@ export class PropertyService {
     await this.findOne(id);
 
     await this.propertyRepository.delete(id);
+  }
+
+  private async validatePayload(
+    ownerId?: string,
+    facilities?: CreatePropertyFacililtyDto[],
+  ) {
+    if (ownerId) {
+      await this.ownerService.findOne(ownerId);
+    }
+
+    if (Array.isArray(facilities) && facilities.length > 0) {
+      const facilityIds = facilities.map((facility) => facility.facilityId);
+
+      await this.facilityService.validateFaciliies(facilityIds);
+    }
   }
 }

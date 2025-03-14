@@ -30,9 +30,7 @@ export class AdminService {
       password: await hash(payload.password),
     });
 
-    const createdAdmin = await this.adminRepository.save(admin);
-
-    return await this.findOne(createdAdmin.id);
+    return await this.adminRepository.save(admin);
   }
 
   async findAll(

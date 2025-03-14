@@ -19,6 +19,7 @@ import {
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
+import { FacilityService } from '../facility/facility.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { CreateVillaFacililtyDto, VillaWithRelationsDto } from './dto';
 import { CreateVillaDto } from './dto/create-villa.dto';
@@ -30,6 +31,7 @@ export class VillaService {
     private datasource: DataSource,
     @InjectRepository(Villa)
     private villaRepository: Repository<Villa>,
+    private facilityService: FacilityService,
   ) {}
 
   private mapVillaData(villa: Villa) {
@@ -40,7 +42,6 @@ export class VillaService {
         'villaFeatures',
         'villaPolicies',
       ]),
-
 
       additionals: groupAndSort(
         villa.villaAdditionals.map(({ id, additional }) => ({
@@ -73,11 +74,17 @@ export class VillaService {
   }
 
   async create(payload: CreateVillaDto): Promise<VillaWithRelationsDto> {
+    const { additionals, facilities, features, policies, ...villaData } =
+      payload;
+
+    if (Array.isArray(facilities) && facilities.length > 0) {
+      const facilityIds = facilities.map((facility) => facility.facilityId);
+
+      await this.facilityService.validateFaciliies(facilityIds);
+    }
+
     const createdVilla = await this.datasource.transaction(
       async (manager: EntityManager) => {
-        const { additionals, facilities, features, policies, ...villaData } =
-          payload;
-
         validatePayloadFromObjectKey(payload, {
           additionals,
           facilities,
@@ -91,38 +98,46 @@ export class VillaService {
         const createdFeatures = await manager.save(Feature, features);
         const createdPolicies = await manager.save(VillaPolicy, policies);
 
-        await manager.save(
-          VillaAdditionalPivot,
-          createdAdditionals.map((additional: Additional) => ({
-            villaId: createdVilla.id,
-            additionalId: additional.id,
-          })),
-        );
+        if (Array.isArray(additionals) && additionals.length > 0) {
+          await manager.save(
+            VillaAdditionalPivot,
+            createdAdditionals.map((additional: Additional) => ({
+              villaId: createdVilla.id,
+              additionalId: additional.id,
+            })),
+          );
+        }
 
-        await manager.save(
-          VillaFacilityPivot,
-          facilities.map((facility: CreateVillaFacililtyDto) => ({
-            villaId: createdVilla.id,
-            facilityId: facility.facilityId,
-            description: facility.description,
-          })),
-        );
+        if (Array.isArray(facilities) && facilities.length > 0) {
+          await manager.save(
+            VillaFacilityPivot,
+            facilities.map((facility: CreateVillaFacililtyDto) => ({
+              villaId: createdVilla.id,
+              facilityId: facility.facilityId,
+              description: facility.description,
+            })),
+          );
+        }
 
-        await manager.save(
-          VillaFeaturePivot,
-          createdFeatures.map((feature: Feature) => ({
-            villaId: createdVilla.id,
-            featureId: feature.id,
-          })),
-        );
+        if (Array.isArray(features) && features.length > 0) {
+          await manager.save(
+            VillaFeaturePivot,
+            createdFeatures.map((feature: Feature) => ({
+              villaId: createdVilla.id,
+              featureId: feature.id,
+            })),
+          );
+        }
 
-        await manager.save(
-          VillaPolicyPivot,
-          createdPolicies.map((policy: VillaPolicy) => ({
-            villaId: createdVilla.id,
-            policyId: policy.id,
-          })),
-        );
+        if (Array.isArray(policies) && policies.length > 0) {
+          await manager.save(
+            VillaPolicyPivot,
+            createdPolicies.map((policy: VillaPolicy) => ({
+              villaId: createdVilla.id,
+              policyId: policy.id,
+            })),
+          );
+        }
 
         return createdVilla;
       },
@@ -189,50 +204,82 @@ export class VillaService {
   ): Promise<VillaWithRelationsDto> {
     await this.findOne(id);
 
-    await this.datasource.transaction(async (manager) => {
-      const { additionals, facilities, features, ...villaData } = payload;
+    const { additionals, facilities, features, policies, ...villaData } =
+      payload;
 
+    if (Array.isArray(facilities) && facilities.length > 0) {
+      const facilityIds = facilities.map((facility) => facility.facilityId);
+
+      await this.facilityService.validateFaciliies(facilityIds);
+    }
+
+    await this.datasource.transaction(async (manager) => {
       const updatedVilla = await manager.update(Villa, id, villaData);
 
-      if (additionals) {
+      if (Array.isArray(additionals)) {
         await manager.delete(VillaAdditionalPivot, { villaId: id });
 
-        const updatedAdditionals = await manager.save(Additional, additionals);
+        if (additionals.length > 0) {
+          const updatedAdditionals = await manager.save(
+            Additional,
+            additionals,
+          );
 
-        await manager.save(
-          VillaAdditionalPivot,
-          updatedAdditionals.map((additional) => ({
-            villaId: id,
-            additionalId: additional.id,
-          })),
-        );
+          await manager.save(
+            VillaAdditionalPivot,
+            updatedAdditionals.map((additional) => ({
+              villaId: id,
+              additionalId: additional.id,
+            })),
+          );
+        }
       }
 
-      if (facilities) {
+      if (Array.isArray(facilities)) {
         await manager.delete(VillaFacilityPivot, { villaId: id });
 
-        await manager.save(
-          VillaFacilityPivot,
-          facilities.map((facility) => ({
-            villaId: id,
-            facilityId: facility.facilityId,
-            description: facility.description,
-          })),
-        );
+        if (facilities.length > 0) {
+          await manager.save(
+            VillaFacilityPivot,
+            facilities.map((facility) => ({
+              villaId: id,
+              facilityId: facility.facilityId,
+              description: facility.description,
+            })),
+          );
+        }
       }
 
-      if (features) {
+      if (Array.isArray(features)) {
         await manager.delete(VillaFeaturePivot, { villaId: id });
 
-        const updatedFeatures = await manager.save(Feature, features);
+        if (features.length > 0) {
+          const updatedFeatures = await manager.save(Feature, features);
 
-        await manager.save(
-          VillaFeaturePivot,
-          updatedFeatures.map((feature) => ({
-            villaId: id,
-            featureId: feature.id,
-          })),
-        );
+          await manager.save(
+            VillaFeaturePivot,
+            updatedFeatures.map((feature) => ({
+              villaId: id,
+              featureId: feature.id,
+            })),
+          );
+        }
+      }
+
+      if (Array.isArray(policies)) {
+        await manager.delete(VillaPolicyPivot, { villaId: id });
+
+        if (policies.length > 0) {
+          const updatedPolicies = await manager.save(VillaPolicy, policies);
+
+          await manager.save(
+            VillaPolicyPivot,
+            updatedPolicies.map((policy: VillaPolicy) => ({
+              villaId: id,
+              policyId: policy.id,
+            })),
+          );
+        }
       }
 
       return updatedVilla;

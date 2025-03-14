@@ -1,34 +1,64 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { DeleteResponse } from '../shared/dto/custom-responses';
+import {
+  CreateOwnerDto,
+  CreateOwnerSuccessResponse,
+  GetOwnersSuccessResponse,
+  GetOwnerSuccessResponse,
+  UpdateOwnerDto,
+  UpdateOwnerSuccessResponse,
+} from './dto';
 import { OwnerService } from './owner.service';
-import { CreateOwnerDto } from './dto/create-owner.dto';
-import { UpdateOwnerDto } from './dto/update-owner.dto';
 
-@Controller('owner')
+@Controller('owners')
 export class OwnerController {
   constructor(private readonly ownerService: OwnerService) {}
 
   @Post()
-  create(@Body() createOwnerDto: CreateOwnerDto) {
-    return this.ownerService.create(createOwnerDto);
+  async create(@Body() payload: CreateOwnerDto) {
+    const blog = await this.ownerService.create(payload);
+
+    return new CreateOwnerSuccessResponse(blog);
   }
 
   @Get()
-  findAll() {
-    return this.ownerService.findAll();
+  async findAll(@Paginate() query: PaginateQuery) {
+    const blogs = await this.ownerService.findAll(query);
+
+    return new GetOwnersSuccessResponse(blogs);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ownerService.findOne(+id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const blog = await this.ownerService.findOne(id);
+
+    return new GetOwnerSuccessResponse(blog);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOwnerDto: UpdateOwnerDto) {
-    return this.ownerService.update(+id, updateOwnerDto);
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: UpdateOwnerDto,
+  ) {
+    const blog = await this.ownerService.update(id, payload);
+
+    return new UpdateOwnerSuccessResponse(blog);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ownerService.remove(+id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.ownerService.remove(id);
+
+    return new DeleteResponse('delete owner success');
   }
 }
