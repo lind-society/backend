@@ -1,6 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
 import { PartialType } from '@nestjs/mapped-types';
-import { IsOptional, IsString } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -9,15 +8,7 @@ import {
 import { CreateFacilityDto } from './create-facility.dto';
 import { FacilityDto } from './facility.dto';
 
-export class UpdateFacilityDto extends PartialType(CreateFacilityDto) {
-  @IsString()
-  @IsOptional()
-  readonly name?: string | null;
-
-  @IsString()
-  @IsOptional()
-  readonly icon?: string | null;
-}
+export class UpdateFacilityDto extends PartialType(CreateFacilityDto) {}
 
 export class UpdateFacilitySuccessResponse
   extends HttpResponseDefaultProps
