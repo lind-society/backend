@@ -8,6 +8,12 @@ export interface IAdminCredentialsDto
     'id' | 'username' | 'email' | 'phoneNumber' | 'password'
   > {}
 
+export interface IAuthenticatedAdminPayloadDto
+  extends Pick<
+    Admin,
+    'id' | 'username' | 'email' | 'phoneNumber' | 'refreshToken'
+  > {}
+
 export interface IAdminPayloadDto
   extends Pick<Admin, 'id' | 'username' | 'email' | 'phoneNumber'> {}
 
@@ -24,6 +30,16 @@ export class AdminCredentialsDto implements IAdminCredentialsDto {
   readonly email!: string;
   readonly phoneNumber!: string;
   readonly password!: string;
+  readonly refreshToken!: string;
+}
+
+export class AuthenticatedAdminPayloadDto
+  implements IAuthenticatedAdminPayloadDto
+{
+  readonly id!: string;
+  readonly username!: string;
+  readonly email!: string;
+  readonly phoneNumber!: string;
   readonly refreshToken!: string;
 }
 

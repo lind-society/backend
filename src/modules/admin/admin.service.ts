@@ -14,6 +14,7 @@ import {
   AdminCredentialsDto,
   AdminPayloadDto,
   AdminWithRelationDto,
+  AuthenticatedAdminPayloadDto,
   CreateAdminDto,
   UpdateAdminDto,
 } from './dto';
@@ -30,7 +31,9 @@ export class AdminService {
       password: await hash(payload.password),
     });
 
-    return await this.adminRepository.save(admin);
+    const createdAdmin = await this.adminRepository.save(admin);
+
+    return await this.findOne(createdAdmin.id);
   }
 
   async findAll(
@@ -180,6 +183,26 @@ export class AdminService {
     }
 
     return admin as AdminPayloadDto;
+  }
+
+  async findAuthorizedAdminById(
+    id: string,
+  ): Promise<AuthenticatedAdminPayloadDto> {
+    const admin = await this.adminRepository.findOne({
+      select: ['id', 'email', 'username', 'phoneNumber', 'refreshToken'],
+      where: { id },
+    });
+
+    if (!admin) {
+      throw new NotFoundException('admin not found');
+    }
+
+    if (!admin.refreshToken) {
+      console.log('lewat');
+      throw new UnauthorizedException('unauthorized admin');
+    }
+
+    return admin as AuthenticatedAdminPayloadDto;
   }
 
   async updatePassword(

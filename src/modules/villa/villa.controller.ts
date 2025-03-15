@@ -6,8 +6,11 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { Public } from 'src/common/decorators';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreateVillaDto,
@@ -20,6 +23,7 @@ import {
 } from './dto';
 import { VillaService } from './villa.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('villas')
 export class VillaController {
   constructor(private readonly villaService: VillaService) {}
@@ -31,6 +35,7 @@ export class VillaController {
     return new CreateVillaSuccessResponse(result);
   }
 
+  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.villaService.findAll(query);
@@ -38,6 +43,7 @@ export class VillaController {
     return new GetVillasSuccessResponse(result);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param() params: GetVillaParamsDto) {
     const result = await this.villaService.findOne(params.id);
