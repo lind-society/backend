@@ -28,18 +28,19 @@ export class Blog {
   @Column({ name: 'category_id', type: 'uuid', nullable: true })
   categoryId!: string | null;
 
-  @ManyToOne(() => BlogCategory, {
-    onDelete: 'SET NULL',
-    nullable: false,
-  })
-  @JoinColumn({ name: 'category_id' })
-  category!: BlogCategory;
-
   @ManyToOne(() => Admin, (admin) => admin.blogs, {
     onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn({ name: 'author_id' })
   author!: Admin | null;
+
+  @ManyToOne(() => BlogCategory, (blogCategory) => blogCategory.blogs, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'category_id' })
+  category!: BlogCategory | null;
 
   @CreateDateColumn({
     name: 'created_at',

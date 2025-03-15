@@ -21,18 +21,6 @@ export class BlogService {
     private blogCategoryRepository: Repository<BlogCategory>,
   ) {}
 
-  private async _validateCategory(categoryId: string): Promise<void> {
-    const validCategory = await this.blogCategoryRepository.findOne({
-      where: {
-        id: categoryId,
-      },
-    });
-
-    if (!validCategory) {
-      throw new NotFoundException('Blog category not found');
-    }
-  }
-
   async create(payload: CreateBlogDto): Promise<BlogWithRelationsDto> {
     await this._validateCategory(payload.categoryId);
 
@@ -99,5 +87,17 @@ export class BlogService {
     await this.findOne(id);
 
     await this.blogRepository.delete(id);
+  }
+
+  private async _validateCategory(categoryId: string): Promise<void> {
+    const validCategory = await this.blogCategoryRepository.findOne({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    if (!validCategory) {
+      throw new NotFoundException('Blog category not found');
+    }
   }
 }

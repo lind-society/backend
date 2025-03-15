@@ -29,8 +29,8 @@ import { PropertyWithRelationsDto } from './property.dto';
 
 export class PropertyPlaceNearbyDto extends PropertyPlaceNearby {
   @IsString()
-  @IsOptional()
-  name: string | null;
+  @IsNotEmpty()
+  name!: string;
 
   @Type(() => Number)
   @IsNumber(
@@ -38,8 +38,8 @@ export class PropertyPlaceNearbyDto extends PropertyPlaceNearby {
     { message: 'distance must be a valid number' },
   )
   @Min(1, { message: 'minimum distance is 1' })
-  @IsOptional()
-  distance: number | null;
+  @IsNotEmpty()
+  distance!: number;
 }
 
 export class CreatePropertyDto {

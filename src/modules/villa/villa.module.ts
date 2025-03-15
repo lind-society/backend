@@ -10,5 +10,6 @@ import { VillaService } from './villa.service';
   controllers: [VillaController],
   providers: [VillaService],
   imports: [TypeOrmModule.forFeature([Villa]), FacilityModule, OwnerModule],
+  exports: [VillaService],
 })
 export class VillaModule {}

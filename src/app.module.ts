@@ -19,6 +19,7 @@ import { BlogModule } from './modules/blog/blog.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { OwnerModule } from './modules/owner/owner.module';
 import { PropertyModule } from './modules/property/property.module';
+import { ReviewModule } from './modules/review/review.module';
 import { LoggerModule } from './modules/shared/logger/logger.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
 import { VillaModule } from './modules/villa/villa.module';
@@ -57,6 +58,7 @@ import { VillaModule } from './modules/villa/villa.module';
     OwnerModule,
     StorageModule,
     VillaModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

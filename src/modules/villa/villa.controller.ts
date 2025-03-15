@@ -10,18 +10,14 @@ import {
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
+  CreateVillaDto,
+  CreateVillaSuccessResponse,
   GetVillaParamsDto,
   GetVillasSuccessResponse,
   GetVillaSuccessResponse,
-} from './dto';
-import {
-  CreateVillaDto,
-  CreateVillaSuccessResponse,
-} from './dto/create-villa.dto';
-import {
   UpdateVillaDto,
   UpdateVillaSuccessResponse,
-} from './dto/update-villa.dto';
+} from './dto';
 import { VillaService } from './villa.service';
 
 @Controller('villas')
