@@ -16,25 +16,71 @@ import {
   UploadFileRequestDto,
   UploadFileSuccessResponse,
 } from './dto';
-import { IReceivedFile } from './interfaces';
 import { StorageService } from './storage.service';
 
 @Controller('storages')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
-  @Post()
-  @UseInterceptors(FilesInterceptor('files'))
-  async uploadFiles(
+  @Post('photos')
+  @UseInterceptors(
+    FilesInterceptor(
+      'files',
+      parseInt(process.env.PHOTOS_LIMIT_QUANTITY, 10) | 10,
+      {
+        limits: { fileSize: parseInt(process.env.PHOTOS_LIMIT_SIZE, 10) | 2 },
+      },
+    ),
+  )
+  async uploadPhotos(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() payload: UploadFileRequestDto,
   ) {
-    const receivedFiles: IReceivedFile[] = files.map((file) => ({
-      key: payload.key,
-      file: file.buffer,
-      mimeType: file.mimetype,
-      originalName: file.originalname,
-    }));
+    const receivedFiles = this.storageService.mapFiles(files, payload.key);
+
+    const result = await this.storageService.uploadFiles(receivedFiles);
+
+    return new UploadFileSuccessResponse(result);
+  }
+
+  @Post('videos')
+  @UseInterceptors(
+    FilesInterceptor(
+      'files',
+      parseInt(process.env.VIDEOS_LIMIT_QUANTITY, 10) | 5,
+      {
+        limits: { fileSize: parseInt(process.env.VIDEOS_LIMIT_SIZE, 10) | 20 },
+      },
+    ),
+  )
+  async uploadVideos(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() payload: UploadFileRequestDto,
+  ) {
+    const receivedFiles = this.storageService.mapFiles(files, payload.key);
+
+    const result = await this.storageService.uploadFiles(receivedFiles);
+
+    return new UploadFileSuccessResponse(result);
+  }
+
+  @Post('video360s')
+  @UseInterceptors(
+    FilesInterceptor(
+      'files',
+      parseInt(process.env.VIDEO360S_LIMIT_QUANTITY, 10) | 5,
+      {
+        limits: {
+          fileSize: parseInt(process.env.VIDEO360S_LIMIT_SIZE, 10) | 30,
+        },
+      },
+    ),
+  )
+  async uploadVideo360s(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() payload: UploadFileRequestDto,
+  ) {
+    const receivedFiles = this.storageService.mapFiles(files, payload.key);
 
     const result = await this.storageService.uploadFiles(receivedFiles);
 

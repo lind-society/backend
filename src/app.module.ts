@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,6 +8,7 @@ import { envPaths } from './common/constants';
 import {
   appConfig,
   databaseConfig,
+  fileConfig,
   gcpConfig,
   jwtConfig,
   storageConfig,
@@ -37,10 +39,19 @@ import { VillaModule } from './modules/villa/villa.module';
       load: [
         appConfig,
         databaseConfig,
+        fileConfig,
         gcpConfig,
         jwtConfig,
         storageConfig,
         xenditConfig,
+      ],
+    }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
       ],
     }),
     TypeOrmModule.forRootAsync({

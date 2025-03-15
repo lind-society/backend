@@ -55,4 +55,15 @@ export class StorageService {
   async deleteFile(payload: DeleteFileDto): Promise<void> {
     await this.storageProvider.deleteFile(payload);
   }
+
+  mapFiles(files: Express.Multer.File[], key: string) {
+    const receivedFiles: IReceivedFile[] = files.map((file) => ({
+      key,
+      file: file.buffer,
+      mimeType: file.mimetype,
+      originalName: file.originalname,
+    }));
+
+    return receivedFiles;
+  }
 }

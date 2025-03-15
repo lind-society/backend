@@ -24,4 +24,14 @@ export const envValues: EnvironmentVariables = {
   JWT_RT_SECRET: process.env.JWT_RT_SECRET || '',
   JWT_AT_EXPIRE: process.env.JWT_AT_EXPIRE || '',
   JWT_RT_EXPIRE: process.env.JWT_RT_EXPIRE || '',
+  PHOTOS_LIMIT_QUANTITY:
+    parseInt(process.env.PHOTOS_LIMIT_QUANTITY || '10', 10) || 10,
+  PHOTOS_LIMIT_SIZE: parseInt(process.env.PHOTOS_LIMIT_SIZE || '2', 10) || 2,
+  VIDEOS_LIMIT_QUANTITY:
+    parseInt(process.env.VIDEOS_LIMIT_QUANTITY || '5', 10) || 5,
+  VIDEOS_LIMIT_SIZE: parseInt(process.env.VIDEOS_LIMIT_SIZE || '20', 10) || 20,
+  VIDEO360S_LIMIT_QUANTITY:
+    parseInt(process.env.VIDEO360S_LIMIT_QUANTITY || '5', 10) || 5,
+  VIDEO360S_LIMIT_SIZE:
+    parseInt(process.env.VIDEO360S_LIMIT_SIZE || '30', 10) || 30,
 };

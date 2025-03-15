@@ -14,9 +14,9 @@ import { JwtAtStrategy, JwtRtStrategy, LocalStrategy } from './strategies';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         return {
-          secret: configService.get<string>('jwt.atSecret'),
+          secret: configService.get<string>('jwt.accessToken.secret'),
           signOptions: {
-            expiresIn: configService.get<string>('jwt.atExpire'),
+            expiresIn: configService.get<string>('jwt.accessToken.expire'),
           },
         };
       },

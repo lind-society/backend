@@ -88,12 +88,7 @@ export class AuthService {
   }
 
   private async signAccessToken(payload: AdminPayloadDto): Promise<string> {
-    const jwtPayload: IJwtPayload = {
-      sub: payload.id,
-      username: payload.username,
-      email: payload.email,
-      phoneNumber: payload.phoneNumber,
-    };
+    const jwtPayload = this._jwtPayloadMapper(payload);
 
     const accessToken = await this.jwtService.signAsync(jwtPayload);
 
@@ -101,18 +96,22 @@ export class AuthService {
   }
 
   private async signRefreshToken(payload: AdminPayloadDto): Promise<string> {
-    const jwtPayload: IJwtPayload = {
+    const jwtPayload = this._jwtPayloadMapper(payload);
+
+    const refreshToken = await this.jwtService.signAsync(jwtPayload, {
+      secret: this.configService.get<string>('jwt.refreshToken.secret'),
+      expiresIn: this.configService.get<string>('jwt.refreshToken.expire'),
+    });
+
+    return refreshToken;
+  }
+
+  private _jwtPayloadMapper(payload: AdminPayloadDto): IJwtPayload {
+    return {
       sub: payload.id,
       username: payload.username,
       email: payload.email,
       phoneNumber: payload.phoneNumber,
     };
-
-    const refreshToken = await this.jwtService.signAsync(jwtPayload, {
-      secret: this.configService.get<string>('jwt.rtSecret'),
-      expiresIn: this.configService.get<string>('jwt.rtExpire'),
-    });
-
-    return refreshToken;
   }
 }

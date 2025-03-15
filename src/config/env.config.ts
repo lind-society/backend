@@ -12,25 +12,26 @@ import {
 import { config, DotenvConfigOptions } from 'dotenv';
 import { envPaths } from 'src/common/constants';
 import { Environment } from 'src/common/enums';
+import { megabyteToByte } from 'src/common/helpers';
 
 export class EnvironmentVariables {
   @IsEnum(Environment)
   @IsOptional()
-  NODE_ENV!: Environment;
+  NODE_ENV?: Environment | null;
 
   @IsString()
   @IsOptional()
-  API_VERSION!: string;
+  API_VERSION?: string | null;
 
   @IsString()
-  @IsNotEmpty()
-  HOST!: string;
+  @IsOptional()
+  HOST?: string | null;
 
   @IsNumber()
   @Min(0)
   @Max(65535)
   @IsOptional()
-  PORT!: number;
+  PORT?: number | null;
 
   @IsString()
   @IsNotEmpty()
@@ -91,6 +92,42 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   JWT_RT_EXPIRE!: string;
+
+  @IsNumber()
+  @Min(0)
+  @Max(20)
+  @IsNotEmpty()
+  PHOTOS_LIMIT_QUANTITY!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(megabyteToByte(100))
+  @IsNotEmpty()
+  PHOTOS_LIMIT_SIZE!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(20)
+  @IsNotEmpty()
+  VIDEOS_LIMIT_QUANTITY!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(megabyteToByte(100))
+  @IsNotEmpty()
+  VIDEOS_LIMIT_SIZE!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(20)
+  @IsNotEmpty()
+  VIDEO360S_LIMIT_QUANTITY!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(megabyteToByte(100))
+  @IsNotEmpty()
+  VIDEO360S_LIMIT_SIZE!: number;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {
