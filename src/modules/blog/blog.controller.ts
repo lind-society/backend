@@ -12,18 +12,14 @@ import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import { BlogService } from './blog.service';
 import {
+  CreateBlogDto,
+  CreateBlogSuccessResponse,
   GetBlogsDto,
   GetBlogsSuccessResponse,
   GetBlogSuccessResponse,
-} from './dto';
-import {
-  CreateBlogDto,
-  CreateBlogSuccessResponse,
-} from './dto/create-blog.dto';
-import {
   UpdateBlogDto,
   UpdateBlogSuccessResponse,
-} from './dto/update-blog.dto';
+} from './dto';
 
 @Controller('blogs')
 export class BlogController {

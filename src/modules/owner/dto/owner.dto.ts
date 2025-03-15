@@ -5,8 +5,8 @@ import { VillaDto } from 'src/modules/villa/dto';
 export interface IOwnerDto extends Omit<Owner, 'properties' | 'villas'> {}
 
 export interface IOwnerWithRelationDto extends IOwnerDto {
-  properties: PropertyDto[];
-  villas: VillaDto[];
+  properties?: PropertyDto[];
+  villas?: VillaDto[];
 }
 
 export class OwnerDto implements IOwnerDto {
@@ -28,6 +28,6 @@ export class OwnerWithRelationDto
   extends OwnerDto
   implements IOwnerWithRelationDto
 {
-  readonly properties: PropertyDto[];
-  readonly villas: VillaDto[];
+  readonly properties?: PropertyDto[];
+  readonly villas?: VillaDto[];
 }

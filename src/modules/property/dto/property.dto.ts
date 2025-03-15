@@ -14,9 +14,9 @@ export interface IPropertyDto
   > {}
 
 export interface IPropertyWithRelationsDto extends IPropertyDto {
-  facilities: PropertyFacilityPivot[];
-  features: PropertyFeaturePivot[];
-  additionals: PropertyAdditionalPivot[];
+  facilities?: PropertyFacilityPivot[];
+  features?: PropertyFeaturePivot[];
+  additionals?: PropertyAdditionalPivot[];
 }
 
 export class PropertyDto implements IPropertyDto {
@@ -49,7 +49,7 @@ export class PropertyWithRelationsDto
   extends PropertyDto
   implements IPropertyWithRelationsDto
 {
-  readonly facilities: PropertyFacilityPivot[];
-  readonly features: PropertyFeaturePivot[];
-  readonly additionals: PropertyAdditionalPivot[];
+  readonly facilities?: PropertyFacilityPivot[];
+  readonly features?: PropertyFeaturePivot[];
+  readonly additionals?: PropertyAdditionalPivot[];
 }

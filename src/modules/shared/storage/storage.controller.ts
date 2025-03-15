@@ -25,7 +25,7 @@ export class StorageController {
 
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
-  async uploadFile(
+  async uploadFiles(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() payload: UploadFileRequestDto,
   ) {
@@ -36,7 +36,7 @@ export class StorageController {
       originalName: file.originalname,
     }));
 
-    const result = await this.storageService.uploadFile(receivedFiles);
+    const result = await this.storageService.uploadFiles(receivedFiles);
 
     return new UploadFileSuccessResponse(result);
   }

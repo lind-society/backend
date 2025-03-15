@@ -12,16 +12,12 @@ import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreatePropertyDto,
   CreatePropertySuccessResponse,
-} from './dto/create-property.dto';
-import {
   GetPropertiesSuccessResponse,
   GetPropertyParamsDto,
   GetPropertySuccessResponse,
-} from './dto/get-property.dto';
-import {
   UpdatePropertyDto,
   UpdatePropertySuccessResponse,
-} from './dto/update-property.dto';
+} from './dto';
 import { PropertyService } from './property.service';
 
 @Controller('properties')

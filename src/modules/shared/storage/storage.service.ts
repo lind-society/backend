@@ -15,7 +15,7 @@ export class StorageService {
     private readonly storageProvider: IStorageProvider,
   ) {}
 
-  async uploadFile(payload: IReceivedFile[]): Promise<UploadFilesResponseDto> {
+  async uploadFiles(payload: IReceivedFile[]): Promise<UploadFilesResponseDto> {
     const uploadResults = await Promise.all(
       payload.map(async (file: IReceivedFile) => {
         try {

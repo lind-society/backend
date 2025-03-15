@@ -9,6 +9,7 @@ import {
   VillaPlaceNearby,
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
+import { ReviewDto } from 'src/modules/review/dto';
 
 export interface IVillaDto
   extends Omit<
@@ -17,14 +18,16 @@ export interface IVillaDto
     | 'villaFeatures'
     | 'villaAdditionals'
     | 'villaPolicies'
+    | 'reviews'
     | 'owner'
   > {}
 
 export interface IVillaWithRelationsDto extends IVillaDto {
-  facilities: VillaFacilityPivot[];
-  features: VillaFeaturePivot[];
-  additionals: VillaAdditionalPivot[];
-  policies: VillaPolicyPivot[];
+  additionals?: VillaAdditionalPivot[];
+  facilities?: VillaFacilityPivot[];
+  features?: VillaFeaturePivot[];
+  policies?: VillaPolicyPivot[];
+  reviews?: ReviewDto[];
 }
 
 export class VillaDto implements IVillaDto {
@@ -65,8 +68,9 @@ export class VillaWithRelationsDto
   extends VillaDto
   implements IVillaWithRelationsDto
 {
-  readonly facilities: VillaFacilityPivot[];
-  readonly features: VillaFeaturePivot[];
-  readonly additionals: VillaAdditionalPivot[];
-  readonly policies: VillaPolicyPivot[];
+  readonly additionals?: VillaAdditionalPivot[];
+  readonly facilities?: VillaFacilityPivot[];
+  readonly features?: VillaFeaturePivot[];
+  readonly policies?: VillaPolicyPivot[];
+  readonly reviews?: ReviewDto[];
 }

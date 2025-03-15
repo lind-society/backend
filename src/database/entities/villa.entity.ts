@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Owner } from './owner.entity';
+import { Review } from './review.entity';
 import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
 import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
@@ -201,9 +202,11 @@ export class Villa {
   })
   soldStatus!: boolean;
 
-  // Should be not nullable, adjusted after adding owner entities
   @Column({ name: 'owner_id', nullable: true })
   ownerId: string | null;
+
+  @OneToMany(() => Review, (review) => review.villa)
+  reviews: Review[];
 
   @OneToMany(
     () => VillaFacilityPivot,
@@ -231,6 +234,7 @@ export class Villa {
 
   @ManyToOne(() => Owner, (owner) => owner.villas, {
     onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn({ name: 'owner_id' })
   owner!: Owner | null;

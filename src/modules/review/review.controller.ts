@@ -1,0 +1,64 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { DeleteResponse } from '../shared/dto/custom-responses';
+import {
+  CreateReviewDto,
+  CreateReviewSuccessResponse,
+  GetReviewsDto,
+  GetReviewsSuccessResponse,
+  GetReviewSuccessResponse,
+  UpdateReviewDto,
+  UpdateReviewSuccessResponse,
+} from './dto';
+import { ReviewService } from './review.service';
+
+@Controller('reviews')
+export class ReviewController {
+  constructor(private readonly reviewService: ReviewService) {}
+
+  @Post()
+  async create(@Body() payload: CreateReviewDto) {
+    const result = await this.reviewService.create(payload);
+
+    return new CreateReviewSuccessResponse(result);
+  }
+
+  @Get()
+  async findAll(
+    @Paginate() query: PaginateQuery,
+    @Body() payload: GetReviewsDto,
+  ) {
+    const result = await this.reviewService.findAll(query, payload);
+
+    return new GetReviewsSuccessResponse(result);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const result = await this.reviewService.findOne(id);
+
+    return new GetReviewSuccessResponse(result);
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() payload: UpdateReviewDto) {
+    const result = await this.reviewService.update(id, payload);
+
+    return new UpdateReviewSuccessResponse(result);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    await this.reviewService.remove(id);
+
+    return new DeleteResponse('delete review success');
+  }
+}
