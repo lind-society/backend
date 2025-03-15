@@ -8,6 +8,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { megabyteToByte } from 'src/common/helpers';
 import { DeleteResponse } from '../dto/custom-responses';
 import {
   DeleteFileDto,
@@ -26,7 +27,8 @@ export class StorageController {
   @UseInterceptors(
     FilesInterceptor(
       'files',
-      parseInt(process.env.PHOTOS_LIMIT_QUANTITY, 10) | 10,
+      megabyteToByte(parseInt(process.env.PHOTOS_LIMIT_QUANTITY, 10)) |
+        megabyteToByte(10),
       {
         limits: { fileSize: parseInt(process.env.PHOTOS_LIMIT_SIZE, 10) | 2 },
       },
@@ -49,7 +51,11 @@ export class StorageController {
       'files',
       parseInt(process.env.VIDEOS_LIMIT_QUANTITY, 10) | 5,
       {
-        limits: { fileSize: parseInt(process.env.VIDEOS_LIMIT_SIZE, 10) | 20 },
+        limits: {
+          fileSize:
+            megabyteToByte(parseInt(process.env.VIDEOS_LIMIT_SIZE, 10)) |
+            megabyteToByte(20),
+        },
       },
     ),
   )
@@ -71,7 +77,9 @@ export class StorageController {
       parseInt(process.env.VIDEO360S_LIMIT_QUANTITY, 10) | 5,
       {
         limits: {
-          fileSize: parseInt(process.env.VIDEO360S_LIMIT_SIZE, 10) | 30,
+          fileSize:
+            megabyteToByte(parseInt(process.env.VIDEO360S_LIMIT_SIZE, 10)) |
+            megabyteToByte(30),
         },
       },
     ),
