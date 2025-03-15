@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { IsOptional, IsUUID } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -7,12 +7,6 @@ import {
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
 import { AdditionalDto } from './additional.dto';
-
-export class GetAdditionalParamsDto {
-  @IsUUID()
-  @IsNotEmpty()
-  id!: string;
-}
 
 export class GetAdditionalsDto {
   @IsUUID()

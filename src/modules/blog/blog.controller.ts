@@ -31,9 +31,9 @@ export class BlogController {
 
   @Post()
   async create(@Body() payload: CreateBlogDto) {
-    const blog = await this.blogService.create(payload);
+    const result = await this.blogService.create(payload);
 
-    return new CreateBlogSuccessResponse(blog);
+    return new CreateBlogSuccessResponse(result);
   }
 
   @Public()
@@ -42,17 +42,17 @@ export class BlogController {
     @Paginate() query: PaginateQuery,
     @Body() payload: GetBlogsDto,
   ) {
-    const blogs = await this.blogService.findAll(query, payload);
+    const result = await this.blogService.findAll(query, payload);
 
-    return new GetBlogsSuccessResponse(blogs);
+    return new GetBlogsSuccessResponse(result);
   }
 
   @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const blog = await this.blogService.findOne(id);
+    const result = await this.blogService.findOne(id);
 
-    return new GetBlogSuccessResponse(blog);
+    return new GetBlogSuccessResponse(result);
   }
 
   @Patch(':id')
@@ -60,9 +60,9 @@ export class BlogController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() payload: UpdateBlogDto,
   ) {
-    const blog = await this.blogService.update(id, payload);
+    const result = await this.blogService.update(id, payload);
 
-    return new UpdateBlogSuccessResponse(blog);
+    return new UpdateBlogSuccessResponse(result);
   }
 
   @Delete(':id')

@@ -1,5 +1,4 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsNotEmpty, IsUUID } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -7,12 +6,6 @@ import {
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
 import { PropertyWithRelationsDto } from './property.dto';
-
-export class GetPropertyParamsDto {
-  @IsUUID()
-  @IsNotEmpty()
-  id!: string;
-}
 
 export class GetPropertyPaginateDto extends PaginateResponseDefaultDataProps {
   readonly data!: PropertyWithRelationsDto[];

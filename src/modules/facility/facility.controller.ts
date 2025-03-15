@@ -4,24 +4,24 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { Public } from 'src/common/decorators';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreateFacilityDto,
   CreateFacilitySuccessResponse,
   GetFacilitiesSuccessResponse,
-  GetFacilityParamsDto,
   GetFacilitySuccessResponse,
   UpdateFacilityDto,
   UpdateFacilitySuccessResponse,
 } from './dto';
 import { FacilityService } from './facility.service';
-import { JwtAuthGuard } from '../auth/guards';
-import { Public } from 'src/common/decorators';
 
 @UseGuards(JwtAuthGuard)
 @Controller('facilities')
@@ -39,34 +39,31 @@ export class FacilityController {
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const facilities = await this.facilityService.findAll(query);
-    
+
     return new GetFacilitiesSuccessResponse(facilities);
   }
-  
+
   @Public()
   @Get(':id')
-  async findOne(@Param() params: GetFacilityParamsDto) {
-    const facility = await this.facilityService.findOne(params.id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const facility = await this.facilityService.findOne(id);
 
     return new GetFacilitySuccessResponse(facility);
   }
 
   @Patch(':id')
   async update(
-    @Param() params: GetFacilityParamsDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateFacilityDto: UpdateFacilityDto,
   ) {
-    const facility = await this.facilityService.update(
-      params.id,
-      updateFacilityDto,
-    );
+    const facility = await this.facilityService.update(id, updateFacilityDto);
 
     return new UpdateFacilitySuccessResponse(facility);
   }
 
   @Delete(':id')
-  async remove(@Param() params: GetFacilityParamsDto) {
-    await this.facilityService.remove(params.id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.facilityService.remove(id);
 
     return new DeleteResponse('delete facility success');
   }

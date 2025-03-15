@@ -1,10 +1,3 @@
-import {
-  IsDate,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
 import { BlogCategory } from 'src/database/entities';
 import { BlogDto } from '../../dto';
 
@@ -15,24 +8,10 @@ export interface IBlogCategoryWithRelationsDto extends IBlogCategoryDto {
 }
 
 export class BlogCategoryDto implements IBlogCategoryDto {
-  @IsUUID()
-  @IsNotEmpty()
   readonly id!: string;
-
-  @IsString()
-  @IsNotEmpty()
   readonly name!: string;
-
-  @IsDate()
-  @IsNotEmpty()
   readonly createdAt!: Date;
-
-  @IsDate()
-  @IsOptional()
   readonly updatedAt!: Date | null;
-
-  @IsDate()
-  @IsOptional()
   readonly deletedAt!: Date | null;
 }
 

@@ -22,25 +22,23 @@ export class Blog {
   @Column({ type: 'text' })
   content!: string;
 
-  @Column({ name: 'author_id', type: 'uuid', nullable: true })
-  authorId!: string | null;
+  @Column({ name: 'author_id', type: 'uuid' })
+  authorId!: string;
 
-  @Column({ name: 'category_id', type: 'uuid', nullable: true })
+  @Column({ name: 'category_id', type: 'uuid' })
   categoryId!: string | null;
 
   @ManyToOne(() => Admin, (admin) => admin.blogs, {
     onDelete: 'SET NULL',
-    nullable: true,
   })
   @JoinColumn({ name: 'author_id' })
-  author!: Admin | null;
+  author!: Admin;
 
   @ManyToOne(() => BlogCategory, (blogCategory) => blogCategory.blogs, {
     onDelete: 'SET NULL',
-    nullable: true,
   })
   @JoinColumn({ name: 'category_id' })
-  category!: BlogCategory | null;
+  category!: BlogCategory;
 
   @CreateDateColumn({
     name: 'created_at',

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -16,7 +17,6 @@ import {
   CreatePropertyDto,
   CreatePropertySuccessResponse,
   GetPropertiesSuccessResponse,
-  GetPropertyParamsDto,
   GetPropertySuccessResponse,
   UpdatePropertyDto,
   UpdatePropertySuccessResponse,
@@ -30,7 +30,6 @@ export class PropertyController {
 
   @Post()
   async create(@Body() payload: CreatePropertyDto) {
-    console.log({ payload });
     const result = await this.propertyService.create(payload);
 
     return new CreatePropertySuccessResponse(result);
@@ -46,25 +45,25 @@ export class PropertyController {
 
   @Public()
   @Get(':id')
-  async findOne(@Param() params: GetPropertyParamsDto) {
-    const result = await this.propertyService.findOne(params.id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const result = await this.propertyService.findOne(id);
 
     return new GetPropertySuccessResponse(result);
   }
 
   @Patch(':id')
   async update(
-    @Param() params: GetPropertyParamsDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() payload: UpdatePropertyDto,
   ) {
-    const result = await this.propertyService.update(params.id, payload);
+    const result = await this.propertyService.update(id, payload);
 
     return new UpdatePropertySuccessResponse(result);
   }
 
   @Delete(':id')
-  async remove(@Param() params: GetPropertyParamsDto) {
-    await this.propertyService.remove(params.id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.propertyService.remove(id);
 
     return new DeleteResponse('delete property success');
   }

@@ -25,6 +25,7 @@ import { ReviewModule } from './modules/review/review.module';
 import { LoggerModule } from './modules/shared/logger/logger.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
 import { VillaModule } from './modules/villa/villa.module';
+import { CurrencyModule } from './modules/currency/currency.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { VillaModule } from './modules/villa/villa.module';
     StorageModule,
     VillaModule,
     ReviewModule,
+    CurrencyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

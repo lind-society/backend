@@ -3,6 +3,7 @@ export * from './admin.entity';
 export * from './blog-category.entity';
 export * from './blog.entity';
 export * from './currency-converter.entity';
+export * from './currency.entity';
 export * from './facility.entity';
 export * from './feature.entity';
 export * from './owner.entity';

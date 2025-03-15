@@ -1,5 +1,4 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsNotEmpty, IsUUID } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -7,12 +6,6 @@ import {
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
 import { VillaWithRelationsDto } from './villa.dto';
-
-export class GetVillaParamsDto {
-  @IsUUID()
-  @IsNotEmpty()
-  id!: string;
-}
 
 export class GetVillaPaginateDto extends PaginateResponseDefaultDataProps {
   readonly data!: VillaWithRelationsDto[];
