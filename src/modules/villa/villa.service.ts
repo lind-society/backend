@@ -165,6 +165,7 @@ export class VillaService {
         villaFeatures: { feature: true },
         villaFacilities: { facility: true },
         villaPolicies: { policy: true },
+        reviews: true,
       },
     });
 
@@ -188,6 +189,7 @@ export class VillaService {
         villaFeatures: { feature: true },
         villaFacilities: { facility: true },
         villaPolicies: { policy: true },
+        reviews: true,
       },
     });
 
