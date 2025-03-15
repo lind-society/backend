@@ -22,7 +22,7 @@ export class JwtAtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: IJwtPayload) {
-    const admin = await this.adminService.findPayloadById(payload.sub);
+    const admin = await this.adminService.findAuthorizedAdminById(payload.sub);
 
     return admin;
   }

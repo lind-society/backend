@@ -7,8 +7,11 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { Public } from 'src/common/decorators';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import { BlogService } from './blog.service';
 import {
@@ -21,6 +24,7 @@ import {
   UpdateBlogSuccessResponse,
 } from './dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('blogs')
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
@@ -32,6 +36,7 @@ export class BlogController {
     return new CreateBlogSuccessResponse(blog);
   }
 
+  @Public()
   @Get()
   async findAll(
     @Paginate() query: PaginateQuery,
@@ -42,6 +47,7 @@ export class BlogController {
     return new GetBlogsSuccessResponse(blogs);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const blog = await this.blogService.findOne(id);

@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { DeleteResponse } from '../shared/dto/custom-responses';
@@ -19,7 +20,9 @@ import {
   UpdateOwnerSuccessResponse,
 } from './dto';
 import { OwnerService } from './owner.service';
+import { JwtAuthGuard } from '../auth/guards';
 
+@UseGuards(JwtAuthGuard)
 @Controller('owners')
 export class OwnerController {
   constructor(private readonly ownerService: OwnerService) {}

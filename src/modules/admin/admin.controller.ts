@@ -83,7 +83,7 @@ export class AdminController {
 
   @Delete(':username')
   async delete(@Param('username') username: string) {
-    const result = await this.adminService.delete(username);
+    await this.adminService.delete(username);
 
     return new DeleteResponse('delete admin success');
   }

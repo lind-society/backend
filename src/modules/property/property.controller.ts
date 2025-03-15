@@ -6,8 +6,11 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { Public } from 'src/common/decorators';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreatePropertyDto,
@@ -20,6 +23,7 @@ import {
 } from './dto';
 import { PropertyService } from './property.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('properties')
 export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}
@@ -32,6 +36,7 @@ export class PropertyController {
     return new CreatePropertySuccessResponse(result);
   }
 
+  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.propertyService.findAll(query);
@@ -39,6 +44,7 @@ export class PropertyController {
     return new GetPropertiesSuccessResponse(result);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param() params: GetPropertyParamsDto) {
     const result = await this.propertyService.findOne(params.id);
