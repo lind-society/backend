@@ -1,26 +1,32 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  PayloadTooLargeException,
   ValidationError,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { Response } from 'express';
+import { MulterError } from 'multer';
 import {
   HttpResponse,
   ValidationExceptionResponse,
 } from 'src/modules/shared/dto';
 import { QueryFailedError } from 'typeorm';
+import { XenditSdkError } from 'xendit-node';
 import { DefaultHttpStatus } from '../enums';
+import { MulterExceptionFilter } from './multer-exception.filter';
 import { TypeOrmExceptionFilter } from './typeorm-exception.filter';
 import { XenditExceptionFilter } from './xendit-exception.filter';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  private xenditExceptionFilter = new XenditExceptionFilter();
+  private multerExceptionFilter = new MulterExceptionFilter();
   private typeOrmExceptionFilter = new TypeOrmExceptionFilter();
+  private xenditExceptionFilter = new XenditExceptionFilter();
 
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
@@ -29,19 +35,52 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
+    console.error(exception);
+
     if (exception instanceof QueryFailedError) {
       console.error('Typeorm / Database error');
       console.error('========================\n');
+
       return this.typeOrmExceptionFilter.catch(exception, host);
     }
 
-    if (exception?.response?.error_code && exception?.response?.message) {
+    if (
+      exception instanceof XenditSdkError ||
+      (exception?.response?.error_code && exception?.response?.message)
+    ) {
       console.error('Xendit API error');
       console.error('================\n');
+
       return this.xenditExceptionFilter.catch(exception, host);
     }
 
+    if (
+      exception instanceof PayloadTooLargeException ||
+      exception instanceof MulterError ||
+      (exception instanceof BadRequestException &&
+        exception.message.includes('Unexpected field') &&
+        exception.message.includes('file'))
+    ) {
+      exception instanceof MulterError
+        ? console.error('Multer error')
+        : exception instanceof MulterError
+          ? console.error('Nest payload max limit error')
+          : console.error('Nest payload max size error');
+
+      console.error('================\n');
+
+      const normalizedException =
+        exception instanceof PayloadTooLargeException
+          ? new MulterError('LIMIT_FILE_SIZE')
+          : exception instanceof BadRequestException
+            ? new MulterError('LIMIT_FILE_COUNT')
+            : exception;
+
+      return this.multerExceptionFilter.catch(normalizedException, host);
+    }
+
     console.error('HTTP Exception');
+    console.error('================\n');
     console.error(exception);
 
     const status =

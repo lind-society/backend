@@ -30,6 +30,8 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
       );
     }
 
+    console.error(exception);
+
     return response.status(responseCode).json(
       new HttpResponse({
         code: responseCode,

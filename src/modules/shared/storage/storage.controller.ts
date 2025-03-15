@@ -27,10 +27,13 @@ export class StorageController {
   @UseInterceptors(
     FilesInterceptor(
       'files',
-      megabyteToByte(parseInt(process.env.PHOTOS_LIMIT_QUANTITY, 10)) |
-        megabyteToByte(10),
+      parseInt(process.env.PHOTOS_LIMIT_QUANTITY, 10) | 10,
       {
-        limits: { fileSize: parseInt(process.env.PHOTOS_LIMIT_SIZE, 10) | 2 },
+        limits: {
+          fileSize:
+            megabyteToByte(parseInt(process.env.PHOTOS_LIMIT_SIZE, 10)) |
+            megabyteToByte(2),
+        },
       },
     ),
   )
