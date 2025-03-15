@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
@@ -56,7 +57,6 @@ export class Property {
   @Column({ name: 'ownership_type', type: 'enum', enum: PropertyOwnershipType })
   ownershipType!: PropertyOwnershipType;
 
-  // description
   @Column({ type: 'text', nullable: true })
   highlight!: string | null;
 
@@ -102,7 +102,10 @@ export class Property {
   })
   soldStatus!: boolean;
 
-  @Column({ name: 'owner_id', nullable: true })
+  @Column({ name: 'currency_id', type: 'uuid' })
+  currencyId: string;
+
+  @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
 
   @OneToMany(
@@ -123,8 +126,15 @@ export class Property {
   )
   propertyAdditionals!: PropertyAdditionalPivot[];
 
+  @ManyToOne(() => Currency, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'currency_id' })
+  currency!: Currency;
+
   @ManyToOne(() => Owner, (owner) => owner.properties, {
     onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn({ name: 'owner_id' })
   owner!: Owner | null;

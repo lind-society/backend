@@ -9,6 +9,7 @@ import {
   IsNumberString,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   Min,
   ValidateNested,
@@ -127,7 +128,11 @@ export class CreatePropertyDto {
   @IsNotEmpty()
   readonly soldStatus!: boolean;
 
-  @IsString()
+  @IsUUID()
+  @IsNotEmpty()
+  readonly currencyId?: string;
+
+  @IsUUID()
   @IsOptional()
   readonly ownerId?: string | null;
 

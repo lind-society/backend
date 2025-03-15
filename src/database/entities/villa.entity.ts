@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
 import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
@@ -202,7 +203,10 @@ export class Villa {
   })
   soldStatus!: boolean;
 
-  @Column({ name: 'owner_id', nullable: true })
+  @Column({ name: 'currency_id', type: 'uuid' })
+  currencyId: string;
+
+  @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
 
   @OneToMany(() => Review, (review) => review.villa)
@@ -231,6 +235,12 @@ export class Villa {
     (villaPolicyPivot) => villaPolicyPivot.villa,
   )
   villaPolicies!: VillaPolicyPivot[];
+
+  @ManyToOne(() => Currency, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'currency_id' })
+  currency!: Currency;
 
   @ManyToOne(() => Owner, (owner) => owner.villas, {
     onDelete: 'SET NULL',

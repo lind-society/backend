@@ -1,4 +1,6 @@
 import {
+  Currency,
+  Owner,
   Property,
   PropertyAdditionalPivot,
   PropertyFacilityPivot,
@@ -10,10 +12,16 @@ import {
 export interface IPropertyDto
   extends Omit<
     Property,
-    'propertyFacilities' | 'propertyFeatures' | 'propertyAdditionals' | 'owner'
+    | 'currency'
+    | 'owner'
+    | 'propertyFacilities'
+    | 'propertyFeatures'
+    | 'propertyAdditionals'
   > {}
 
 export interface IPropertyWithRelationsDto extends IPropertyDto {
+  currency?: Currency;
+  owner?: Owner;
   facilities?: PropertyFacilityPivot[];
   features?: PropertyFeaturePivot[];
   additionals?: PropertyAdditionalPivot[];
@@ -39,7 +47,8 @@ export class PropertyDto implements IPropertyDto {
   readonly videos!: string[];
   readonly video360s!: string[];
   readonly soldStatus!: boolean;
-  readonly ownerId!: string;
+  readonly currencyId!: string;
+  readonly ownerId!: string | null;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
   readonly deletedAt!: Date | null;
@@ -49,6 +58,8 @@ export class PropertyWithRelationsDto
   extends PropertyDto
   implements IPropertyWithRelationsDto
 {
+  readonly currency?: Currency;
+  readonly owner?: Owner;
   readonly facilities?: PropertyFacilityPivot[];
   readonly features?: PropertyFeaturePivot[];
   readonly additionals?: PropertyAdditionalPivot[];

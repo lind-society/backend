@@ -1,4 +1,6 @@
 import {
+  Currency,
+  Owner,
   Villa,
   VillaAdditionalPivot,
   VillaAvailability,
@@ -14,15 +16,18 @@ import { ReviewDto } from 'src/modules/review/dto';
 export interface IVillaDto
   extends Omit<
     Villa,
+    | 'currency'
+    | 'owner'
     | 'villaFacilities'
     | 'villaFeatures'
     | 'villaAdditionals'
     | 'villaPolicies'
     | 'reviews'
-    | 'owner'
   > {}
 
 export interface IVillaWithRelationsDto extends IVillaDto {
+  currency?: Currency;
+  owner?: Owner;
   additionals?: VillaAdditionalPivot[];
   facilities?: VillaFacilityPivot[];
   features?: VillaFeaturePivot[];
@@ -58,7 +63,8 @@ export class VillaDto implements IVillaDto {
   readonly videos!: string[];
   readonly video360s!: string[];
   readonly soldStatus!: boolean;
-  readonly ownerId!: string;
+  readonly currencyId!: string;
+  readonly ownerId!: string | null;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
   readonly deletedAt!: Date | null;
@@ -68,6 +74,8 @@ export class VillaWithRelationsDto
   extends VillaDto
   implements IVillaWithRelationsDto
 {
+  readonly currency?: Currency;
+  readonly owner?: Owner;
   readonly additionals?: VillaAdditionalPivot[];
   readonly facilities?: VillaFacilityPivot[];
   readonly features?: VillaFeaturePivot[];

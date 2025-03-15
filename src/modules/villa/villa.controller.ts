@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -15,7 +16,6 @@ import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreateVillaDto,
   CreateVillaSuccessResponse,
-  GetVillaParamsDto,
   GetVillasSuccessResponse,
   GetVillaSuccessResponse,
   UpdateVillaDto,
@@ -45,25 +45,25 @@ export class VillaController {
 
   @Public()
   @Get(':id')
-  async findOne(@Param() params: GetVillaParamsDto) {
-    const result = await this.villaService.findOne(params.id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const result = await this.villaService.findOne(id);
 
     return new GetVillaSuccessResponse(result);
   }
 
   @Patch(':id')
   async update(
-    @Param() params: GetVillaParamsDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() payload: UpdateVillaDto,
   ) {
-    const result = await this.villaService.update(params.id, payload);
+    const result = await this.villaService.update(id, payload);
 
     return new UpdateVillaSuccessResponse(result);
   }
 
   @Delete(':id')
-  async remove(@Param() params: GetVillaParamsDto) {
-    await this.villaService.remove(params.id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.villaService.remove(id);
 
     return new DeleteResponse('delete villa success');
   }

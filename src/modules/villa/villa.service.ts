@@ -66,10 +66,14 @@ export class VillaService {
         ...feature,
       })),
 
-      policies: villa.villaPolicies.map(({ id, policy }) => ({
-        pivotId: id,
-        ...policy,
-      })),
+      policies: groupAndSort(
+        villa.villaPolicies.map(({ id, policy }) => ({
+          pivotId: id,
+          ...policy,
+        })),
+        'type',
+        'name',
+      ),
     });
   }
 

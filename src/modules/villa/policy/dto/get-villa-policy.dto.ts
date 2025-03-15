@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { IsOptional, IsUUID } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -8,13 +8,7 @@ import {
 } from 'src/modules/shared/dto';
 import { VillaPolicyDto } from './villa-policy.dto';
 
-export class GetVillaPolicyParamsDto {
-  @IsUUID()
-  @IsNotEmpty()
-  id!: string;
-}
-
-export class GetVillaPolicysDto {
+export class GetVillaPoliciesDto {
   @IsUUID()
   @IsOptional()
   additionalId?: string | null;
@@ -24,7 +18,7 @@ export class GetVillaPolicyPaginateDto extends PaginateResponseDefaultDataProps 
   readonly data!: VillaPolicyDto[];
 }
 
-export class GetVillaPolicysSuccessResponse
+export class GetVillaPoliciesSuccessResponse
   extends HttpResponseDefaultProps
   implements HttpResponseOptions<GetVillaPolicyPaginateDto>
 {

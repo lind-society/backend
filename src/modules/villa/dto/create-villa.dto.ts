@@ -10,6 +10,7 @@ import {
   IsNumberString,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   Min,
   ValidateNested,
@@ -174,7 +175,11 @@ export class CreateVillaDto {
   @IsNotEmpty()
   readonly soldStatus!: boolean;
 
-  @IsString()
+  @IsUUID()
+  @IsOptional()
+  readonly currencyId?: string;
+
+  @IsUUID()
   @IsOptional()
   readonly ownerId?: string | null;
 

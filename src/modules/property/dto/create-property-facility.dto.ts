@@ -2,8 +2,8 @@ import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreatePropertyFacililtyDto {
   @IsUUID()
-  @IsOptional()
-  readonly propertyId?: string | null;
+  @IsNotEmpty()
+  readonly propertyId?: string;
 
   @IsUUID()
   @IsNotEmpty()
