@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthorizedRequest } from 'src/common/types';
 import { CreateAdminDto, CreateAdminSuccessResponse } from '../admin/dto';
 import { LogoutResponse } from '../shared/dto/custom-responses/logout-response.dto';
@@ -18,6 +26,7 @@ export class AuthController {
   }
 
   @UseGuards(LocalAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Request() req: AuthorizedRequest) {
     const result = await this.authService.login(req.user);

@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -13,6 +15,8 @@ import { Public } from 'src/common/decorators';
 import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
 import { CurrencyConverterService } from './currency-converter.service';
 import {
+  ConvertPriceToBasePriceRequestDto,
+  ConvertPriceToBasePriceSuccessResponse,
   CreateCurrencyConverterDto,
   CreateCurrencyConverterSuccessResponse,
   GetCurrencyConvertersSuccessResponse,
@@ -26,6 +30,17 @@ export class CurrencyConverterController {
   constructor(
     private readonly currencyConverterService: CurrencyConverterService,
   ) {}
+
+  @HttpCode(HttpStatus.OK)
+  @Post('base')
+  async convertPriceToBasePrice(
+    @Body() payload: ConvertPriceToBasePriceRequestDto,
+  ) {
+    const result =
+      await this.currencyConverterService.convertPriceToBasePrice(payload);
+
+    return new ConvertPriceToBasePriceSuccessResponse(result);
+  }
 
   @Post()
   async create(@Body() payload: CreateCurrencyConverterDto) {
