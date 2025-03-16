@@ -35,7 +35,7 @@ export class VillaService {
   ) {}
 
   private mapVillaData(villa: Villa) {
-    const mappedVilla = plainToInstance(VillaWithRelationsDto, {
+    return plainToInstance(VillaWithRelationsDto, {
       ...omit(villa, [
         'villaAdditionals',
         'villaFacilities',
@@ -75,8 +75,6 @@ export class VillaService {
         'name',
       ),
     });
-
-    return mappedVilla;
   }
 
   async create(payload: CreateVillaDto): Promise<VillaWithRelationsDto> {
@@ -170,7 +168,7 @@ export class VillaService {
         owner: true,
         reviews: true,
         villaAdditionals: { additional: true },
-        villaFeatures: { feature: true },
+        villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
         villaPolicies: { policy: true },
       },
