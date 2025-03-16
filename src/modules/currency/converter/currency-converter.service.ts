@@ -67,6 +67,10 @@ export class CurrencyConverterService {
           'targetCurrencyId',
           'exchangeRate',
         ],
+        relations: {
+          baseCurrency: true,
+          targetCurrency: true,
+        },
       },
     );
 
@@ -77,6 +81,10 @@ export class CurrencyConverterService {
     const currency = await this.currencyConverterRepository.findOne({
       where: {
         id,
+      },
+      relations: {
+        baseCurrency: true,
+        targetCurrency: true,
       },
     });
 

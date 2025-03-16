@@ -18,12 +18,14 @@ import {
 import { QueryFailedError } from 'typeorm';
 import { XenditSdkError } from 'xendit-node';
 import { DefaultHttpStatus } from '../enums';
+import { GCPExceptionFilter } from './gcp-exception.filter';
 import { MulterExceptionFilter } from './multer-exception.filter';
 import { TypeOrmExceptionFilter } from './typeorm-exception.filter';
 import { XenditExceptionFilter } from './xendit-exception.filter';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private gcpExceptionFilter = new GCPExceptionFilter();
   private multerExceptionFilter = new MulterExceptionFilter();
   private typeOrmExceptionFilter = new TypeOrmExceptionFilter();
   private xenditExceptionFilter = new XenditExceptionFilter();
@@ -75,6 +77,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
             : exception;
 
       return this.multerExceptionFilter.catch(normalizedException, host);
+    }
+
+    if (
+      exception.code &&
+      exception.errors &&
+      Array.isArray(exception.errors) &&
+      exception.response &&
+      exception.response.statusCode
+    ) {
+      console.error('GCP error');
+      console.error('========================\n');
+
+      return this.gcpExceptionFilter.catch(exception, host);
     }
 
     console.error('HTTP Exception');
