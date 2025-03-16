@@ -85,8 +85,6 @@ export class AdminService {
       },
     });
 
-    console.log({ username });
-
     if (!admin) {
       throw new NotFoundException('admin not found');
     }
@@ -198,7 +196,6 @@ export class AdminService {
     }
 
     if (!admin.refreshToken) {
-      console.log('lewat');
       throw new UnauthorizedException('unauthorized admin');
     }
 

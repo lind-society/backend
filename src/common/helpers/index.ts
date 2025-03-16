@@ -1,3 +1,5 @@
+export * from './calculate-discounted-price.helper';
+export * from './format-price.helper';
 export * from './group-and-sort.helper';
 export * from './hash.helper';
 export * from './paginate-response-mapper.helper';

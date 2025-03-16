@@ -35,7 +35,7 @@ export class VillaService {
   ) {}
 
   private mapVillaData(villa: Villa) {
-    return plainToInstance(VillaWithRelationsDto, {
+    const mappedVilla = plainToInstance(VillaWithRelationsDto, {
       ...omit(villa, [
         'villaAdditionals',
         'villaFacilities',
@@ -75,6 +75,8 @@ export class VillaService {
         'name',
       ),
     });
+
+    return mappedVilla;
   }
 
   async create(payload: CreateVillaDto): Promise<VillaWithRelationsDto> {
@@ -97,7 +99,6 @@ export class VillaService {
         });
 
         const createdVilla = await manager.save(Villa, villaData);
-
         const createdAdditionals = await manager.save(Additional, additionals);
         const createdFeatures = await manager.save(Feature, features);
         const createdPolicies = await manager.save(VillaPolicy, policies);
@@ -153,7 +154,7 @@ export class VillaService {
   async findAll(
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<VillaWithRelationsDto[]>> {
-    const paginatedProperties = await paginate(query, this.villaRepository, {
+    const paginatedVilla = await paginate(query, this.villaRepository, {
       sortableColumns: ['createdAt'],
       defaultSortBy: [['createdAt', 'DESC']],
       defaultLimit: 10,
@@ -165,22 +166,21 @@ export class VillaService {
         'villaPolicies.policy.name',
       ],
       relations: {
+        currency: true,
+        owner: true,
+        reviews: true,
         villaAdditionals: { additional: true },
         villaFeatures: { feature: true },
         villaFacilities: { facility: true },
         villaPolicies: { policy: true },
-        reviews: true,
       },
     });
 
-    const mappedPaginatedProperties = paginatedProperties.data.map((villa) =>
+    const mappedPaginatedVilla = paginatedVilla.data.map((villa) =>
       this.mapVillaData(villa),
     );
 
-    return paginateResponseMapper(
-      paginatedProperties,
-      mappedPaginatedProperties,
-    );
+    return paginateResponseMapper(paginatedVilla, mappedPaginatedVilla);
   }
 
   async findOne(id: string): Promise<VillaWithRelationsDto> {
@@ -189,11 +189,13 @@ export class VillaService {
         id,
       },
       relations: {
+        currency: true,
+        owner: true,
+        reviews: true,
         villaAdditionals: { additional: true },
-        villaFeatures: { feature: true },
+        villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
         villaPolicies: { policy: true },
-        reviews: true,
       },
     });
 

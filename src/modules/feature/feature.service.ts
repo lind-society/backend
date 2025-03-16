@@ -45,6 +45,9 @@ export class FeatureService {
       where: {
         id,
       },
+      relations: {
+        currency: true,
+      },
     });
 
     if (!feature) {

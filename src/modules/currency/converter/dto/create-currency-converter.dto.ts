@@ -25,7 +25,7 @@ export class CreateCurrencyConverterDto {
 
   @Type(() => Number)
   @IsNumber(
-    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 3 },
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 15 },
     { message: 'exchangeRate must be a valid number' },
   )
   @IsOptional()

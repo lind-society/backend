@@ -107,7 +107,6 @@ export class StorageController {
 
   @Delete()
   async deleteFile(@Body() payload: DeleteFileDto) {
-    console.log({ payload });
     await this.storageService.deleteFile(payload);
 
     return new DeleteResponse('delete file success');

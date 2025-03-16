@@ -6,6 +6,8 @@ import { CurrencyConverter } from 'src/database/entities';
 import { PaginateResponseDataProps } from 'src/modules/shared/dto';
 import { Repository } from 'typeorm';
 import {
+  ConvertPriceToBasePriceRequestDto,
+  ConvertPriceToBasePriceResponsetDto,
   CreateCurrencyConverterDto,
   CurrencyConverterDto,
   UpdateCurrencyConverterDto,
@@ -14,12 +16,40 @@ import {
 export class CurrencyConverterService {
   constructor(
     @InjectRepository(CurrencyConverter)
-    private currencyRepository: Repository<CurrencyConverter>,
+    private currencyConverterRepository: Repository<CurrencyConverter>,
   ) {}
-  async create(payload: CreateCurrencyConverterDto) {
-    const currency = this.currencyRepository.create(payload);
 
-    return await this.currencyRepository.save(currency);
+  async convertPriceToBasePrice(
+    payload: ConvertPriceToBasePriceRequestDto,
+  ): Promise<ConvertPriceToBasePriceResponsetDto> {
+    const exchangeRate = await this.currencyConverterRepository.findOne({
+      where: {
+        baseCurrencyId: payload.priceCurrencyId,
+        targetCurrencyId: payload.baseCurrencyId,
+      },
+      select: {
+        id: true,
+        exchangeRate: true,
+        targetCurrency: {
+          code: true,
+          name: true,
+          symbol: true,
+        },
+      },
+      relations: {
+        targetCurrency: true,
+      },
+    });
+
+    return exchangeRate
+      ? this._mapConvertedPrice(payload.price, exchangeRate)
+      : this._mapConvertedPrice(payload.price);
+  }
+
+  async create(payload: CreateCurrencyConverterDto) {
+    const currency = this.currencyConverterRepository.create(payload);
+
+    return await this.currencyConverterRepository.save(currency);
   }
 
   async findAll(
@@ -27,7 +57,7 @@ export class CurrencyConverterService {
   ): Promise<PaginateResponseDataProps<CurrencyConverterDto[]>> {
     const paginatedCurrencyConverter = await paginate(
       query,
-      this.currencyRepository,
+      this.currencyConverterRepository,
       {
         sortableColumns: ['createdAt'],
         defaultSortBy: [['createdAt', 'DESC']],
@@ -44,7 +74,7 @@ export class CurrencyConverterService {
   }
 
   async findOne(id: string): Promise<CurrencyConverterDto> {
-    const currency = await this.currencyRepository.findOne({
+    const currency = await this.currencyConverterRepository.findOne({
       where: {
         id,
       },
@@ -63,7 +93,7 @@ export class CurrencyConverterService {
   ): Promise<CurrencyConverterDto> {
     await this.findOne(id);
 
-    await this.currencyRepository.update(id, payload);
+    await this.currencyConverterRepository.update(id, payload);
 
     return await this.findOne(id);
   }
@@ -71,6 +101,24 @@ export class CurrencyConverterService {
   async remove(id: string) {
     await this.findOne(id);
 
-    await this.currencyRepository.delete(id);
+    await this.currencyConverterRepository.delete(id);
+  }
+
+  _mapConvertedPrice(
+    price: number,
+    convertedPrice?: CurrencyConverter,
+  ): ConvertPriceToBasePriceResponsetDto {
+    const calculatedPrice = convertedPrice
+      ? price * convertedPrice.exchangeRate
+      : price;
+
+    const convertedPriceResult: ConvertPriceToBasePriceResponsetDto = {
+      basePrice: calculatedPrice,
+      basePriceCode: convertedPrice?.targetCurrency.code ?? '',
+      basePriceName: convertedPrice?.targetCurrency.name ?? '',
+      basePriceSymbol: convertedPrice?.targetCurrency.symbol ?? '',
+    };
+
+    return convertedPriceResult;
   }
 }

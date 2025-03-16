@@ -35,8 +35,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    console.error(exception);
-
     if (exception instanceof QueryFailedError) {
       console.error('Typeorm / Database error');
       console.error('========================\n');
