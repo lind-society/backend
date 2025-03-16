@@ -7,6 +7,8 @@ export class CurrencyDto implements ICurrencyDto {
   readonly code!: string;
   readonly name!: string;
   readonly symbol!: string | null;
+  readonly allowDecimal!: boolean | null;
+  readonly allowRound!: boolean | null;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
   readonly deletedAt!: Date | null;

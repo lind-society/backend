@@ -2,7 +2,7 @@ import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateVillaFacililtyDto {
   @IsUUID()
-  @IsNotEmpty()
+  @IsOptional()
   readonly villaId?: string;
 
   @IsUUID()

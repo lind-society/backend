@@ -8,5 +8,6 @@ import { CurrencyConverterService } from './currency-converter.service';
   controllers: [CurrencyConverterController],
   providers: [CurrencyConverterService],
   imports: [TypeOrmModule.forFeature([CurrencyConverter])],
+  exports: [CurrencyConverterService],
 })
 export class CurrencyConverterModule {}

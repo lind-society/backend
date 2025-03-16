@@ -3,10 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Currency } from './currency.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 
@@ -24,8 +27,8 @@ export class Feature {
   @Column()
   free!: boolean;
 
-  @Column({ name: 'price_currency', nullable: true })
-  priceCurrency!: string | null;
+  @Column({ name: 'currency_id', type: 'uuid', nullable: true })
+  currencyId!: string | null;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   price!: number | null;
@@ -44,6 +47,12 @@ export class Feature {
     (villaFeaturePivot) => villaFeaturePivot.feature,
   )
   villaFeatures!: VillaFeaturePivot[];
+
+  @ManyToOne(() => Currency, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'currency_id' })
+  currency!: Currency;
 
   @CreateDateColumn({
     name: 'created_at',

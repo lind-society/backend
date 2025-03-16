@@ -7,6 +7,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Min,
 } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
@@ -29,9 +30,9 @@ export class CreateFeatureDto {
   @IsOptional()
   readonly free?: boolean | null;
 
-  @IsString()
+  @IsUUID()
   @IsOptional()
-  readonly priceCurrency?: string | null;
+  readonly currencyId?: string | null;
 
   @Type(() => Number)
   @IsNumber(

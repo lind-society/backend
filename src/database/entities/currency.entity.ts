@@ -21,6 +21,22 @@ export class Currency {
   @Column({ type: 'varchar', length: 5, nullable: true })
   symbol!: string | null;
 
+  @Column({
+    name: 'allow_decimal',
+    type: 'boolean',
+    default: true,
+    nullable: true,
+  })
+  allowDecimal!: boolean | null;
+
+  @Column({
+    name: 'allow_round',
+    type: 'boolean',
+    default: false,
+    nullable: true,
+  })
+  allowRound!: boolean | null;
+
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamptz',
