@@ -19,7 +19,6 @@ import { DefaultHttpStatus } from 'src/common/enums';
 import {
   VillaAvailability,
   VillaAvailabilityPerPrice,
-  VillaOwnershipType,
   VillaPlaceNearby,
 } from 'src/database/entities';
 import { CreateAdditionalDto } from 'src/modules/additional/dto';
@@ -117,10 +116,6 @@ export class CreateVillaDto {
   @Type(() => VillaAvailabilityPerPriceDto)
   @IsOptional()
   readonly availabilityPerPrice?: VillaAvailabilityPerPriceDto[] | null;
-
-  @IsEnum(VillaOwnershipType)
-  @IsNotEmpty()
-  readonly ownershipType!: VillaOwnershipType;
 
   @IsString()
   @IsOptional()

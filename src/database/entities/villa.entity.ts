@@ -23,11 +23,6 @@ export enum VillaAvailability {
   Yearly = 'yearly',
 }
 
-export enum VillaOwnershipType {
-  Leasehold = 'leasehold',
-  Freehold = 'freehold',
-}
-
 export class VillaPlaceNearby {
   name!: string;
   distance!: number;
@@ -153,9 +148,6 @@ export class Villa {
     nullable: true,
   })
   availabilityPerPrice!: VillaAvailabilityPerPrice[] | null;
-
-  @Column({ name: 'ownership_type', type: 'enum', enum: VillaOwnershipType })
-  ownershipType!: VillaOwnershipType;
 
   // description
   @Column({ type: 'text', nullable: true })

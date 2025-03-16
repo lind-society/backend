@@ -18,7 +18,7 @@ import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { CreatePropertyFacililtyDto } from './dto';
 import { CreatePropertyDto } from './dto/create-property.dto';
-import { PropertyDto, PropertyWithRelationsDto } from './dto/property.dto';
+import { PropertyWithRelationsDto } from './dto/property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Injectable()
@@ -123,7 +123,7 @@ export class PropertyService {
       ],
       relations: {
         propertyAdditionals: { additional: true },
-        propertyFeatures: { feature: true },
+        propertyFeatures: { feature: { currency: true } },
         propertyFacilities: { facility: true },
       },
     });
@@ -145,13 +145,10 @@ export class PropertyService {
       },
       relations: {
         propertyAdditionals: { additional: true },
-        propertyFeatures: { feature: true },
+        propertyFeatures: { feature: { currency: true } },
         propertyFacilities: { facility: true },
       },
     });
-
-    console.log('property :', plainToInstance(PropertyDto, property));
-    console.log('property plain to instance :', plainToInstance(PropertyDto, property));
 
     if (!property) {
       throw new NotFoundException(`property not found`);

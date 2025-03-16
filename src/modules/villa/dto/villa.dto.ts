@@ -7,7 +7,6 @@ import {
   VillaAvailabilityPerPrice,
   VillaFacilityPivot,
   VillaFeaturePivot,
-  VillaOwnershipType,
   VillaPlaceNearby,
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
@@ -50,7 +49,6 @@ export class VillaDto implements IVillaDto {
   readonly priceMonthlyAfterDiscount!: number | null;
   readonly priceYearlyAfterDiscount!: number | null;
   readonly availabilityPerPrice!: VillaAvailabilityPerPrice[] | null;
-  readonly ownershipType!: VillaOwnershipType;
   readonly highlight!: string | null;
   readonly address!: string | null;
   readonly country!: string | null;
