@@ -1,5 +1,11 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -21,6 +27,14 @@ export class CreateCurrencyDto {
   @Length(1, 5)
   @IsOptional()
   readonly symbol?: string | null;
+
+  @IsBoolean()
+  @IsOptional()
+  readonly allowDecimal!: boolean | null;
+
+  @IsBoolean()
+  @IsOptional()
+  readonly allowRound!: boolean | null;
 }
 
 export class CreateCurrencySuccessResponse

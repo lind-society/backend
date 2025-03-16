@@ -34,6 +34,16 @@ export class GCPStorageProvider implements IStorageProvider {
   async deleteFile(payload: DeleteFileDto): Promise<void> {
     const bucketRef = this.storage.bucket(this.bucketName);
 
-    await bucketRef.file(payload.key).delete();
+    const keyFromPayload = this._extractPath(payload.key);
+
+    if (keyFromPayload) {
+      await bucketRef.file(keyFromPayload).delete();
+    }
+  }
+
+  _extractPath(url: string): string | null {
+    const match = url.match(/storage\.googleapis\.com\/.*?\/(villa\/.*)/);
+
+    return match ? match[1] : null;
   }
 }
