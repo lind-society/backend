@@ -3,13 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { BlogCategory } from 'src/database/entities';
-import { UpdateFacilityDto } from 'src/modules/facility/dto';
 import { PaginateResponseDataProps } from 'src/modules/shared/dto';
 import { Repository } from 'typeorm';
 import {
   BlogCategoryDto,
   BlogCategoryWithRelationsDto,
   CreateBlogCategoryDto,
+  UpdateBlogCategoryDto,
 } from './dto';
 
 @Injectable()
@@ -68,7 +68,7 @@ export class BlogCategoryService {
 
   async update(
     id: string,
-    payload: UpdateFacilityDto,
+    payload: UpdateBlogCategoryDto,
   ): Promise<BlogCategoryDto> {
     await this.findOne(id);
 

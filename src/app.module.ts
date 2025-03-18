@@ -26,6 +26,7 @@ import { LoggerModule } from './modules/shared/logger/logger.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
 import { VillaModule } from './modules/villa/villa.module';
 import { CurrencyModule } from './modules/currency/currency.module';
+import { ActivityModule } from './modules/activity/activity.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { CurrencyModule } from './modules/currency/currency.module';
     VillaModule,
     ReviewModule,
     CurrencyModule,
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

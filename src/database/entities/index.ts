@@ -1,3 +1,5 @@
+export * from './activity-category.entity';
+export * from './activity.entity';
 export * from './additional.entity';
 export * from './admin.entity';
 export * from './blog-category.entity';
