@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   Activity,
   ActivityCategory,
@@ -34,8 +35,13 @@ export class ActivityDto implements IActivityDto {
   readonly postalCode!: string | null;
   readonly mapLink!: string | null;
   readonly placeNearby!: ActivityPlaceNearby[] | null;
+
+  @Transform(({ value }) => (value ? value.slice(0, 5) : null))
   readonly openingHour!: string;
+
+  @Transform(({ value }) => (value ? value.slice(0, 5) : null))
   readonly closingHour!: string;
+
   readonly startDate!: Date | null;
   readonly endDate!: Date | null;
   readonly photos!: string[];

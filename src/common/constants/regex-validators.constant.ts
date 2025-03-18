@@ -24,4 +24,12 @@ export const regexValidator: Record<string, IRegexValidator> = {
     regex: /^([01]\d|2[0-3]):([0-5]\d)$/,
     message: 'closing hour must be in HH:mm format',
   },
+  checkInHour: {
+    regex: /^([01]\d|2[0-3]):([0-5]\d)$/,
+    message: 'check in hour must be in HH:mm format',
+  },
+  checkOutHour: {
+    regex: /^([01]\d|2[0-3]):([0-5]\d)$/,
+    message: 'check out hour must be in HH:mm format',
+  },
 };

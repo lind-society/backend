@@ -2,7 +2,6 @@ import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
   IsArray,
-  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -11,6 +10,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   Max,
   Min,
   ValidateNested,
@@ -30,6 +30,7 @@ import {
 import { CreateVillaPolicyDto } from '../policy/dto';
 import { CreateVillaFacililtyDto } from './create-villa-facility.dto';
 import { VillaWithRelationsDto } from './villa.dto';
+import { regexValidator } from 'src/common/constants';
 
 export class VillaPlaceNearbyDto extends VillaPlaceNearby {
   @IsString()
@@ -151,6 +152,20 @@ export class CreateVillaDto {
   @IsOptional()
   readonly placeNearby?: VillaPlaceNearbyDto[] | null;
 
+  @IsString()
+  @Matches(regexValidator.checkInHour.regex, {
+    message: regexValidator.checkInHour.message,
+  })
+  @IsNotEmpty()
+  readonly checkInHour!: string;
+
+  @IsString()
+  @Matches(regexValidator.checkOutHour.regex, {
+    message: regexValidator.checkOutHour.message,
+  })
+  @IsNotEmpty()
+  readonly checkOutHour!: string;
+
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -165,10 +180,6 @@ export class CreateVillaDto {
   @IsString({ each: true })
   @IsOptional()
   readonly video360s?: string[] | null;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  readonly soldStatus!: boolean;
 
   @IsUUID()
   @IsOptional()

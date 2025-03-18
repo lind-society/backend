@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   Currency,
   Owner,
@@ -57,10 +58,16 @@ export class VillaDto implements IVillaDto {
   readonly postalCode!: string | null;
   readonly mapLink!: string | null;
   readonly placeNearby!: VillaPlaceNearby[] | null;
+
+  @Transform(({ value }) => (value ? value.slice(0, 5) : null))
+  readonly checkInHour!: string;
+
+  @Transform(({ value }) => (value ? value.slice(0, 5) : null))
+  readonly checkOutHour!: string;
+
   readonly photos!: string[];
   readonly videos!: string[];
   readonly video360s!: string[];
-  readonly soldStatus!: boolean;
   readonly currencyId!: string;
   readonly ownerId!: string | null;
   readonly createdAt!: Date;

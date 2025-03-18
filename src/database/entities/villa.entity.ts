@@ -178,6 +178,12 @@ export class Villa {
   })
   placeNearby!: VillaPlaceNearby[] | null;
 
+  @Column({ name: 'check_in_hour', type: 'time', precision: 0 })
+  checkInHour!: string;
+
+  @Column({ name: 'check_out_hour', type: 'time', precision: 0 })
+  checkOutHour!: string;
+
   @Column({ type: 'varchar', array: true, nullable: true })
   photos!: string[] | null;
 
@@ -186,14 +192,6 @@ export class Villa {
 
   @Column({ name: 'video_360', type: 'varchar', array: true, nullable: true })
   video360s!: string[] | null;
-
-  @Column({
-    name: 'sold_status',
-    type: 'boolean',
-    default: false,
-    nullable: false,
-  })
-  soldStatus!: boolean;
 
   @Column({ name: 'currency_id', type: 'uuid' })
   currencyId: string;

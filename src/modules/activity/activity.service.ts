@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Activity } from 'src/database/entities';
@@ -69,7 +70,7 @@ export class ActivityService {
       throw new NotFoundException('activity not found');
     }
 
-    return activity;
+    return plainToInstance(ActivityWithRelationsDto, activity);
   }
 
   async update(
