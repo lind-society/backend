@@ -2,9 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
-import { Blog, BlogCategory } from 'src/database/entities';
+import { Blog } from 'src/database/entities';
 import { Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
+import { BlogCategoryService } from './category/blog-category.service';
 import {
   BlogWithRelationsDto,
   CreateBlogDto,
@@ -17,12 +18,11 @@ export class BlogService {
   constructor(
     @InjectRepository(Blog)
     private blogRepository: Repository<Blog>,
-    @InjectRepository(BlogCategory)
-    private blogCategoryRepository: Repository<BlogCategory>,
+    private blogCategoryService: BlogCategoryService,
   ) {}
 
   async create(payload: CreateBlogDto): Promise<BlogWithRelationsDto> {
-    await this._validateCategory(payload.categoryId);
+    await this.blogCategoryService.findOne(payload.categoryId);
 
     const createdBlog = this.blogRepository.create(payload);
 
@@ -75,7 +75,7 @@ export class BlogService {
     await this.findOne(id);
 
     if (payload.categoryId) {
-      await this._validateCategory(payload.categoryId);
+      await this.blogCategoryService.findOne(payload.categoryId);
     }
 
     await this.blogRepository.update(id, payload);
@@ -87,17 +87,5 @@ export class BlogService {
     await this.findOne(id);
 
     await this.blogRepository.delete(id);
-  }
-
-  private async _validateCategory(categoryId: string): Promise<void> {
-    const validCategory = await this.blogCategoryRepository.findOne({
-      where: {
-        id: categoryId,
-      },
-    });
-
-    if (!validCategory) {
-      throw new NotFoundException('Blog category not found');
-    }
   }
 }

@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { BlogCategoryService } from './blog-category.service';
-import { BlogCategoryController } from './blog-category.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Blog, BlogCategory } from 'src/database/entities';
+import { BlogCategory } from 'src/database/entities';
+import { BlogCategoryController } from './blog-category.controller';
+import { BlogCategoryService } from './blog-category.service';
 
 @Module({
   controllers: [BlogCategoryController],
   providers: [BlogCategoryService],
-  imports: [TypeOrmModule.forFeature([Blog, BlogCategory])],
+  imports: [TypeOrmModule.forFeature([BlogCategory])],
+  exports: [BlogCategoryService],
 })
 export class BlogCategoryModule {}

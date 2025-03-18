@@ -1,0 +1,53 @@
+import { HttpStatus } from '@nestjs/common';
+import { IsOptional, IsUUID } from 'class-validator';
+import { DefaultHttpStatus } from 'src/common/enums';
+import {
+  HttpResponseDefaultProps,
+  HttpResponseOptions,
+  PaginateResponseDefaultDataProps,
+} from 'src/modules/shared/dto';
+import { ActivityWithRelationsDto } from './activity.dto';
+
+export class GetActivitiesDto {
+  @IsUUID()
+  @IsOptional()
+  categoryId?: string;
+}
+
+export class GetActivityPaginateDto extends PaginateResponseDefaultDataProps {
+  readonly data!: ActivityWithRelationsDto[];
+}
+
+export class GetActivitiesSuccessResponse
+  extends HttpResponseDefaultProps
+  implements HttpResponseOptions<GetActivityPaginateDto>
+{
+  readonly data: GetActivityPaginateDto;
+
+  constructor(data: GetActivityPaginateDto) {
+    super({
+      code: HttpStatus.OK,
+      message: 'get activities success',
+      status: DefaultHttpStatus.Success,
+    });
+
+    this.data = data;
+  }
+}
+
+export class GetActivitySuccessResponse
+  extends HttpResponseDefaultProps
+  implements HttpResponseOptions<ActivityWithRelationsDto>
+{
+  readonly data: ActivityWithRelationsDto;
+
+  constructor(data: ActivityWithRelationsDto) {
+    super({
+      code: HttpStatus.OK,
+      message: 'get activity success',
+      status: DefaultHttpStatus.Success,
+    });
+
+    this.data = data;
+  }
+}
