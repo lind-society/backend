@@ -13,6 +13,7 @@ import {
   PropertyFeaturePivot,
 } from 'src/database/entities';
 import { DataSource, EntityManager, Repository } from 'typeorm';
+import { CurrencyService } from '../currency/currency.service';
 import { FacilityService } from '../facility/facility.service';
 import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
@@ -27,6 +28,7 @@ export class PropertyService {
     private datasource: DataSource,
     @InjectRepository(Property)
     private propertyRepository: Repository<Property>,
+    private currencyService: CurrencyService,
     private facilityService: FacilityService,
     private ownerService: OwnerService,
   ) {}
@@ -67,7 +69,11 @@ export class PropertyService {
   async create(payload: CreatePropertyDto): Promise<PropertyWithRelationsDto> {
     const { additionals, facilities, features, ...propertyData } = payload;
 
-    await this.validatePayload(propertyData.ownerId, facilities);
+    await this._validateRelatedEntities(
+      payload.currencyId,
+      payload.ownerId,
+      facilities,
+    );
 
     const createdProperty = await this.datasource.transaction(
       async (manager: EntityManager) => {
@@ -161,11 +167,15 @@ export class PropertyService {
     id: string,
     payload: UpdatePropertyDto,
   ): Promise<PropertyWithRelationsDto> {
-    const { additionals, facilities, features, ...propertyData } = payload;
-
     await this.findOne(id);
 
-    await this.validatePayload(propertyData.ownerId, facilities);
+    const { additionals, facilities, features, ...propertyData } = payload;
+
+    await this._validateRelatedEntities(
+      payload.currencyId,
+      payload.ownerId,
+      facilities,
+    );
 
     await this.datasource.transaction(async (manager: EntityManager) => {
       const updatedProperty = await manager.update(Property, id, propertyData);
@@ -223,10 +233,15 @@ export class PropertyService {
     await this.propertyRepository.delete(id);
   }
 
-  private async validatePayload(
+  private async _validateRelatedEntities(
+    currencyId?: string,
     ownerId?: string,
     facilities?: CreatePropertyFacililtyDto[],
-  ) {
+  ): Promise<void> {
+    if (currencyId) {
+      await this.currencyService.findOne(currencyId);
+    }
+
     if (ownerId) {
       await this.ownerService.findOne(ownerId);
     }

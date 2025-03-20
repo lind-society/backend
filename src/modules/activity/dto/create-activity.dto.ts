@@ -11,12 +11,12 @@ import {
   IsString,
   IsUUID,
   Matches,
-  Max,
   Min,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { regexValidator } from 'src/common/constants';
+import { ValidateDiscountValueFromMultiplePrice } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   ActivityDiscountType,
@@ -75,24 +75,24 @@ export class CreateActivityDto {
   @IsOptional()
   readonly pricePerSession?: number;
 
+  @IsEnum(ActivityDiscountType)
+  @IsOptional()
+  readonly discountType?: ActivityDiscountType | null;
+
+  @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
+  @IsNotEmpty({
+    message: 'discount should be provided when discountType is filled',
+  })
   @Type(() => Number)
   @IsNumber(
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @ValidateIf((o) => o.discountType === ActivityDiscountType.Percentage)
-  @Min(0, { message: 'Percentage discount cannot be less than 0%' })
-  @Max(100, { message: 'Percentage discount cannot exceed 100%' })
-  @ValidateIf((o) => o.discountType === ActivityDiscountType.Fixed)
-  @Min(0, { message: 'Fixed discount cannot be less than 0' })
-  @ValidateIf(
-    (o) =>
-      o.discountType === ActivityDiscountType.Fixed &&
-      o.pricePerSession !== undefined &&
-      o.pricePerSession !== null &&
-      o.discount > o.pricePerSession,
+  @ValidateDiscountValueFromMultiplePrice(
+    'discountType',
+    ['pricePerPerson', 'pricePerSession'],
+    ActivityDiscountType,
   )
-  @Max(0, { message: 'Fixed discount cannot exceed the price' })
   @IsOptional()
   readonly discount?: number;
 

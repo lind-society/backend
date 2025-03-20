@@ -7,9 +7,11 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { Public } from 'src/common/decorators';
+import { PriceConverterInterceptor } from 'src/common/interceptors';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import { ActivityService } from './activity.service';
 import {
@@ -34,6 +36,7 @@ export class ActivityController {
   }
 
   @Public()
+  @UseInterceptors(PriceConverterInterceptor)
   @Get()
   async findAll(
     @Paginate() query: PaginateQuery,
@@ -45,6 +48,7 @@ export class ActivityController {
   }
 
   @Public()
+  @UseInterceptors(PriceConverterInterceptor)
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.activityService.findOne(id);

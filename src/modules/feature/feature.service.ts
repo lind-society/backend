@@ -4,6 +4,7 @@ import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Feature } from 'src/database/entities';
 import { Repository } from 'typeorm';
+import { CurrencyService } from '../currency/currency.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
   CreateFeatureDto,
@@ -17,8 +18,11 @@ export class FeatureService {
   constructor(
     @InjectRepository(Feature)
     private featureRepository: Repository<Feature>,
+    private currencyService: CurrencyService,
   ) {}
   async create(payload: CreateFeatureDto): Promise<FeatureDto> {
+    await this._validateRelatedEntities(payload.currencyId);
+
     const feature = this.featureRepository.create(payload);
 
     return await this.featureRepository.save(feature);
@@ -63,6 +67,8 @@ export class FeatureService {
   ): Promise<FeatureWithRelationsDto> {
     await this.findOne(id);
 
+    await this._validateRelatedEntities(payload.currencyId);
+
     await this.update(id, payload);
 
     return await this.findOne(id);
@@ -72,5 +78,11 @@ export class FeatureService {
     await this.findOne(id);
 
     await this.remove(id);
+  }
+
+  private async _validateRelatedEntities(currencyId?: string): Promise<void> {
+    if (currencyId) {
+      await this.currencyService.findOne(currencyId);
+    }
   }
 }
