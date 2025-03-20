@@ -1,8 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { PartialType } from '@nestjs/mapped-types';
-import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
-import { AdditionalType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -10,24 +8,7 @@ import {
 import { AdditionalWithRelationsDto } from './additional.dto';
 import { CreateAdditionalDto } from './create-additional.dto';
 
-export class UpdateAdditionalDto extends PartialType(CreateAdditionalDto) {
-  @IsString()
-  @IsOptional()
-  readonly name?: string | null;
-
-  @IsEnum(AdditionalType)
-  @IsOptional()
-  readonly type?: AdditionalType | null;
-
-  @IsString()
-  @IsOptional()
-  readonly description?: string | null;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  readonly photos?: string[];
-}
+export class UpdateAdditionalDto extends PartialType(CreateAdditionalDto) {}
 
 export class UpdateAdditionalSuccessResponse
   extends HttpResponseDefaultProps

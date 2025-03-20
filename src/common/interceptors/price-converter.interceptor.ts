@@ -74,6 +74,12 @@ export class PriceConverterInterceptor implements NestInterceptor {
     const { allowDecimal, allowRound } = convertedCurrency;
 
     try {
+      const activityPriceFields = ['pricePerPerson', 'pricePerSession'];
+      const activityPriceAfterDiscountFields = [
+        'pricePerPersonAfterDiscount',
+        'pricePerSessionAfterDiscount',
+      ];
+
       const villaPriceFields = ['priceDaily', 'priceMonthly', 'priceYearly'];
       const villaDiscountFields = [
         'discountDaily',
@@ -85,6 +91,42 @@ export class PriceConverterInterceptor implements NestInterceptor {
         'priceMonthlyAfterDiscount',
         'priceYearlyAfterDiscount',
       ];
+
+      for (const priceField of activityPriceFields) {
+        if (obj[priceField] !== undefined && obj[priceField] !== null) {
+          const convertedPrice =
+            await this.currencyConverterService.convertPriceToBasePrice({
+              price: obj[priceField],
+              priceCurrencyId: currencyId,
+              baseCurrencyId,
+            });
+
+          converted[priceField] = formatPrice(
+            convertedPrice.basePrice,
+            allowDecimal,
+            allowRound,
+          );
+
+          // Recalculate activity price after discount
+          const priceAfterDiscountField =
+            activityPriceAfterDiscountFields[
+              activityPriceFields.indexOf(priceField)
+            ];
+
+          if (
+            obj.discount !== undefined &&
+            obj.discount !== null &&
+            convertedPrice.basePrice !== null
+          ) {
+            converted[priceAfterDiscountField] = formatPrice(
+              convertedPrice.basePrice -
+                (convertedPrice.basePrice * parseFloat(obj.discount)) / 100,
+              allowDecimal,
+              allowRound,
+            );
+          }
+        }
+      }
 
       // Convert villa price related field
       for (const priceField of villaPriceFields) {

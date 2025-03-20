@@ -10,12 +10,14 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  Max,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
+import { ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
+  PropertyDiscountType,
   PropertyOwnershipType,
   PropertyPlaceNearby,
 } from 'src/database/entities';
@@ -61,15 +63,22 @@ export class CreatePropertyDto {
   @IsOptional()
   readonly price?: number;
 
+  @IsEnum(PropertyDiscountType)
+  @IsOptional()
+  readonly discountType?: PropertyDiscountType | null;
+
+  @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
+  @IsNotEmpty({
+    message: 'discount should be provided when discountType is filled',
+  })
   @Type(() => Number)
   @IsNumber(
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @Min(1, { message: 'minimum discount is 1%' })
-  @Max(100, { message: 'maximum discount is 100%' })
+  @ValidateDiscountValue('discountType', 'price', PropertyDiscountType)
   @IsOptional()
-  readonly discount?: number;
+  readonly discount?: number | null;
 
   @IsEnum(PropertyOwnershipType)
   @IsNotEmpty()

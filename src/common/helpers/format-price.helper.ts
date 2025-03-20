@@ -5,19 +5,19 @@ export function formatPrice(
 ): string {
   if (allowDecimal) {
     return allowRound
-      ? price.toFixed(2)
+      ? roundToNearestHundred(price).toFixed(2)
       : (Math.floor(price * 100) / 100).toFixed(2);
   }
 
   return allowRound
-    ? roundToNearestHundred(Math.round(price))
+    ? roundToNearestHundred(Math.round(price)).toString()
     : Math.floor(price).toString();
 }
 
-export function roundToNearestHundred(price: number): string {
+export function roundToNearestHundred(price: number): number {
   const remainder = price % 100;
 
   const roundedPrice = price - remainder + (remainder >= 50 ? 100 : 0);
 
-  return roundedPrice.toString();
+  return roundedPrice;
 }

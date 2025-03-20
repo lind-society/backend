@@ -11,14 +11,17 @@ import {
   IsString,
   IsUUID,
   Matches,
-  Max,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
+import { regexValidator } from 'src/common/constants';
+import { ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   VillaAvailability,
   VillaAvailabilityPerPrice,
+  VillaDiscountType,
   VillaPlaceNearby,
 } from 'src/database/entities';
 import { CreateAdditionalDto } from 'src/modules/additional/dto';
@@ -30,7 +33,6 @@ import {
 import { CreateVillaPolicyDto } from '../policy/dto';
 import { CreateVillaFacililtyDto } from './create-villa-facility.dto';
 import { VillaWithRelationsDto } from './villa.dto';
-import { regexValidator } from 'src/common/constants';
 
 export class VillaPlaceNearbyDto extends VillaPlaceNearby {
   @IsString()
@@ -91,25 +93,68 @@ export class CreateVillaDto {
   @IsOptional()
   readonly priceYearly?: number | null;
 
+  @IsEnum(VillaDiscountType)
+  @IsOptional()
+  readonly discountDailyType?: VillaDiscountType | null;
+
+  @IsEnum(VillaDiscountType)
+  @IsOptional()
+  readonly discountMonthlyType?: VillaDiscountType | null;
+
+  @IsEnum(VillaDiscountType)
+  @IsOptional()
+  readonly discountYearlyType?: VillaDiscountType | null;
+
+  @ValidateIf(
+    (o) => o.discountDailyType !== null && o.discountDailyType !== undefined,
+  )
+  @IsNotEmpty({
+    message:
+      'discountDaily should be provided when discountDailyType is filled',
+  })
   @Type(() => Number)
-  @IsNumber({ allowNaN: false, allowInfinity: false })
-  @Min(1, { message: 'minimum daily discount is 1%' })
-  @Max(100, { message: 'maximum daily discount is 100%' })
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'discountDaily must be a valid number' },
+  )
+  @ValidateDiscountValue('discountDailyType', 'priceDaily', VillaDiscountType)
   @IsOptional()
   readonly discountDaily?: number | null;
 
+  @ValidateIf(
+    (o) =>
+      o.discountMonthlyType !== null && o.discountMonthlyType !== undefined,
+  )
+  @IsNotEmpty({
+    message:
+      'discountMonthly should be provided when discountMonthlyType is filled',
+  })
   @Type(() => Number)
-  @IsNumber({ allowNaN: false, allowInfinity: false })
-  @Min(1, { message: 'minimum monthly discount is 1%' })
-  @Max(100, { message: 'maximum monthly discount is 100%' })
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'discountMonthly must be a valid number' },
+  )
+  @ValidateDiscountValue(
+    'discountMonthlyType',
+    'priceMonthly',
+    VillaDiscountType,
+  )
   @IsOptional()
   readonly discountMonthly?: number | null;
 
+  @ValidateIf(
+    (o) => o.discountYearlyType !== null && o.discountYearlyType !== undefined,
+  )
+  @IsNotEmpty({
+    message:
+      'discountYearly should be provided when discountYearlyType is filled',
+  })
   @Type(() => Number)
-  @IsNumber({ allowNaN: false, allowInfinity: false })
-  @Min(1, { message: 'minimum yearly discount is 1%' })
-  @Max(100, { message: 'maximum yearly discount is 100%' })
-  @IsOptional()
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'discountYearly must be a valid number' },
+  )
+  @ValidateDiscountValue('discountYearlyType', 'priceyearly', VillaDiscountType)
   readonly discountYearly?: number | null;
 
   @IsArray()

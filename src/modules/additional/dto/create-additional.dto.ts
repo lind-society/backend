@@ -19,7 +19,9 @@ export class CreateAdditionalDto {
   @IsNotEmpty()
   readonly name!: string;
 
-  @IsEnum(AdditionalType)
+  @IsEnum(AdditionalType, {
+    message: `additional type must be one of: ${Object.values(AdditionalType).join(', ')}`,
+  })
   @IsNotEmpty()
   readonly type!: AdditionalType;
 

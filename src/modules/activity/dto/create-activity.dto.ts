@@ -11,13 +11,18 @@ import {
   IsString,
   IsUUID,
   Matches,
-  Max,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { regexValidator } from 'src/common/constants';
+import { ValidateDiscountValueFromMultiplePrice } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
-import { ActivityDuration, ActivityPlaceNearby } from 'src/database/entities';
+import {
+  ActivityDiscountType,
+  ActivityDuration,
+  ActivityPlaceNearby,
+} from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -70,18 +75,29 @@ export class CreateActivityDto {
   @IsOptional()
   readonly pricePerSession?: number;
 
+  @IsEnum(ActivityDiscountType)
+  @IsOptional()
+  readonly discountType?: ActivityDiscountType | null;
+
+  @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
+  @IsNotEmpty({
+    message: 'discount should be provided when discountType is filled',
+  })
   @Type(() => Number)
   @IsNumber(
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @Min(1, { message: 'minimum discount is 1%' })
-  @Max(100, { message: 'maximum discount is 100%' })
+  @ValidateDiscountValueFromMultiplePrice(
+    'discountType',
+    ['pricePerPerson', 'pricePerSession'],
+    ActivityDiscountType,
+  )
   @IsOptional()
   readonly discount?: number;
 
   @IsEnum(ActivityDuration, {
-    message: `duration must be one of: ${Object.values(ActivityDuration).join(', ')}`,
+    message: `activity duration must be one of: ${Object.values(ActivityDuration).join(', ')}`,
   })
   @IsNotEmpty()
   readonly duration?: ActivityDuration;

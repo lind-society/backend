@@ -8,9 +8,11 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { Public } from 'src/common/decorators';
+import { PriceConverterInterceptor } from 'src/common/interceptors';
 import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
@@ -36,6 +38,7 @@ export class FacilityController {
   }
 
   @Public()
+  @UseInterceptors(PriceConverterInterceptor)
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const facilities = await this.facilityService.findAll(query);
@@ -44,6 +47,7 @@ export class FacilityController {
   }
 
   @Public()
+  @UseInterceptors(PriceConverterInterceptor)
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const facility = await this.facilityService.findOne(id);

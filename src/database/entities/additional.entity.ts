@@ -23,10 +23,10 @@ export class Additional {
   id!: string;
 
   @Column()
-  name!: string;
-
-  @Column({ type: 'enum', enum: AdditionalType })
   type!: AdditionalType;
+
+  @Column()
+  name!: string;
 
   @Column({ type: 'text', nullable: true })
   description!: string | null;

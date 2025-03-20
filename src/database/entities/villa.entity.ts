@@ -17,6 +17,11 @@ import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 import { VillaPolicyPivot } from './villa-policy-pivot.entity';
 
+export enum VillaDiscountType {
+  Percentage = 'percentage',
+  Fixed = 'fixed',
+}
+
 export enum VillaAvailability {
   Daily = 'daily',
   Monthly = 'monthly',
@@ -55,7 +60,7 @@ export class Villa {
   @Column({
     name: 'price_daily',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     nullable: true,
   })
@@ -64,7 +69,7 @@ export class Villa {
   @Column({
     name: 'price_monthly',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     nullable: true,
   })
@@ -73,16 +78,40 @@ export class Villa {
   @Column({
     name: 'price_yearly',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     nullable: true,
   })
   priceYearly!: number | null;
 
   @Column({
+    name: 'discount_daily_type',
+    type: 'enum',
+    enum: VillaDiscountType,
+    nullable: true,
+  })
+  discountDailyType!: VillaDiscountType | null;
+
+  @Column({
+    name: 'discount_monthly_type',
+    type: 'enum',
+    enum: VillaDiscountType,
+    nullable: true,
+  })
+  discountMonthlyType!: VillaDiscountType | null;
+
+  @Column({
+    name: 'discount_yearly_type',
+    type: 'enum',
+    enum: VillaDiscountType,
+    nullable: true,
+  })
+  discountYearlyType!: VillaDiscountType | null;
+
+  @Column({
     name: 'discount_daily',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     nullable: true,
   })
@@ -91,7 +120,7 @@ export class Villa {
   @Column({
     name: 'discount_monthly',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     nullable: true,
   })
@@ -100,7 +129,7 @@ export class Villa {
   @Column({
     name: 'discount_yearly',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     nullable: true,
   })
@@ -109,11 +138,17 @@ export class Villa {
   @Column({
     name: 'price_daily_after_discount',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     generatedType: 'STORED',
-    asExpression:
-      'COALESCE(price_daily, 0) - (COALESCE(price_daily, 0) * COALESCE(discount_daily, 0) / 100)',
+    asExpression: `
+      CASE 
+        WHEN discount_daily_type = 'percentage' THEN 
+          GREATEST(price_daily - (price_daily * discount_daily / 100), 0)
+        ELSE 
+          GREATEST(price_daily - discount_daily, 0)
+      END
+    `,
     nullable: true,
   })
   priceDailyAfterDiscount!: number | null;
@@ -121,11 +156,17 @@ export class Villa {
   @Column({
     name: 'price_monthly_after_discount',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     generatedType: 'STORED',
-    asExpression:
-      'COALESCE(price_monthly, 0) - (COALESCE(price_monthly, 0) * COALESCE(discount_monthly, 0) / 100)',
+    asExpression: `
+      CASE 
+        WHEN discount_monthly_type = 'percentage' THEN 
+          GREATEST(price_monthly - (price_monthly * discount_monthly / 100), 0)
+        ELSE 
+          GREATEST(price_monthly - discount_monthly, 0)
+      END
+    `,
     nullable: true,
   })
   priceMonthlyAfterDiscount!: number | null;
@@ -133,11 +174,17 @@ export class Villa {
   @Column({
     name: 'price_yearly_after_discount',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     generatedType: 'STORED',
-    asExpression:
-      'COALESCE(price_yearly, 0) - (COALESCE(price_yearly, 0) * COALESCE(discount_yearly, 0) / 100)',
+    asExpression: `
+      CASE 
+        WHEN discount_yearly_type = 'percentage' THEN 
+          GREATEST(price_yearly - (price_yearly * discount_yearly / 100), 0)
+        ELSE 
+          GREATEST(price_yearly - discount_yearly, 0)
+      END
+    `,
     nullable: true,
   })
   priceYearlyAfterDiscount!: number | null;
@@ -149,7 +196,6 @@ export class Villa {
   })
   availabilityPerPrice!: VillaAvailabilityPerPrice[] | null;
 
-  // description
   @Column({ type: 'text', nullable: true })
   highlight!: string | null;
 

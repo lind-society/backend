@@ -1,27 +1,31 @@
 import {
-  Currency,
-  Owner,
   Property,
   PropertyAdditionalPivot,
+  PropertyDiscountType,
   PropertyFacilityPivot,
   PropertyFeaturePivot,
   PropertyOwnershipType,
   PropertyPlaceNearby,
 } from 'src/database/entities';
+import { CurrencyDto } from 'src/modules/currency/dto';
+import { OwnerDto } from 'src/modules/owner/dto';
+import { ReviewDto } from 'src/modules/review/dto';
 
 export interface IPropertyDto
   extends Omit<
     Property,
     | 'currency'
     | 'owner'
+    | 'reviews'
     | 'propertyFacilities'
     | 'propertyFeatures'
     | 'propertyAdditionals'
   > {}
 
 export interface IPropertyWithRelationsDto extends IPropertyDto {
-  currency?: Currency;
-  owner?: Owner;
+  currency?: CurrencyDto;
+  owner?: OwnerDto;
+  reviews?: ReviewDto[];
   facilities?: PropertyFacilityPivot[];
   features?: PropertyFeaturePivot[];
   additionals?: PropertyAdditionalPivot[];
@@ -32,6 +36,7 @@ export class PropertyDto implements IPropertyDto {
   readonly name!: string;
   readonly secondaryName!: string | null;
   readonly price!: number | null;
+  readonly discountType!: PropertyDiscountType | null;
   readonly discount!: number | null;
   readonly priceAfterDiscount!: number | null;
   readonly ownershipType!: PropertyOwnershipType;
@@ -58,8 +63,9 @@ export class PropertyWithRelationsDto
   extends PropertyDto
   implements IPropertyWithRelationsDto
 {
-  readonly currency?: Currency;
-  readonly owner?: Owner;
+  readonly currency?: CurrencyDto;
+  readonly owner?: OwnerDto;
+  readonly reviews?: ReviewDto[];
   readonly facilities?: PropertyFacilityPivot[];
   readonly features?: PropertyFeaturePivot[];
   readonly additionals?: PropertyAdditionalPivot[];

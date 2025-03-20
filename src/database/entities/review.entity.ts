@@ -8,6 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Activity } from './activity.entity';
+import { Property } from './property.entity';
 import { Villa } from './villa.entity';
 
 @Entity({ name: 'reviews' })
@@ -28,7 +30,7 @@ export class Review {
   @Column({ name: 'check_out', type: 'timestamptz', nullable: true })
   checkOut!: Date | null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 5, scale: 2 })
   rating!: number;
 
   @Column({ type: 'text' })
@@ -38,15 +40,28 @@ export class Review {
   @Column({ name: 'booking_id', type: 'uuid', nullable: true })
   bookingId!: string | null;
 
-  // refering to villa or property
-  // @Column()
-  // type!: string; -> villa or activity
+  @Column({ name: 'activity_id', type: 'uuid', nullable: true })
+  activityId!: string | null;
 
-  // @Column({ name: 'reviewed_id', type: 'uuid', nullable: true })
-  // reviewedId!: string | null;
+  @Column({ name: 'property_id', type: 'uuid', nullable: true })
+  propertyId!: string | null;
 
   @Column({ name: 'villa_id', type: 'uuid', nullable: true })
   villaId!: string | null;
+
+  @ManyToOne(() => Activity, (activity) => activity.reviews, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'activity_id' })
+  activity!: Activity | null;
+
+  @ManyToOne(() => Property, (property) => property.reviews, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'property_id' })
+  property!: Property | null;
 
   @ManyToOne(() => Villa, (villa) => villa.reviews, {
     onDelete: 'SET NULL',

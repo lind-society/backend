@@ -5,6 +5,8 @@ import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Activity } from 'src/database/entities';
 import { Repository } from 'typeorm';
+import { CurrencyService } from '../currency/currency.service';
+import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { ActivityCategoryService } from './category/activity-category.service';
 import {
@@ -20,10 +22,16 @@ export class ActivityService {
     @InjectRepository(Activity)
     private activityRepository: Repository<Activity>,
     private activityCategoryService: ActivityCategoryService,
+    private currencyService: CurrencyService,
+    private ownerService: OwnerService,
   ) {}
 
   async create(payload: CreateActivityDto): Promise<ActivityWithRelationsDto> {
-    await this.activityCategoryService.findOne(payload.categoryId);
+    await this._validateRelatedEntities(
+      payload.categoryId,
+      payload.currencyId,
+      payload.ownerId,
+    );
 
     const createdActivity = this.activityRepository.create(payload);
 
@@ -79,9 +87,11 @@ export class ActivityService {
   ): Promise<ActivityWithRelationsDto> {
     await this.findOne(id);
 
-    if (payload.categoryId) {
-      await this.activityCategoryService.findOne(payload.categoryId);
-    }
+    await this._validateRelatedEntities(
+      payload.categoryId,
+      payload.currencyId,
+      payload.ownerId,
+    );
 
     await this.activityRepository.update(id, payload);
 
@@ -92,5 +102,21 @@ export class ActivityService {
     await this.findOne(id);
 
     await this.activityRepository.delete(id);
+  }
+
+  private async _validateRelatedEntities(
+    categoryId: string,
+    currencyId?: string,
+    ownerId?: string,
+  ): Promise<void> {
+    await this.activityCategoryService.findOne(categoryId);
+
+    if (currencyId) {
+      await this.currencyService.findOne(currencyId);
+    }
+
+    if (ownerId) {
+      await this.ownerService.findOne(ownerId);
+    }
   }
 }

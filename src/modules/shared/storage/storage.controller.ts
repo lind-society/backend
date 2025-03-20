@@ -105,7 +105,7 @@ export class StorageController {
     return new GetFileUrlSuccessResponse(result);
   }
 
-  @Delete()
+  @Post()
   async deleteFile(@Body() payload: DeleteFileDto) {
     await this.storageService.deleteFile(payload);
 

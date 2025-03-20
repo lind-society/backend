@@ -19,7 +19,9 @@ import {
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
+import { CurrencyService } from '../currency/currency.service';
 import { FacilityService } from '../facility/facility.service';
+import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { CreateVillaFacililtyDto, VillaWithRelationsDto } from './dto';
 import { CreateVillaDto } from './dto/create-villa.dto';
@@ -31,7 +33,9 @@ export class VillaService {
     private datasource: DataSource,
     @InjectRepository(Villa)
     private villaRepository: Repository<Villa>,
+    private currencyService: CurrencyService,
     private facilityService: FacilityService,
+    private ownerService: OwnerService,
   ) {}
 
   private mapVillaData(villa: Villa) {
@@ -81,11 +85,11 @@ export class VillaService {
     const { additionals, facilities, features, policies, ...villaData } =
       payload;
 
-    if (Array.isArray(facilities) && facilities.length > 0) {
-      const facilityIds = facilities.map((facility) => facility.facilityId);
-
-      await this.facilityService.validateFaciliies(facilityIds);
-    }
+    await this._validateRelatedEntities(
+      payload.currencyId,
+      payload.ownerId,
+      facilities,
+    );
 
     const createdVilla = await this.datasource.transaction(
       async (manager: EntityManager) => {
@@ -213,11 +217,11 @@ export class VillaService {
     const { additionals, facilities, features, policies, ...villaData } =
       payload;
 
-    if (Array.isArray(facilities) && facilities.length > 0) {
-      const facilityIds = facilities.map((facility) => facility.facilityId);
-
-      await this.facilityService.validateFaciliies(facilityIds);
-    }
+    await this._validateRelatedEntities(
+      payload.currencyId,
+      payload.ownerId,
+      facilities,
+    );
 
     await this.datasource.transaction(async (manager) => {
       const updatedVilla = await manager.update(Villa, id, villaData);
@@ -298,5 +302,25 @@ export class VillaService {
     await this.findOne(id);
 
     await this.villaRepository.delete(id);
+  }
+
+  private async _validateRelatedEntities(
+    currencyId?: string,
+    ownerId?: string,
+    facilities?: CreateVillaFacililtyDto[],
+  ): Promise<void> {
+    if (currencyId) {
+      await this.currencyService.findOne(currencyId);
+    }
+
+    if (ownerId) {
+      await this.ownerService.findOne(ownerId);
+    }
+
+    if (Array.isArray(facilities) && facilities.length > 0) {
+      const facilityIds = facilities.map((facility) => facility.facilityId);
+
+      await this.facilityService.validateFaciliies(facilityIds);
+    }
   }
 }

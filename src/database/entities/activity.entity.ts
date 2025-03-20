@@ -5,12 +5,19 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ActivityCategory } from './activity-category.entity';
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
+import { Review } from './review.entity';
+
+export enum ActivityDiscountType {
+  Percentage = 'percentage',
+  Fixed = 'fixed',
+}
 
 export enum ActivityDuration {
   Temporary = 'temporary',
@@ -36,35 +43,67 @@ export class Activity {
   @Column({ type: 'text', nullable: true })
   highlight!: string | null;
 
-  @Column({ name: 'price_per_person', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({
+    name: 'price_per_person',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
   pricePerPerson!: number | null;
 
-  @Column({ name: 'price_per_session', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({
+    name: 'price_per_session',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
   pricePerSession!: number | null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({
+    name: 'discount_type',
+    type: 'enum',
+    enum: ActivityDiscountType,
+    nullable: true,
+  })
+  discountType!: ActivityDiscountType | null;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   discount!: number | null;
 
   @Column({
     name: 'price_per_person_after_discount',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     generatedType: 'STORED',
-    asExpression:
-      'COALESCE(price_per_person, 0) - (COALESCE(price_per_person, 0) * COALESCE(discount, 0) / 100)',
+    asExpression: `
+      CASE 
+        WHEN discount_type = 'percentage' THEN 
+          GREATEST(price_per_person - (price_per_person * discount / 100), 0)
+        ELSE 
+          GREATEST(price_per_person - discount, 0)
+      END
+    `,
     nullable: true,
   })
   pricePerPersonAfterDiscount!: number | null;
-  
+
   @Column({
     name: 'price_per_session_after_discount',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     generatedType: 'STORED',
-    asExpression:
-      'COALESCE(price_per_session, 0) - (COALESCE(price_per_session, 0) * COALESCE(discount, 0) / 100)',
+    asExpression: `
+      CASE 
+        WHEN discount_type = 'percentage' THEN 
+          GREATEST(price_per_session - (price_per_session * discount / 100), 0)
+        ELSE 
+          GREATEST(price_per_session - discount, 0)
+      END
+    `,
     nullable: true,
   })
   pricePerSessionAfterDiscount!: number | null;
@@ -126,6 +165,9 @@ export class Activity {
 
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
+
+  @OneToMany(() => Review, (review) => review.activity)
+  reviews: Review[];
 
   @ManyToOne(() => ActivityCategory, {
     onDelete: 'SET NULL',

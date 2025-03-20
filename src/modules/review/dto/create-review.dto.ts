@@ -2,6 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
   IsDate,
+  IsEmpty,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -9,6 +10,7 @@ import {
   IsUUID,
   Max,
   Min,
+  ValidateIf,
 } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
@@ -57,7 +59,33 @@ export class CreateReviewDto {
 
   @IsUUID()
   @IsNotEmpty()
+  readonly activityId!: string;
+
+  @IsUUID()
+  @IsNotEmpty()
+  readonly propertyId!: string;
+
+  @IsUUID()
+  @IsNotEmpty()
   readonly villaId!: string;
+
+  @ValidateIf((o) => !o.activityId && !o.propertyId && !o.villaId)
+  @IsNotEmpty({
+    message:
+      'At least one of activityId, propertyId, or villaId must be provided',
+  })
+  readonly _atLeastOneIdRequired?: string;
+
+  @ValidateIf(
+    (o) =>
+      (o.activityId && o.propertyId) ||
+      (o.activityId && o.villaId) ||
+      (o.propertyId && o.villaId),
+  )
+  @IsEmpty({
+    message: 'Only one of activityId, propertyId, or villaId can be provided',
+  })
+  readonly _onlyOneIdAllowed?: string;
 }
 
 export class CreateReviewSuccessResponse

@@ -40,10 +40,17 @@ export class ReviewService {
       sortableColumns: ['createdAt'],
       defaultSortBy: [['createdAt', 'DESC']],
       defaultLimit: 10,
-      searchableColumns: ['name', 'villa.name'],
+      searchableColumns: [
+        'name',
+        'activity.name',
+        'property.name',
+        'villa.name',
+      ],
       where: whereCondition,
       relations: {
+        activity: true,
         villa: true,
+        property: true,
       },
     });
 
