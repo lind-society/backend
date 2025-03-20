@@ -15,7 +15,9 @@ import { Environment } from 'src/common/enums';
 import { megabyteToByte } from 'src/common/helpers';
 
 export class EnvironmentVariables {
-  @IsEnum(Environment)
+  @IsEnum(Environment, {
+    message: `NODE_ENV environment variable must be one of: ${Object.values(Environment).join(', ')}`,
+  })
   @IsOptional()
   NODE_ENV?: Environment | null;
 

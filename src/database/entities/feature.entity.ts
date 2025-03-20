@@ -13,10 +13,18 @@ import { Currency } from './currency.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 
+export enum FeatureDiscountType {
+  Percentage = 'percentage',
+  Fixed = 'fixed',
+}
+
 @Entity({ name: 'features' })
 export class Feature {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @Column()
+  type!: string;
 
   @Column()
   name!: string;
@@ -30,11 +38,37 @@ export class Feature {
   @Column({ name: 'currency_id', type: 'uuid', nullable: true })
   currencyId!: string | null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   price!: number | null;
 
-  @Column({ type: 'varchar', array: true, nullable: true })
-  list!: string[] | null;
+  @Column({
+    name: 'discount_type',
+    type: 'enum',
+    enum: FeatureDiscountType,
+    nullable: true,
+  })
+  discountType!: FeatureDiscountType | null;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
+  discount!: number | null;
+
+  @Column({
+    name: 'price_after_discount',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    generatedType: 'STORED',
+    asExpression: `
+        CASE 
+          WHEN discount_type = 'percentage' THEN 
+            GREATEST(price - (price * discount / 100), 0)
+          ELSE 
+            GREATEST(price - discount, 0)
+        END
+      `,
+    nullable: true,
+  })
+  priceAfterDiscount!: number | null;
 
   @OneToMany(
     () => PropertyFeaturePivot,

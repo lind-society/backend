@@ -11,6 +11,14 @@ import { ReviewWithRelationsDto } from './review.dto';
 export class GetReviewsDto {
   @IsUUID()
   @IsOptional()
+  activityId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  propertyId?: string;
+
+  @IsUUID()
+  @IsOptional()
   villaId?: string;
 }
 

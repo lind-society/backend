@@ -34,9 +34,11 @@ export class FacilityService {
         (id) => !validFacilityIds.includes(id),
       );
 
-      throw new BadRequestException(
-        `invalid facility ids: ${invalidFacilityIds.join(', ')}`,
-      );
+      if (invalidFacilityIds.length > 0) {
+        throw new BadRequestException(
+          `invalid facility ids: ${invalidFacilityIds.join(', ')}`,
+        );
+      }
     }
   }
 

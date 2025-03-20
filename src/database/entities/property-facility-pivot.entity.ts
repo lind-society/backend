@@ -22,6 +22,14 @@ export class PropertyFacilityPivot {
   @Column({ name: 'facility_id', type: 'uuid' })
   facilityId!: string;
 
+  @Column({
+    name: 'include_description',
+    type: 'boolean',
+    nullable: false,
+    default: false,
+  })
+  includeDescription!: boolean;
+
   @Column({ type: 'text', nullable: true })
   description!: string | null;
 

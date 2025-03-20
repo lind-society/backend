@@ -1,16 +1,17 @@
 import { Transform } from 'class-transformer';
 import {
-  Currency,
-  Owner,
   Villa,
   VillaAdditionalPivot,
   VillaAvailability,
   VillaAvailabilityPerPrice,
+  VillaDiscountType,
   VillaFacilityPivot,
   VillaFeaturePivot,
   VillaPlaceNearby,
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
+import { CurrencyDto } from 'src/modules/currency/dto';
+import { OwnerDto } from 'src/modules/owner/dto';
 import { ReviewDto } from 'src/modules/review/dto';
 
 export interface IVillaDto
@@ -26,13 +27,13 @@ export interface IVillaDto
   > {}
 
 export interface IVillaWithRelationsDto extends IVillaDto {
-  currency?: Currency;
-  owner?: Owner;
+  currency?: CurrencyDto;
+  owner?: OwnerDto;
+  reviews?: ReviewDto[];
   additionals?: VillaAdditionalPivot[];
   facilities?: VillaFacilityPivot[];
   features?: VillaFeaturePivot[];
   policies?: VillaPolicyPivot[];
-  reviews?: ReviewDto[];
 }
 
 export class VillaDto implements IVillaDto {
@@ -43,6 +44,9 @@ export class VillaDto implements IVillaDto {
   readonly priceDaily!: number | null;
   readonly priceMonthly!: number | null;
   readonly priceYearly!: number | null;
+  readonly discountDailyType!: VillaDiscountType | null;
+  readonly discountMonthlyType!: VillaDiscountType | null;
+  readonly discountYearlyType!: VillaDiscountType | null;
   readonly discountDaily!: number | null;
   readonly discountMonthly!: number | null;
   readonly discountYearly!: number | null;
@@ -79,11 +83,11 @@ export class VillaWithRelationsDto
   extends VillaDto
   implements IVillaWithRelationsDto
 {
-  readonly currency?: Currency;
-  readonly owner?: Owner;
+  readonly currency?: CurrencyDto;
+  readonly owner?: OwnerDto;
+  readonly reviews?: ReviewDto[];
   readonly additionals?: VillaAdditionalPivot[];
   readonly facilities?: VillaFacilityPivot[];
   readonly features?: VillaFeaturePivot[];
   readonly policies?: VillaPolicyPivot[];
-  readonly reviews?: ReviewDto[];
 }

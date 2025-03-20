@@ -1,6 +1,8 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
+import { FacilityType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -15,6 +17,15 @@ export class CreateFacilityDto {
   @IsString()
   @IsOptional()
   readonly icon?: string | null;
+
+  @IsEnum(FacilityType, {
+    message: `facility type must be one of: ${Object.values(FacilityType).join(', ')}`,
+  })
+  @IsNotEmpty()
+  @Transform(({ value }) =>
+    value === undefined ? FacilityType.Optional : value,
+  )
+  readonly type?: FacilityType | null;
 }
 
 export class CreateFacilitySuccessResponse

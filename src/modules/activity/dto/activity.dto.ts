@@ -2,19 +2,25 @@ import { Transform } from 'class-transformer';
 import {
   Activity,
   ActivityCategory,
+  ActivityDiscountType,
   ActivityDuration,
   ActivityPlaceNearby,
   Currency,
   Owner,
 } from 'src/database/entities';
+import { CurrencyDto } from 'src/modules/currency/dto';
+import { OwnerDto } from 'src/modules/owner/dto';
+import { ReviewDto } from 'src/modules/review/dto';
+import { ActivityCategoryDto } from '../category/dto';
 
 export interface IActivityDto
-  extends Omit<Activity, 'category' | 'currency' | 'owner'> {}
+  extends Omit<Activity, 'category' | 'currency' | 'owner' | 'reviews'> {}
 
 export interface IActivityWithRelationsDto extends IActivityDto {
-  category?: ActivityCategory;
-  currency?: Currency;
-  owner?: Owner;
+  category?: ActivityCategoryDto;
+  currency?: CurrencyDto;
+  owner?: OwnerDto;
+  reviews?: ReviewDto[];
 }
 
 export class ActivityDto implements IActivityDto {
@@ -24,6 +30,7 @@ export class ActivityDto implements IActivityDto {
   readonly highlight!: string | null;
   readonly pricePerPerson!: number | null;
   readonly pricePerSession!: number | null;
+  readonly discountType!: ActivityDiscountType | null;
   readonly discount!: number | null;
   readonly pricePerPersonAfterDiscount!: number | null;
   readonly pricePerSessionAfterDiscount!: number | null;
@@ -62,4 +69,5 @@ export class ActivityWithRelationsDto
   readonly category?: ActivityCategory;
   readonly currency?: Currency;
   readonly owner?: Owner;
+  readonly reviews?: ReviewDto[];
 }

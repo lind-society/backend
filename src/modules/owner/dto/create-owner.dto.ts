@@ -20,7 +20,9 @@ export class CreateOwnerDto {
   @IsNotEmpty()
   readonly name!: string;
 
-  @IsEnum(OwnerType)
+  @IsEnum(OwnerType, {
+    message: `owner type must be one of: ${Object.values(OwnerType).join(', ')}`,
+  })
   @IsNotEmpty()
   readonly type!: OwnerType;
 

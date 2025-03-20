@@ -14,6 +14,12 @@ import { Owner } from './owner.entity';
 import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
+import { Review } from './review.entity';
+
+export enum PropertyDiscountType {
+  Percentage = 'percentage',
+  Fixed = 'fixed',
+}
 
 export enum PropertyOwnershipType {
   Leasehold = 'leasehold',
@@ -36,20 +42,34 @@ export class Property {
   @Column({ name: 'secondary_name', nullable: true })
   secondaryName!: string | null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   price!: number | null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({
+    name: 'discount_type',
+    type: 'enum',
+    enum: PropertyDiscountType,
+    nullable: true,
+  })
+  discountType!: PropertyDiscountType | null;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   discount!: number | null;
 
   @Column({
     name: 'price_after_discount',
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
     generatedType: 'STORED',
-    asExpression:
-      'COALESCE(price, 0) - (COALESCE(price, 0) * COALESCE(discount, 0) / 100)',
+    asExpression: `
+      CASE 
+        WHEN discount_type = 'percentage' THEN 
+          GREATEST(price - (price * discount / 100), 0)
+        ELSE 
+          GREATEST(price - discount, 0)
+      END
+    `,
     nullable: true,
   })
   priceAfterDiscount!: number | null;
@@ -107,6 +127,9 @@ export class Property {
 
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
+
+  @OneToMany(() => Review, (review) => review.property)
+  reviews: Review[];
 
   @OneToMany(
     () => PropertyFacilityPivot,

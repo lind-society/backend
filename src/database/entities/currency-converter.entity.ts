@@ -6,11 +6,13 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Currency } from './currency.entity';
 
 @Entity({ name: 'currency_converters' })
+@Unique(['baseCurrencyId', 'targetCurrencyId'])
 export class CurrencyConverter {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
