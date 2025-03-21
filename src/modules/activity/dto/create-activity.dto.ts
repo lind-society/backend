@@ -18,31 +18,13 @@ import {
 import { regexValidator } from 'src/common/constants';
 import { ValidateDiscountValueFromMultiplePrice } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
-import {
-  ActivityDiscountType,
-  ActivityDuration,
-  ActivityPlaceNearby,
-} from 'src/database/entities';
+import { ActivityDuration, DiscountType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
+  PlaceNearbyDto,
 } from 'src/modules/shared/dto';
 import { ActivityWithRelationsDto } from './activity.dto';
-
-export class ActivityPlaceNearbyDto extends ActivityPlaceNearby {
-  @IsString()
-  @IsNotEmpty()
-  name!: string;
-
-  @Type(() => Number)
-  @IsNumber(
-    { allowNaN: false, allowInfinity: false },
-    { message: 'distance must be a valid number' },
-  )
-  @Min(1, { message: 'minimum distance is 1' })
-  @IsNotEmpty()
-  distance!: number;
-}
 
 export class CreateActivityDto {
   @IsString()
@@ -75,9 +57,9 @@ export class CreateActivityDto {
   @IsOptional()
   readonly pricePerSession?: number;
 
-  @IsEnum(ActivityDiscountType)
+  @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountType?: ActivityDiscountType | null;
+  readonly discountType?: DiscountType | null;
 
   @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
   @IsNotEmpty({
@@ -91,7 +73,7 @@ export class CreateActivityDto {
   @ValidateDiscountValueFromMultiplePrice(
     'discountType',
     ['pricePerPerson', 'pricePerSession'],
-    ActivityDiscountType,
+    DiscountType,
   )
   @IsOptional()
   readonly discount?: number;
@@ -128,9 +110,9 @@ export class CreateActivityDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ActivityPlaceNearbyDto)
+  @Type(() => PlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: ActivityPlaceNearbyDto[] | null;
+  readonly placeNearby?: PlaceNearbyDto[] | null;
 
   @IsString()
   @Matches(regexValidator.openingHour.regex, {

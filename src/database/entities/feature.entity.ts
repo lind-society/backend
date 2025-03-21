@@ -11,12 +11,8 @@ import {
 } from 'typeorm';
 import { Currency } from './currency.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
+import { DiscountType } from './shared-enum.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
-
-export enum FeatureDiscountType {
-  Percentage = 'percentage',
-  Fixed = 'fixed',
-}
 
 @Entity({ name: 'features' })
 export class Feature {
@@ -44,10 +40,10 @@ export class Feature {
   @Column({
     name: 'discount_type',
     type: 'enum',
-    enum: FeatureDiscountType,
+    enum: DiscountType,
     nullable: true,
   })
-  discountType!: FeatureDiscountType | null;
+  discountType!: DiscountType | null;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   discount!: number | null;

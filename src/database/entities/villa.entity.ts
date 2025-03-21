@@ -12,25 +12,16 @@ import {
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
+import { DiscountType, PlaceNearby } from './shared-enum.entity';
 import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
 import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 import { VillaPolicyPivot } from './villa-policy-pivot.entity';
 
-export enum VillaDiscountType {
-  Percentage = 'percentage',
-  Fixed = 'fixed',
-}
-
 export enum VillaAvailability {
   Daily = 'daily',
   Monthly = 'monthly',
   Yearly = 'yearly',
-}
-
-export class VillaPlaceNearby {
-  name!: string;
-  distance!: number;
 }
 
 export class VillaAvailabilityPerPrice {
@@ -87,26 +78,26 @@ export class Villa {
   @Column({
     name: 'discount_daily_type',
     type: 'enum',
-    enum: VillaDiscountType,
+    enum: DiscountType,
     nullable: true,
   })
-  discountDailyType!: VillaDiscountType | null;
+  discountDailyType!: DiscountType | null;
 
   @Column({
     name: 'discount_monthly_type',
     type: 'enum',
-    enum: VillaDiscountType,
+    enum: DiscountType,
     nullable: true,
   })
-  discountMonthlyType!: VillaDiscountType | null;
+  discountMonthlyType!: DiscountType | null;
 
   @Column({
     name: 'discount_yearly_type',
     type: 'enum',
-    enum: VillaDiscountType,
+    enum: DiscountType,
     nullable: true,
   })
-  discountYearlyType!: VillaDiscountType | null;
+  discountYearlyType!: DiscountType | null;
 
   @Column({
     name: 'discount_daily',
@@ -222,7 +213,7 @@ export class Villa {
     type: 'jsonb',
     nullable: true,
   })
-  placeNearby!: VillaPlaceNearby[] | null;
+  placeNearby!: PlaceNearby[] | null;
 
   @Column({ name: 'check_in_hour', type: 'time', precision: 0 })
   checkInHour!: string;

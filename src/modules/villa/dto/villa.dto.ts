@@ -1,13 +1,13 @@
 import { Transform } from 'class-transformer';
 import {
+  DiscountType,
+  PlaceNearby,
   Villa,
   VillaAdditionalPivot,
   VillaAvailability,
   VillaAvailabilityPerPrice,
-  VillaDiscountType,
   VillaFacilityPivot,
   VillaFeaturePivot,
-  VillaPlaceNearby,
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
 import { CurrencyDto } from 'src/modules/currency/dto';
@@ -44,9 +44,9 @@ export class VillaDto implements IVillaDto {
   readonly priceDaily!: number | null;
   readonly priceMonthly!: number | null;
   readonly priceYearly!: number | null;
-  readonly discountDailyType!: VillaDiscountType | null;
-  readonly discountMonthlyType!: VillaDiscountType | null;
-  readonly discountYearlyType!: VillaDiscountType | null;
+  readonly discountDailyType!: DiscountType | null;
+  readonly discountMonthlyType!: DiscountType | null;
+  readonly discountYearlyType!: DiscountType | null;
   readonly discountDaily!: number | null;
   readonly discountMonthly!: number | null;
   readonly discountYearly!: number | null;
@@ -61,7 +61,7 @@ export class VillaDto implements IVillaDto {
   readonly city!: string | null;
   readonly postalCode!: string | null;
   readonly mapLink!: string | null;
-  readonly placeNearby!: VillaPlaceNearby[] | null;
+  readonly placeNearby!: PlaceNearby[] | null;
 
   @Transform(({ value }) => (value ? value.slice(0, 5) : null))
   readonly checkInHour!: string;

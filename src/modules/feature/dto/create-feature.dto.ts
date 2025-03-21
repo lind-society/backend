@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
-import { FeatureDiscountType } from 'src/database/entities';
+import { DiscountType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -50,9 +50,9 @@ export class CreateFeatureDto {
   @IsOptional()
   readonly price?: number | null;
 
-  @IsEnum(FeatureDiscountType)
+  @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountType?: FeatureDiscountType | null;
+  readonly discountType?: DiscountType | null;
 
   @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
   @IsNotEmpty({
@@ -63,7 +63,7 @@ export class CreateFeatureDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @ValidateDiscountValue('discountType', 'price', FeatureDiscountType)
+  @ValidateDiscountValue('discountType', 'price', DiscountType)
   @IsOptional()
   readonly discount?: number | null;
 }

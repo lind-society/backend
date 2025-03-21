@@ -19,35 +19,20 @@ import { regexValidator } from 'src/common/constants';
 import { ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
+  DiscountType,
   VillaAvailability,
   VillaAvailabilityPerPrice,
-  VillaDiscountType,
-  VillaPlaceNearby,
 } from 'src/database/entities';
 import { CreateAdditionalDto } from 'src/modules/additional/dto';
 import { CreateFeatureDto } from 'src/modules/feature/dto';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
+  PlaceNearbyDto,
 } from 'src/modules/shared/dto';
 import { CreateVillaPolicyDto } from '../policy/dto';
 import { CreateVillaFacililtyDto } from './create-villa-facility.dto';
 import { VillaWithRelationsDto } from './villa.dto';
-
-export class VillaPlaceNearbyDto extends VillaPlaceNearby {
-  @IsString()
-  @IsOptional()
-  name: string | null;
-
-  @Type(() => Number)
-  @IsNumber(
-    { allowNaN: false, allowInfinity: false },
-    { message: 'distance must be a valid number' },
-  )
-  @Min(1, { message: 'minimum distance is 1' })
-  @IsOptional()
-  distance: number | null;
-}
 
 export class VillaAvailabilityPerPriceDto extends VillaAvailabilityPerPrice {
   @IsEnum(VillaAvailability)
@@ -93,17 +78,17 @@ export class CreateVillaDto {
   @IsOptional()
   readonly priceYearly?: number | null;
 
-  @IsEnum(VillaDiscountType)
+  @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountDailyType?: VillaDiscountType | null;
+  readonly discountDailyType?: DiscountType | null;
 
-  @IsEnum(VillaDiscountType)
+  @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountMonthlyType?: VillaDiscountType | null;
+  readonly discountMonthlyType?: DiscountType | null;
 
-  @IsEnum(VillaDiscountType)
+  @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountYearlyType?: VillaDiscountType | null;
+  readonly discountYearlyType?: DiscountType | null;
 
   @ValidateIf(
     (o) => o.discountDailyType !== null && o.discountDailyType !== undefined,
@@ -117,7 +102,7 @@ export class CreateVillaDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discountDaily must be a valid number' },
   )
-  @ValidateDiscountValue('discountDailyType', 'priceDaily', VillaDiscountType)
+  @ValidateDiscountValue('discountDailyType', 'priceDaily', DiscountType)
   @IsOptional()
   readonly discountDaily?: number | null;
 
@@ -134,11 +119,7 @@ export class CreateVillaDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discountMonthly must be a valid number' },
   )
-  @ValidateDiscountValue(
-    'discountMonthlyType',
-    'priceMonthly',
-    VillaDiscountType,
-  )
+  @ValidateDiscountValue('discountMonthlyType', 'priceMonthly', DiscountType)
   @IsOptional()
   readonly discountMonthly?: number | null;
 
@@ -154,7 +135,7 @@ export class CreateVillaDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discountYearly must be a valid number' },
   )
-  @ValidateDiscountValue('discountYearlyType', 'priceyearly', VillaDiscountType)
+  @ValidateDiscountValue('discountYearlyType', 'priceyearly', DiscountType)
   readonly discountYearly?: number | null;
 
   @IsArray()
@@ -193,9 +174,9 @@ export class CreateVillaDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => VillaPlaceNearbyDto)
+  @Type(() => PlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: VillaPlaceNearbyDto[] | null;
+  readonly placeNearby?: PlaceNearbyDto[] | null;
 
   @IsString()
   @Matches(regexValidator.checkInHour.regex, {

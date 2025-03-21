@@ -15,20 +15,11 @@ import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
 import { Review } from './review.entity';
-
-export enum PropertyDiscountType {
-  Percentage = 'percentage',
-  Fixed = 'fixed',
-}
+import { DiscountType, PlaceNearby } from './shared-enum.entity';
 
 export enum PropertyOwnershipType {
   Leasehold = 'leasehold',
   Freehold = 'freehold',
-}
-
-export class PropertyPlaceNearby {
-  name!: string;
-  distance!: number;
 }
 
 @Entity({ name: 'properties' })
@@ -48,10 +39,10 @@ export class Property {
   @Column({
     name: 'discount_type',
     type: 'enum',
-    enum: PropertyDiscountType,
+    enum: DiscountType,
     nullable: true,
   })
-  discountType!: PropertyDiscountType | null;
+  discountType!: DiscountType | null;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   discount!: number | null;
@@ -103,7 +94,7 @@ export class Property {
     type: 'jsonb',
     nullable: true,
   })
-  placeNearby!: PropertyPlaceNearby[] | null;
+  placeNearby!: PlaceNearby[] | null;
 
   @Column({ type: 'varchar', array: true, nullable: true })
   photos!: string[] | null;

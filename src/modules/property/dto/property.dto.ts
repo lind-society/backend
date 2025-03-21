@@ -1,11 +1,11 @@
 import {
+  DiscountType,
+  PlaceNearby,
   Property,
   PropertyAdditionalPivot,
-  PropertyDiscountType,
   PropertyFacilityPivot,
   PropertyFeaturePivot,
   PropertyOwnershipType,
-  PropertyPlaceNearby,
 } from 'src/database/entities';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
@@ -36,7 +36,7 @@ export class PropertyDto implements IPropertyDto {
   readonly name!: string;
   readonly secondaryName!: string | null;
   readonly price!: number | null;
-  readonly discountType!: PropertyDiscountType | null;
+  readonly discountType!: DiscountType | null;
   readonly discount!: number | null;
   readonly priceAfterDiscount!: number | null;
   readonly ownershipType!: PropertyOwnershipType;
@@ -47,7 +47,7 @@ export class PropertyDto implements IPropertyDto {
   readonly city!: string | null;
   readonly postalCode!: string | null;
   readonly mapLink!: string | null;
-  readonly placeNearby!: PropertyPlaceNearby[] | null;
+  readonly placeNearby!: PlaceNearby[] | null;
   readonly photos!: string[];
   readonly videos!: string[];
   readonly video360s!: string[];

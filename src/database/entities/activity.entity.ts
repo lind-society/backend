@@ -13,20 +13,11 @@ import { ActivityCategory } from './activity-category.entity';
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
-
-export enum ActivityDiscountType {
-  Percentage = 'percentage',
-  Fixed = 'fixed',
-}
+import { DiscountType, PlaceNearby } from './shared-enum.entity';
 
 export enum ActivityDuration {
   Temporary = 'temporary',
   Permanent = 'permanent',
-}
-
-export class ActivityPlaceNearby {
-  name!: string;
-  distance!: number;
 }
 
 @Entity({ name: 'activities' })
@@ -64,10 +55,10 @@ export class Activity {
   @Column({
     name: 'discount_type',
     type: 'enum',
-    enum: ActivityDiscountType,
+    enum: DiscountType,
     nullable: true,
   })
-  discountType!: ActivityDiscountType | null;
+  discountType!: DiscountType | null;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   discount!: number | null;
@@ -134,7 +125,7 @@ export class Activity {
     type: 'jsonb',
     nullable: true,
   })
-  placeNearby!: ActivityPlaceNearby[] | null;
+  placeNearby!: PlaceNearby[] | null;
 
   @Column({ name: 'opening_hour', type: 'time', precision: 0 })
   openingHour!: string;
