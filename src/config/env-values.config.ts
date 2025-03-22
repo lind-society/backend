@@ -34,4 +34,6 @@ export const envValues: EnvironmentVariables = {
     parseInt(process.env.VIDEO360S_LIMIT_QUANTITY || '5', 10) || 5,
   VIDEO360S_LIMIT_SIZE:
     parseInt(process.env.VIDEO360S_LIMIT_SIZE || '30', 10) || 30,
+  INDONESIA_REGION_FETCH: process.env.INDONESIA_REGION_FETCH || '',
+  INDONESIA_POSTAL_CODE_FETCH: process.env.INDONESIA_POSTAL_CODE_FETCH || '',
 };

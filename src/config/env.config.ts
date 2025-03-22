@@ -130,6 +130,14 @@ export class EnvironmentVariables {
   @Max(megabyteToByte(100))
   @IsNotEmpty()
   VIDEO360S_LIMIT_SIZE!: number;
+  
+  @IsString()
+  @IsNotEmpty()
+  INDONESIA_REGION_FETCH!: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  INDONESIA_POSTAL_CODE_FETCH!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {
