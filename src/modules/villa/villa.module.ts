@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Villa } from 'src/database/entities';
 import { CurrencyModule } from '../currency/currency.module';
 import { FacilityModule } from '../facility/facility.module';
+import { FeatureModule } from '../feature/feature.module';
 import { OwnerModule } from '../owner/owner.module';
 import { VillaController } from './villa.controller';
 import { VillaService } from './villa.service';
@@ -14,6 +15,7 @@ import { VillaService } from './villa.service';
     TypeOrmModule.forFeature([Villa]),
     CurrencyModule,
     FacilityModule,
+    FeatureModule,
     OwnerModule,
   ],
   exports: [VillaService],

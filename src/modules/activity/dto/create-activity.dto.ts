@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -59,7 +59,7 @@ export class CreateActivityDto {
 
   @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountType?: DiscountType | null;
+  discountType?: DiscountType | null;
 
   @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
   @IsNotEmpty({

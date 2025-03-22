@@ -25,6 +25,7 @@ import {
 } from './dto';
 
 @Controller('activities')
+@UseInterceptors(PriceConverterInterceptor)
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
@@ -36,7 +37,6 @@ export class ActivityController {
   }
 
   @Public()
-  @UseInterceptors(PriceConverterInterceptor)
   @Get()
   async findAll(
     @Paginate() query: PaginateQuery,
@@ -48,7 +48,6 @@ export class ActivityController {
   }
 
   @Public()
-  @UseInterceptors(PriceConverterInterceptor)
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.activityService.findOne(id);

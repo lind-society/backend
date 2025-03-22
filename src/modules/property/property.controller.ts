@@ -26,6 +26,7 @@ import {
 import { PropertyService } from './property.service';
 
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(PriceConverterInterceptor)
 @Controller('properties')
 export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}
@@ -38,7 +39,6 @@ export class PropertyController {
   }
 
   @Public()
-  @UseInterceptors(PriceConverterInterceptor)
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.propertyService.findAll(query);
@@ -47,7 +47,6 @@ export class PropertyController {
   }
 
   @Public()
-  @UseInterceptors(PriceConverterInterceptor)
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.propertyService.findOne(id);

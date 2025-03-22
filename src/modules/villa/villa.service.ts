@@ -10,6 +10,7 @@ import {
 } from 'src/common/helpers';
 import {
   Additional,
+  DiscountType,
   Feature,
   Villa,
   VillaAdditionalPivot,
@@ -21,6 +22,7 @@ import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entit
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { CurrencyService } from '../currency/currency.service';
 import { FacilityService } from '../facility/facility.service';
+import { FeatureService } from '../feature/feature.service';
 import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { CreateVillaFacililtyDto, VillaWithRelationsDto } from './dto';
@@ -35,6 +37,7 @@ export class VillaService {
     private villaRepository: Repository<Villa>,
     private currencyService: CurrencyService,
     private facilityService: FacilityService,
+    private featureService: FeatureService,
     private ownerService: OwnerService,
   ) {}
 
@@ -82,6 +85,8 @@ export class VillaService {
   }
 
   async create(payload: CreateVillaDto): Promise<VillaWithRelationsDto> {
+    this._handleDefaultDiscountType(payload);
+
     const { additionals, facilities, features, policies, ...villaData } =
       payload;
 
@@ -102,7 +107,13 @@ export class VillaService {
 
         const createdVilla = await manager.save(Villa, villaData);
         const createdAdditionals = await manager.save(Additional, additionals);
+
+        features.map((feature) =>
+          this.featureService.handleDefaultDiscountType(feature),
+        );
+
         const createdFeatures = await manager.save(Feature, features);
+
         const createdPolicies = await manager.save(VillaPolicy, policies);
 
         if (Array.isArray(additionals) && additionals.length > 0) {
@@ -214,6 +225,8 @@ export class VillaService {
   ): Promise<VillaWithRelationsDto> {
     await this.findOne(id);
 
+    this._handleDefaultDiscountType(payload);
+
     const { additionals, facilities, features, policies, ...villaData } =
       payload;
 
@@ -264,6 +277,10 @@ export class VillaService {
         await manager.delete(VillaFeaturePivot, { villaId: id });
 
         if (features.length > 0) {
+          features.map((feature) =>
+            this.featureService.handleDefaultDiscountType(feature),
+          );
+
           const updatedFeatures = await manager.save(Feature, features);
 
           await manager.save(
@@ -321,6 +338,22 @@ export class VillaService {
       const facilityIds = facilities.map((facility) => facility.facilityId);
 
       await this.facilityService.validateFaciliies(facilityIds);
+    }
+  }
+
+  private async _handleDefaultDiscountType(
+    payload: CreateVillaDto | UpdateVillaDto,
+  ) {
+    if (payload.discountDaily && !payload.discountDailyType) {
+      payload.discountDailyType = DiscountType.Percentage;
+    }
+
+    if (payload.discountMonthly && !payload.discountMonthlyType) {
+      payload.discountMonthlyType = DiscountType.Percentage;
+    }
+
+    if (payload.discountYearly && !payload.discountYearlyType) {
+      payload.discountYearlyType = DiscountType.Percentage;
     }
   }
 }

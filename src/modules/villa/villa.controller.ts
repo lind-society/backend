@@ -26,6 +26,7 @@ import {
 import { VillaService } from './villa.service';
 
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(PriceConverterInterceptor)
 @Controller('villas')
 export class VillaController {
   constructor(private readonly villaService: VillaService) {}
@@ -38,7 +39,6 @@ export class VillaController {
   }
 
   @Public()
-  @UseInterceptors(PriceConverterInterceptor)
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.villaService.findAll(query);
@@ -47,7 +47,6 @@ export class VillaController {
   }
 
   @Public()
-  @UseInterceptors(PriceConverterInterceptor)
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.villaService.findOne(id);
