@@ -1,5 +1,6 @@
 import { Facility, FacilityType } from 'src/database/entities';
 import { PropertyDto } from 'src/modules/property/dto/property.dto';
+import { IconDto } from 'src/modules/shared/dto';
 import { VillaDto } from 'src/modules/villa/dto';
 
 export interface IFacilityDto
@@ -13,7 +14,7 @@ export interface IFacilityWithRelationsDto extends IFacilityDto {
 export class FacilityDto implements IFacilityDto {
   readonly id!: string;
   readonly name!: string;
-  readonly icon!: string;
+  readonly icon!: IconDto | null;
   readonly type!: FacilityType;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;

@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -11,8 +11,11 @@ import {
   IsString,
   IsUUID,
   Min,
+  registerDecorator,
   ValidateIf,
   ValidateNested,
+  ValidationArguments,
+  ValidationOptions,
 } from 'class-validator';
 import { ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
@@ -26,6 +29,28 @@ import {
 } from 'src/modules/shared/dto';
 import { CreatePropertyFacililtyDto } from './create-property-facility.dto';
 import { PropertyWithRelationsDto } from './property.dto';
+
+export function SetDiscountTypeIfDiscountExists(
+  validationOptions?: ValidationOptions,
+) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: 'setDiscountTypeIfDiscountExists',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          const discount = (args.object as any).discount;
+          if (discount !== null && discount !== undefined) {
+            (args.object as any)[propertyName] = 'percentage';
+          }
+          return true; // Always return true since this is not a validation decorator
+        },
+      },
+    });
+  };
+}
 
 export class CreatePropertyDto {
   @IsString()

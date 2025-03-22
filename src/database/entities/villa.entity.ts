@@ -12,7 +12,8 @@ import {
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
-import { DiscountType, PlaceNearby } from './shared-enum.entity';
+import { DiscountType } from './shared-enum.entity';
+import { PlaceNearby } from './shared-interface.entity';
 import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
 import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
@@ -79,6 +80,7 @@ export class Villa {
     name: 'discount_daily_type',
     type: 'enum',
     enum: DiscountType,
+    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountDailyType!: DiscountType | null;
@@ -87,6 +89,7 @@ export class Villa {
     name: 'discount_monthly_type',
     type: 'enum',
     enum: DiscountType,
+    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountMonthlyType!: DiscountType | null;
@@ -95,6 +98,7 @@ export class Villa {
     name: 'discount_yearly_type',
     type: 'enum',
     enum: DiscountType,
+    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountYearlyType!: DiscountType | null;
@@ -134,10 +138,10 @@ export class Villa {
     generatedType: 'STORED',
     asExpression: `
       CASE 
-        WHEN discount_daily_type = 'percentage' THEN 
-          GREATEST(price_daily - (price_daily * discount_daily / 100), 0)
+        WHEN discount_daily_type = 'fixed' THEN 
+          GREATEST(price_daily - COALESCE(discount_daily, 0), 0)
         ELSE 
-          GREATEST(price_daily - discount_daily, 0)
+          GREATEST(price_daily - (price_daily * COALESCE(discount_daily, 0) / 100), 0)
       END
     `,
     nullable: true,
@@ -152,10 +156,10 @@ export class Villa {
     generatedType: 'STORED',
     asExpression: `
       CASE 
-        WHEN discount_monthly_type = 'percentage' THEN 
-          GREATEST(price_monthly - (price_monthly * discount_monthly / 100), 0)
+        WHEN discount_monthly_type = 'fixed' THEN 
+          GREATEST(price_monthly - COALESCE(discount_monthly, 0), 0)
         ELSE 
-          GREATEST(price_monthly - discount_monthly, 0)
+          GREATEST(price_monthly - (price_monthly * COALESCE(discount_monthly, 0) / 100), 0)
       END
     `,
     nullable: true,
@@ -170,10 +174,10 @@ export class Villa {
     generatedType: 'STORED',
     asExpression: `
       CASE 
-        WHEN discount_yearly_type = 'percentage' THEN 
-          GREATEST(price_yearly - (price_yearly * discount_yearly / 100), 0)
+        WHEN discount_yearly_type = 'fixed' THEN 
+          GREATEST(price_yearly - COALESCE(discount_yearly, 0), 0)
         ELSE 
-          GREATEST(price_yearly - discount_yearly, 0)
+          GREATEST(price_yearly - (price_yearly * COALESCE(discount_yearly, 0) / 100), 0)
       END
     `,
     nullable: true,

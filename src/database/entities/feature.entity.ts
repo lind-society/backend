@@ -12,6 +12,7 @@ import {
 import { Currency } from './currency.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
 import { DiscountType } from './shared-enum.entity';
+import { Icon } from './shared-interface.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 
 @Entity({ name: 'features' })
@@ -25,8 +26,11 @@ export class Feature {
   @Column()
   name!: string;
 
-  @Column({ nullable: true })
-  icon!: string | null;
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+  })
+  icon!: Icon | null;
 
   @Column()
   free!: boolean;
@@ -41,6 +45,7 @@ export class Feature {
     name: 'discount_type',
     type: 'enum',
     enum: DiscountType,
+    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountType!: DiscountType | null;
@@ -56,10 +61,10 @@ export class Feature {
     generatedType: 'STORED',
     asExpression: `
         CASE 
-          WHEN discount_type = 'percentage' THEN 
-            GREATEST(price - (price * discount / 100), 0)
+          WHEN discount_type = 'fixed' THEN 
+            GREATEST(price - COALESCE(discount, 0), 0)
           ELSE 
-            GREATEST(price - discount, 0)
+            GREATEST(price - (price * COALESCE(discount, 0) / 100), 0)
         END
       `,
     nullable: true,

@@ -1,11 +1,18 @@
 import { HttpStatus } from '@nestjs/common';
-import { Transform } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import { FacilityType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
+  IconDto,
 } from 'src/modules/shared/dto';
 import { FacilityDto } from './facility.dto';
 
@@ -14,9 +21,10 @@ export class CreateFacilityDto {
   @IsNotEmpty()
   readonly name!: string;
 
-  @IsString()
+  @ValidateNested()
+  @Type(() => IconDto)
   @IsOptional()
-  readonly icon?: string | null;
+  readonly icon?: IconDto | null;
 
   @IsEnum(FacilityType, {
     message: `facility type must be one of: ${Object.values(FacilityType).join(', ')}`,

@@ -15,7 +15,8 @@ import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
 import { Review } from './review.entity';
-import { DiscountType, PlaceNearby } from './shared-enum.entity';
+import { DiscountType } from './shared-enum.entity';
+import { PlaceNearby } from './shared-interface.entity';
 
 export enum PropertyOwnershipType {
   Leasehold = 'leasehold',
@@ -40,6 +41,7 @@ export class Property {
     name: 'discount_type',
     type: 'enum',
     enum: DiscountType,
+    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountType!: DiscountType | null;
@@ -55,10 +57,10 @@ export class Property {
     generatedType: 'STORED',
     asExpression: `
       CASE 
-        WHEN discount_type = 'percentage' THEN 
-          GREATEST(price - (price * discount / 100), 0)
+        WHEN discount_type = 'fixed' THEN 
+          GREATEST(price - COALESCE(discount, 0), 0)
         ELSE 
-          GREATEST(price - discount, 0)
+          GREATEST(price - (price * COALESCE(discount, 0) / 100), 0)
       END
     `,
     nullable: true,

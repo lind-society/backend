@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
-import { PlaceNearby } from 'src/database/entities';
+import { Icon, PlaceNearby } from 'src/database/entities';
 
 export class PlaceNearbyDto extends PlaceNearby {
   @IsString()
@@ -15,4 +15,14 @@ export class PlaceNearbyDto extends PlaceNearby {
   @Min(1, { message: 'minimum distance is 1' })
   @IsNotEmpty()
   distance!: number;
+}
+
+export class IconDto extends Icon {
+  @IsString()
+  @IsNotEmpty()
+  url!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  key!: string;
 }

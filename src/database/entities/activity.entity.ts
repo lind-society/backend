@@ -13,7 +13,8 @@ import { ActivityCategory } from './activity-category.entity';
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
-import { DiscountType, PlaceNearby } from './shared-enum.entity';
+import { DiscountType } from './shared-enum.entity';
+import { PlaceNearby } from './shared-interface.entity';
 
 export enum ActivityDuration {
   Temporary = 'temporary',
@@ -56,6 +57,7 @@ export class Activity {
     name: 'discount_type',
     type: 'enum',
     enum: DiscountType,
+    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountType!: DiscountType | null;
@@ -71,10 +73,10 @@ export class Activity {
     generatedType: 'STORED',
     asExpression: `
       CASE 
-        WHEN discount_type = 'percentage' THEN 
-          GREATEST(price_per_person - (price_per_person * discount / 100), 0)
+        WHEN discount_type = 'fixed' THEN 
+          GREATEST(price_per_person - COALESCE(discount, 0), 0)
         ELSE 
-          GREATEST(price_per_person - discount, 0)
+          GREATEST(price_per_person - (price_per_person * COALESCE(discount, 0) / 100), 0)
       END
     `,
     nullable: true,
@@ -89,10 +91,10 @@ export class Activity {
     generatedType: 'STORED',
     asExpression: `
       CASE 
-        WHEN discount_type = 'percentage' THEN 
-          GREATEST(price_per_session - (price_per_session * discount / 100), 0)
+        WHEN discount_type = 'fixed' THEN 
+          GREATEST(price_per_session - COALESCE(discount, 0), 0)
         ELSE 
-          GREATEST(price_per_session - discount, 0)
+          GREATEST(price_per_session - (price_per_session * COALESCE(discount, 0) / 100), 0)
       END
     `,
     nullable: true,

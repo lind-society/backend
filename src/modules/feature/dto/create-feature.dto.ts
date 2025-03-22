@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -10,6 +10,7 @@ import {
   IsUUID,
   Min,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
@@ -17,6 +18,7 @@ import { DiscountType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
+  IconDto,
 } from 'src/modules/shared/dto';
 import { FeatureWithRelationsDto } from './feature.dto';
 
@@ -29,9 +31,10 @@ export class CreateFeatureDto {
   @IsNotEmpty()
   readonly name!: string;
 
-  @IsString()
+  @ValidateNested()
+  @Type(() => IconDto)
   @IsOptional()
-  readonly icon?: string | null;
+  readonly icon?: IconDto | null;
 
   @IsBoolean()
   @IsOptional()
