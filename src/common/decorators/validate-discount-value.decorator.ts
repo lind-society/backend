@@ -3,21 +3,12 @@ import {
   ValidationArguments,
   ValidationOptions,
 } from 'class-validator';
-import {
-  ActivityDiscountType,
-  FeatureDiscountType,
-  PropertyDiscountType,
-  VillaDiscountType,
-} from 'src/database/entities';
+import { DiscountType } from 'src/database/entities';
 
 export function ValidateDiscountValue(
   typePropertyName: string,
   pricePropertyName: string,
-  discountEnum:
-    | typeof ActivityDiscountType
-    | typeof FeatureDiscountType
-    | typeof PropertyDiscountType
-    | typeof VillaDiscountType,
+  discountEnum: typeof DiscountType,
   validationOptions?: ValidationOptions,
 ) {
   return function (object: Object, propertyName: string) {
@@ -89,11 +80,7 @@ export function ValidateDiscountValue(
 export function ValidateDiscountValueFromMultiplePrice(
   typePropertyName: string,
   pricePropertyNames: string[],
-  discountEnum:
-    | typeof ActivityDiscountType
-    | typeof FeatureDiscountType
-    | typeof PropertyDiscountType
-    | typeof VillaDiscountType,
+  discountEnum: typeof DiscountType,
   validationOptions?: ValidationOptions,
 ) {
   return function (object: Object, propertyName: string) {

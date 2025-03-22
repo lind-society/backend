@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Icon } from './shared-interface.entity';
 import { VillaPolicyPivot } from './villa-policy-pivot.entity';
 
 export enum VillaPolicyType {
@@ -28,8 +29,11 @@ export class VillaPolicy {
   @Column({ type: 'text', nullable: true })
   description!: string | null;
 
-  @Column({ nullable: true })
-  icon!: string | null;
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+  })
+  icon!: Icon | null;
 
   @OneToMany(
     () => VillaPolicyPivot,

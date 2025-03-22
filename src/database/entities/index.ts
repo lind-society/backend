@@ -14,6 +14,8 @@ export * from './property-facility-pivot.entity';
 export * from './property-feature-pivot.entity';
 export * from './property.entity';
 export * from './review.entity';
+export * from './shared-enum.entity';
+export * from './shared-interface.entity';
 export * from './villa-additional-pivot.entity';
 export * from './villa-facility-pivot.entity';
 export * from './villa-feature-pivot.entity';

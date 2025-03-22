@@ -20,7 +20,7 @@ export class GetVillasSuccessResponse
   constructor(data: GetVillaPaginateDto) {
     super({
       code: HttpStatus.OK,
-      message: 'get properties success',
+      message: 'get villas success',
       status: DefaultHttpStatus.Success,
     });
 

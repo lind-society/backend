@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
+import { Icon } from './shared-interface.entity';
 import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 
 export enum FacilityType {
@@ -23,8 +24,11 @@ export class Facility {
   @Column()
   name!: string;
 
-  @Column({ nullable: true })
-  icon!: string | null;
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+  })
+  icon!: Icon | null;
 
   @Column({
     type: 'enum',

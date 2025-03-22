@@ -1,16 +1,18 @@
 import { HttpStatus } from '@nestjs/common';
+import { Type } from 'class-transformer';
 import {
-  IsArray,
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
+  ValidateNested,
 } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import { VillaPolicyType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
+  IconDto,
 } from 'src/modules/shared/dto';
 import { VillaPolicyWithRelationsDto } from './villa-policy.dto';
 
@@ -27,9 +29,10 @@ export class CreateVillaPolicyDto {
   @IsOptional()
   readonly description?: string | null;
 
-  @IsString()
+  @ValidateNested()
+  @Type(() => IconDto)
   @IsOptional()
-  readonly icon?: string | null;
+  readonly icon?: IconDto | null;
 }
 
 export class CreateVillaPolicySuccessResponse

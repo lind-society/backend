@@ -2,11 +2,11 @@ import { Transform } from 'class-transformer';
 import {
   Activity,
   ActivityCategory,
-  ActivityDiscountType,
   ActivityDuration,
-  ActivityPlaceNearby,
   Currency,
+  DiscountType,
   Owner,
+  PlaceNearby,
 } from 'src/database/entities';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
@@ -30,7 +30,7 @@ export class ActivityDto implements IActivityDto {
   readonly highlight!: string | null;
   readonly pricePerPerson!: number | null;
   readonly pricePerSession!: number | null;
-  readonly discountType!: ActivityDiscountType | null;
+  readonly discountType!: DiscountType | null;
   readonly discount!: number | null;
   readonly pricePerPersonAfterDiscount!: number | null;
   readonly pricePerSessionAfterDiscount!: number | null;
@@ -41,7 +41,7 @@ export class ActivityDto implements IActivityDto {
   readonly city!: string | null;
   readonly postalCode!: string | null;
   readonly mapLink!: string | null;
-  readonly placeNearby!: ActivityPlaceNearby[] | null;
+  readonly placeNearby!: PlaceNearby[] | null;
 
   @Transform(({ value }) => (value ? value.slice(0, 5) : null))
   readonly openingHour!: string;

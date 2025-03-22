@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -10,13 +10,15 @@ import {
   IsUUID,
   Min,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
-import { FeatureDiscountType } from 'src/database/entities';
+import { DiscountType } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
+  IconDto,
 } from 'src/modules/shared/dto';
 import { FeatureWithRelationsDto } from './feature.dto';
 
@@ -29,9 +31,10 @@ export class CreateFeatureDto {
   @IsNotEmpty()
   readonly name!: string;
 
-  @IsString()
+  @ValidateNested()
+  @Type(() => IconDto)
   @IsOptional()
-  readonly icon?: string | null;
+  readonly icon?: IconDto | null;
 
   @IsBoolean()
   @IsOptional()
@@ -50,9 +53,9 @@ export class CreateFeatureDto {
   @IsOptional()
   readonly price?: number | null;
 
-  @IsEnum(FeatureDiscountType)
+  @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountType?: FeatureDiscountType | null;
+  readonly discountType?: DiscountType | null;
 
   @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
   @IsNotEmpty({
@@ -63,7 +66,7 @@ export class CreateFeatureDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @ValidateDiscountValue('discountType', 'price', FeatureDiscountType)
+  @ValidateDiscountValue('discountType', 'price', DiscountType)
   @IsOptional()
   readonly discount?: number | null;
 }

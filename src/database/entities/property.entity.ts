@@ -15,20 +15,12 @@ import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
 import { Review } from './review.entity';
-
-export enum PropertyDiscountType {
-  Percentage = 'percentage',
-  Fixed = 'fixed',
-}
+import { DiscountType } from './shared-enum.entity';
+import { PlaceNearby } from './shared-interface.entity';
 
 export enum PropertyOwnershipType {
   Leasehold = 'leasehold',
   Freehold = 'freehold',
-}
-
-export class PropertyPlaceNearby {
-  name!: string;
-  distance!: number;
 }
 
 @Entity({ name: 'properties' })
@@ -48,10 +40,11 @@ export class Property {
   @Column({
     name: 'discount_type',
     type: 'enum',
-    enum: PropertyDiscountType,
+    enum: DiscountType,
+    enumName: 'discount_type_enum',
     nullable: true,
   })
-  discountType!: PropertyDiscountType | null;
+  discountType!: DiscountType | null;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   discount!: number | null;
@@ -64,10 +57,10 @@ export class Property {
     generatedType: 'STORED',
     asExpression: `
       CASE 
-        WHEN discount_type = 'percentage' THEN 
-          GREATEST(price - (price * discount / 100), 0)
+        WHEN discount_type = 'fixed' THEN 
+          GREATEST(price - COALESCE(discount, 0), 0)
         ELSE 
-          GREATEST(price - discount, 0)
+          GREATEST(price - (price * COALESCE(discount, 0) / 100), 0)
       END
     `,
     nullable: true,
@@ -103,7 +96,7 @@ export class Property {
     type: 'jsonb',
     nullable: true,
   })
-  placeNearby!: PropertyPlaceNearby[] | null;
+  placeNearby!: PlaceNearby[] | null;
 
   @Column({ type: 'varchar', array: true, nullable: true })
   photos!: string[] | null;

@@ -13,20 +13,12 @@ import { ActivityCategory } from './activity-category.entity';
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
-
-export enum ActivityDiscountType {
-  Percentage = 'percentage',
-  Fixed = 'fixed',
-}
+import { DiscountType } from './shared-enum.entity';
+import { PlaceNearby } from './shared-interface.entity';
 
 export enum ActivityDuration {
   Temporary = 'temporary',
   Permanent = 'permanent',
-}
-
-export class ActivityPlaceNearby {
-  name!: string;
-  distance!: number;
 }
 
 @Entity({ name: 'activities' })
@@ -64,10 +56,11 @@ export class Activity {
   @Column({
     name: 'discount_type',
     type: 'enum',
-    enum: ActivityDiscountType,
+    enum: DiscountType,
+    enumName: 'discount_type_enum',
     nullable: true,
   })
-  discountType!: ActivityDiscountType | null;
+  discountType!: DiscountType | null;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   discount!: number | null;
@@ -80,10 +73,10 @@ export class Activity {
     generatedType: 'STORED',
     asExpression: `
       CASE 
-        WHEN discount_type = 'percentage' THEN 
-          GREATEST(price_per_person - (price_per_person * discount / 100), 0)
+        WHEN discount_type = 'fixed' THEN 
+          GREATEST(price_per_person - COALESCE(discount, 0), 0)
         ELSE 
-          GREATEST(price_per_person - discount, 0)
+          GREATEST(price_per_person - (price_per_person * COALESCE(discount, 0) / 100), 0)
       END
     `,
     nullable: true,
@@ -98,10 +91,10 @@ export class Activity {
     generatedType: 'STORED',
     asExpression: `
       CASE 
-        WHEN discount_type = 'percentage' THEN 
-          GREATEST(price_per_session - (price_per_session * discount / 100), 0)
+        WHEN discount_type = 'fixed' THEN 
+          GREATEST(price_per_session - COALESCE(discount, 0), 0)
         ELSE 
-          GREATEST(price_per_session - discount, 0)
+          GREATEST(price_per_session - (price_per_session * COALESCE(discount, 0) / 100), 0)
       END
     `,
     nullable: true,
@@ -134,7 +127,7 @@ export class Activity {
     type: 'jsonb',
     nullable: true,
   })
-  placeNearby!: ActivityPlaceNearby[] | null;
+  placeNearby!: PlaceNearby[] | null;
 
   @Column({ name: 'opening_hour', type: 'time', precision: 0 })
   openingHour!: string;

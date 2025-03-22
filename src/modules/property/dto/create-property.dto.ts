@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -11,38 +11,45 @@ import {
   IsString,
   IsUUID,
   Min,
+  registerDecorator,
   ValidateIf,
   ValidateNested,
+  ValidationArguments,
+  ValidationOptions,
 } from 'class-validator';
 import { ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
-import {
-  PropertyDiscountType,
-  PropertyOwnershipType,
-  PropertyPlaceNearby,
-} from 'src/database/entities';
+import { DiscountType, PropertyOwnershipType } from 'src/database/entities';
 import { CreateAdditionalDto } from 'src/modules/additional/dto';
 import { CreateFeatureDto } from 'src/modules/feature/dto';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
+  PlaceNearbyDto,
 } from 'src/modules/shared/dto';
 import { CreatePropertyFacililtyDto } from './create-property-facility.dto';
 import { PropertyWithRelationsDto } from './property.dto';
 
-export class PropertyPlaceNearbyDto extends PropertyPlaceNearby {
-  @IsString()
-  @IsNotEmpty()
-  name!: string;
-
-  @Type(() => Number)
-  @IsNumber(
-    { allowNaN: false, allowInfinity: false },
-    { message: 'distance must be a valid number' },
-  )
-  @Min(1, { message: 'minimum distance is 1' })
-  @IsNotEmpty()
-  distance!: number;
+export function SetDiscountTypeIfDiscountExists(
+  validationOptions?: ValidationOptions,
+) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: 'setDiscountTypeIfDiscountExists',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          const discount = (args.object as any).discount;
+          if (discount !== null && discount !== undefined) {
+            (args.object as any)[propertyName] = 'percentage';
+          }
+          return true; // Always return true since this is not a validation decorator
+        },
+      },
+    });
+  };
 }
 
 export class CreatePropertyDto {
@@ -63,9 +70,9 @@ export class CreatePropertyDto {
   @IsOptional()
   readonly price?: number;
 
-  @IsEnum(PropertyDiscountType)
+  @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountType?: PropertyDiscountType | null;
+  readonly discountType?: DiscountType | null;
 
   @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
   @IsNotEmpty({
@@ -76,7 +83,7 @@ export class CreatePropertyDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @ValidateDiscountValue('discountType', 'price', PropertyDiscountType)
+  @ValidateDiscountValue('discountType', 'price', DiscountType)
   @IsOptional()
   readonly discount?: number | null;
 
@@ -114,9 +121,9 @@ export class CreatePropertyDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => PropertyPlaceNearbyDto)
+  @Type(() => PlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: PropertyPlaceNearbyDto[] | null;
+  readonly placeNearby?: PlaceNearbyDto[] | null;
 
   @IsArray()
   @IsString({ each: true })

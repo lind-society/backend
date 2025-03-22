@@ -1,6 +1,7 @@
-import { Feature, FeatureDiscountType } from 'src/database/entities';
+import { DiscountType, Feature } from 'src/database/entities';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { PropertyDto } from 'src/modules/property/dto/property.dto';
+import { IconDto } from 'src/modules/shared/dto';
 import { VillaDto } from 'src/modules/villa/dto';
 
 export interface IFeatureDto
@@ -16,11 +17,11 @@ export class FeatureDto implements IFeatureDto {
   readonly id!: string;
   readonly type!: string;
   readonly name!: string;
-  readonly icon!: string | null;
+  readonly icon!: IconDto | null;
   readonly free!: boolean;
   readonly currencyId!: string | null;
   readonly price!: number | null;
-  readonly discountType!: FeatureDiscountType | null;
+  readonly discountType!: DiscountType | null;
   readonly priceAfterDiscount!: number | null;
   readonly discount!: number | null;
   readonly createdAt!: Date;
