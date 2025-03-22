@@ -55,7 +55,7 @@ export class CreateFeatureDto {
 
   @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountType?: DiscountType | null;
+  discountType?: DiscountType | null;
 
   @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
   @IsNotEmpty({

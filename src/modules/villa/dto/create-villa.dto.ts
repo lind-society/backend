@@ -80,15 +80,15 @@ export class CreateVillaDto {
 
   @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountDailyType?: DiscountType | null;
+  discountDailyType?: DiscountType | null;
 
   @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountMonthlyType?: DiscountType | null;
+  discountMonthlyType?: DiscountType | null;
 
   @IsEnum(DiscountType)
   @IsOptional()
-  readonly discountYearlyType?: DiscountType | null;
+  discountYearlyType?: DiscountType | null;
 
   @ValidateIf(
     (o) => o.discountDailyType !== null && o.discountDailyType !== undefined,

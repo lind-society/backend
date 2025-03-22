@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -11,11 +11,8 @@ import {
   IsString,
   IsUUID,
   Min,
-  registerDecorator,
   ValidateIf,
   ValidateNested,
-  ValidationArguments,
-  ValidationOptions,
 } from 'class-validator';
 import { ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
@@ -29,28 +26,6 @@ import {
 } from 'src/modules/shared/dto';
 import { CreatePropertyFacililtyDto } from './create-property-facility.dto';
 import { PropertyWithRelationsDto } from './property.dto';
-
-export function SetDiscountTypeIfDiscountExists(
-  validationOptions?: ValidationOptions,
-) {
-  return function (object: Object, propertyName: string) {
-    registerDecorator({
-      name: 'setDiscountTypeIfDiscountExists',
-      target: object.constructor,
-      propertyName: propertyName,
-      options: validationOptions,
-      validator: {
-        validate(value: any, args: ValidationArguments) {
-          const discount = (args.object as any).discount;
-          if (discount !== null && discount !== undefined) {
-            (args.object as any)[propertyName] = 'percentage';
-          }
-          return true; // Always return true since this is not a validation decorator
-        },
-      },
-    });
-  };
-}
 
 export class CreatePropertyDto {
   @IsString()
@@ -70,11 +45,13 @@ export class CreatePropertyDto {
   @IsOptional()
   readonly price?: number;
 
-  @IsEnum(DiscountType)
+  @IsEnum(DiscountType, {
+    message: `discount type be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
   @IsOptional()
-  readonly discountType?: DiscountType | null;
+  discountType?: DiscountType | null;
 
-  @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
+  @ValidateIf((o) => o.discountType !== null)
   @IsNotEmpty({
     message: 'discount should be provided when discountType is filled',
   })

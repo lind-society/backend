@@ -15,6 +15,10 @@ export function formatPrice(
 }
 
 export function roundToNearestHundred(price: number): number {
+  if (price < 100) {
+    return (Math.round(price) * 10) / 10;
+  }
+
   const remainder = price % 100;
 
   const roundedPrice = price - remainder + (remainder >= 50 ? 100 : 0);

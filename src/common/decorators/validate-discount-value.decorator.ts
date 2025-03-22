@@ -30,10 +30,10 @@ export function ValidateDiscountValue(
             return true;
           }
 
-          // If discount type is not provided, discount should not be provided
-          if (obj[typeProperty] === null || obj[typeProperty] === undefined) {
-            return false;
-          }
+          // If discount type is not provided, discount should not be provided (deprecated, currently discount will dynamically filled as percentage if disocunt is provided)
+          // if (obj[typeProperty] === null || obj[typeProperty] === undefined) {
+          //   return false;
+          // }
 
           // If discount type is percentage, check range 1-100
           if (obj[typeProperty] === DiscountType.Percentage) {
@@ -58,9 +58,10 @@ export function ValidateDiscountValue(
           const [typeProperty, priceProperty, DiscountType] = args.constraints;
           const obj = args.object as any;
 
-          if (obj[typeProperty] === null || obj[typeProperty] === undefined) {
-            return `${args.property} cannot be set when ${typeProperty} is not provided`;
-          }
+          // (deprecate)
+          // if (obj[typeProperty] === null || obj[typeProperty] === undefined) {
+          //   return `${args.property} cannot be set when ${typeProperty} is not provided`;
+          // }
 
           if (obj[typeProperty] === DiscountType.Percentage) {
             return `For percentage discounts, ${args.property} must be between 1 and 100`;

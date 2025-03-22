@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
-import { Feature } from 'src/database/entities';
+import { DiscountType, Feature } from 'src/database/entities';
 import { Repository } from 'typeorm';
 import { CurrencyService } from '../currency/currency.service';
 import { PaginateResponseDataProps } from '../shared/dto';
@@ -83,6 +83,12 @@ export class FeatureService {
   private async _validateRelatedEntities(currencyId?: string): Promise<void> {
     if (currencyId) {
       await this.currencyService.findOne(currencyId);
+    }
+  }
+
+  handleDefaultDiscountType(payload: CreateFeatureDto | UpdateFeatureDto) {
+    if (payload.discount && !payload.discountType) {
+      payload.discountType = DiscountType.Percentage;
     }
   }
 }

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
-import { Activity } from 'src/database/entities';
+import { Activity, DiscountType } from 'src/database/entities';
 import { Repository } from 'typeorm';
 import { CurrencyService } from '../currency/currency.service';
 import { OwnerService } from '../owner/owner.service';
@@ -27,6 +27,8 @@ export class ActivityService {
   ) {}
 
   async create(payload: CreateActivityDto): Promise<ActivityWithRelationsDto> {
+    this._handleDefaultDiscountType(payload);
+
     await this._validateRelatedEntities(
       payload.categoryId,
       payload.currencyId,
@@ -87,6 +89,8 @@ export class ActivityService {
   ): Promise<ActivityWithRelationsDto> {
     await this.findOne(id);
 
+    this._handleDefaultDiscountType(payload);
+
     await this._validateRelatedEntities(
       payload.categoryId,
       payload.currencyId,
@@ -117,6 +121,14 @@ export class ActivityService {
 
     if (ownerId) {
       await this.ownerService.findOne(ownerId);
+    }
+  }
+
+  private async _handleDefaultDiscountType(
+    payload: CreateActivityDto | UpdateActivityDto,
+  ) {
+    if (payload.discount && !payload.discountType) {
+      payload.discountType = DiscountType.Percentage;
     }
   }
 }

@@ -6,6 +6,7 @@ import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { groupAndSort, paginateResponseMapper } from 'src/common/helpers';
 import {
   Additional,
+  DiscountType,
   Feature,
   Property,
   PropertyAdditionalPivot,
@@ -15,6 +16,7 @@ import {
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { CurrencyService } from '../currency/currency.service';
 import { FacilityService } from '../facility/facility.service';
+import { FeatureService } from '../feature/feature.service';
 import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { CreatePropertyFacililtyDto } from './dto';
@@ -30,6 +32,7 @@ export class PropertyService {
     private propertyRepository: Repository<Property>,
     private currencyService: CurrencyService,
     private facilityService: FacilityService,
+    private featureService: FeatureService,
     private ownerService: OwnerService,
   ) {}
 
@@ -67,6 +70,8 @@ export class PropertyService {
   }
 
   async create(payload: CreatePropertyDto): Promise<PropertyWithRelationsDto> {
+    this._handleDefaultDiscountType(payload);
+
     const { additionals, facilities, features, ...propertyData } = payload;
 
     await this._validateRelatedEntities(
@@ -80,6 +85,11 @@ export class PropertyService {
         const createdProperty = await manager.save(Property, propertyData);
 
         const createdAdditionals = await manager.save(Additional, additionals);
+
+        features.map((feature) =>
+          this.featureService.handleDefaultDiscountType(feature),
+        );
+
         const createdFeatures = await manager.save(Feature, features);
 
         await manager.save(
@@ -169,6 +179,8 @@ export class PropertyService {
   ): Promise<PropertyWithRelationsDto> {
     await this.findOne(id);
 
+    this._handleDefaultDiscountType(payload);
+
     const { additionals, facilities, features, ...propertyData } = payload;
 
     await this._validateRelatedEntities(
@@ -180,45 +192,58 @@ export class PropertyService {
     await this.datasource.transaction(async (manager: EntityManager) => {
       const updatedProperty = await manager.update(Property, id, propertyData);
 
-      if (additionals) {
+      if (Array.isArray(additionals)) {
         await manager.delete(PropertyAdditionalPivot, { propertyId: id });
 
-        const updatedAdditionals = await manager.save(Additional, additionals);
+        if (additionals.length > 0) {
+          const updatedAdditionals = await manager.save(
+            Additional,
+            additionals,
+          );
 
-        await manager.save(
-          PropertyAdditionalPivot,
-          updatedAdditionals.map((additional: Additional) => ({
-            propertyId: id,
-            additionalId: additional.id,
-          })),
-        );
+          await manager.save(
+            PropertyAdditionalPivot,
+            updatedAdditionals.map((additional: Additional) => ({
+              propertyId: id,
+              additionalId: additional.id,
+            })),
+          );
+        }
       }
 
-      if (facilities) {
+      if (Array.isArray(facilities)) {
         await manager.delete(PropertyFacilityPivot, { propertyId: id });
 
-        await manager.save(
-          PropertyFacilityPivot,
-          facilities.map((facility: CreatePropertyFacililtyDto) => ({
-            propertyId: id,
-            facilityId: facility.facilityId,
-            description: facility.description,
-          })),
-        );
+        if (facilities.length > 0) {
+          await manager.save(
+            PropertyFacilityPivot,
+            facilities.map((facility: CreatePropertyFacililtyDto) => ({
+              propertyId: id,
+              facilityId: facility.facilityId,
+              description: facility.description,
+            })),
+          );
+        }
       }
 
-      if (features) {
+      if (Array.isArray(features)) {
         await manager.delete(PropertyFeaturePivot, { propertyId: id });
 
-        const updatedFeatures = await manager.save(Feature, features);
+        if (facilities.length > 0) {
+          features.map((feature) =>
+            this.featureService.handleDefaultDiscountType(feature),
+          );
 
-        await manager.save(
-          PropertyFeaturePivot,
-          updatedFeatures.map((feature: Feature) => ({
-            propertyId: id,
-            featureId: feature.id,
-          })),
-        );
+          const updatedFeatures = await manager.save(Feature, features);
+
+          await manager.save(
+            PropertyFeaturePivot,
+            updatedFeatures.map((feature: Feature) => ({
+              propertyId: id,
+              featureId: feature.id,
+            })),
+          );
+        }
       }
 
       return updatedProperty;
@@ -250,6 +275,14 @@ export class PropertyService {
       const facilityIds = facilities.map((facility) => facility.facilityId);
 
       await this.facilityService.validateFaciliies(facilityIds);
+    }
+  }
+
+  private async _handleDefaultDiscountType(
+    payload: CreatePropertyDto | UpdatePropertyDto,
+  ) {
+    if (payload.discount && !payload.discountType) {
+      payload.discountType = DiscountType.Percentage;
     }
   }
 }
