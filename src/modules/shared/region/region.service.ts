@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { GetGlobalPostalCodePayload } from './global/dto';
 import { GlobalRegionService } from './global/global.service';
 import { IndonesiaRegionService } from './indonesia/indonesia.service';
 
@@ -49,11 +50,26 @@ export class RegionService {
     }
   }
 
-  async getPostalCode(subDistrictId: string, country?: string) {
-    if (country === 'indonesia') {
-      return await this.indonesiaRegionService.getPostalCode(subDistrictId);
+  async getPostalCode(payload: GetGlobalPostalCodePayload) {
+    if (payload.country === 'indonesia') {
+      if (!payload.subDistrict) {
+        throw new BadRequestException('please input subdistrict id');
+      }
+
+      return await this.indonesiaRegionService.getPostalCode(
+        payload.subDistrictId,
+      );
     } else {
-      return 'not implemented';
+      if (!payload.subDistrict || !payload.district || !payload.city) {
+        throw new BadRequestException('please input region name');
+      }
+      return await this.globalRegionService.getPostalCode(
+        payload.provinceCode,
+        payload.secondaryProvinceCode,
+        payload.subDistrict,
+        payload.district,
+        payload.city,
+      );
     }
   }
 }

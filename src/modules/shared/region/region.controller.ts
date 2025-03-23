@@ -1,4 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { GetGlobalPostalCodePayload } from './global/dto';
 import { RegionService } from './region.service';
 
 @Controller('regions')
@@ -17,24 +18,24 @@ export class RegionController {
 
   @Get('provinces')
   async getProvince(
-    @Query('country') country: string,
     @Query('countryId') countryId: string,
+    @Query('country') country: string,
   ) {
     return await this.regionService.getProvince(countryId, country);
   }
 
   @Get('cities')
   async getCity(
-    @Query('country') country: string,
     @Query('province') provinceId: string,
+    @Query('country') country: string,
   ) {
     return await this.regionService.getCity(provinceId, country);
   }
 
   @Get('districts')
   async getDistrict(
-    @Query('country') country: string,
     @Query('city') cityId: string,
+    @Query('country') country: string,
   ) {
     return await this.regionService.getDistrict(cityId, country);
   }
@@ -49,9 +50,24 @@ export class RegionController {
 
   @Get('postal-code')
   async getPostalCode(
+    @Query('subDistrict') subDistrict: string,
+    @Query('district') district: string,
+    @Query('city') city: string,
+    @Query('provinceCode') provinceCode: string,
+    @Query('secondaryProvinceCode') secondaryProvinceCode: string,
+    @Query('subDistrictId') subDistrictId: string,
     @Query('country') country: string,
-    @Query('sub-district') subDistrictId: string,
   ) {
-    return await this.regionService.getPostalCode(subDistrictId, country);
+    const payload: GetGlobalPostalCodePayload = {
+      subDistrict,
+      district,
+      city,
+      provinceCode,
+      secondaryProvinceCode,
+      subDistrictId,
+      country,
+    };
+
+    return await this.regionService.getPostalCode(payload);
   }
 }
