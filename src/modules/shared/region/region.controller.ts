@@ -5,7 +5,17 @@ import { RegionService } from './region.service';
 export class RegionController {
   constructor(private readonly regionService: RegionService) {}
 
-  @Get('province')
+  @Get('continents')
+  async getContinent() {
+    return await this.regionService.getContinent();
+  }
+
+  @Get('countries')
+  async getCountry(@Query('continent') continentCode: string) {
+    return await this.regionService.getCountry(continentCode);
+  }
+
+  @Get('provinces')
   async getProvince(
     @Query('country') country: string,
     @Query('countryId') countryId: string,
@@ -13,7 +23,7 @@ export class RegionController {
     return await this.regionService.getProvince(countryId, country);
   }
 
-  @Get('city')
+  @Get('cities')
   async getCity(
     @Query('country') country: string,
     @Query('province') provinceId: string,
@@ -21,7 +31,7 @@ export class RegionController {
     return await this.regionService.getCity(provinceId, country);
   }
 
-  @Get('district')
+  @Get('districts')
   async getDistrict(
     @Query('country') country: string,
     @Query('city') cityId: string,
@@ -29,7 +39,7 @@ export class RegionController {
     return await this.regionService.getDistrict(cityId, country);
   }
 
-  @Get('sub-district')
+  @Get('sub-districts')
   async getSubDistrict(
     @Query('country') country: string,
     @Query('district') districtId: string,
