@@ -314,9 +314,6 @@ export class PriceConverterInterceptor implements NestInterceptor {
 
     const { allowDecimal, allowRound } = currency;
 
-    console.log({ allowDecimal });
-    console.log({ allowRound });
-
     try {
       // Format discount values as strings
       if (obj.discount !== undefined && obj.discount !== null) {

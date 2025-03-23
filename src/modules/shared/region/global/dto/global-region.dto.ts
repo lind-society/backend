@@ -25,4 +25,6 @@ export class GlobalRegionGeoNamesDetailDto {
 export class GlobalRegionPayloadDto {
   id: number | null;
   name: string | null;
+  provinceCode: string | null;
+  secondaryProvinceCode: string | null;
 }
