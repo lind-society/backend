@@ -1,8 +1,13 @@
 import { registerAs } from '@nestjs/config';
 import { envValues } from './env-values.config';
 
-const { INDONESIA_REGION_FETCH } = envValues;
+const { GEONAMES_API_USERNAME, GLOBAL_REGION_FETCH, INDONESIA_REGION_FETCH } =
+  envValues;
 
 export const regionConfig = registerAs('region', () => ({
+  geonames: {
+    username: GEONAMES_API_USERNAME,
+  },
+  global: GLOBAL_REGION_FETCH,
   indonesia: INDONESIA_REGION_FETCH,
 }));

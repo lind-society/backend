@@ -1,3 +1,12 @@
+export class IndonesiaPostalCodePayloadDto {
+  code: number | null;
+  village: string | null;
+  district: string | null;
+  regency: string | null;
+  province: string | null;
+  timezone: string | null;
+}
+
 export class IndonesiaPostalCodeDto {
   statusCode: number | null;
   code: string | null;

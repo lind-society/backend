@@ -1,14 +1,27 @@
 import { Injectable } from '@nestjs/common';
+import { GlobalRegionService } from './global/global.service';
 import { IndonesiaRegionService } from './indonesia/indonesia.service';
 
 @Injectable()
 export class RegionService {
-  constructor(private indonesiaRegionService: IndonesiaRegionService) {}
+  constructor(
+    private globalRegionService: GlobalRegionService,
+    private indonesiaRegionService: IndonesiaRegionService,
+  ) {}
+
+  async getContinent() {
+    return await this.globalRegionService.getContinent();
+  }
+
+  async getCountry(continentCode: string) {
+    return await this.globalRegionService.getCountry(continentCode);
+  }
+
   async getProvince(countryId: string = '', country?: string) {
     if (country === 'indonesia') {
       return await this.indonesiaRegionService.getProvince();
     } else {
-      return 'not implemented';
+      return await this.globalRegionService.getChildren(countryId);
     }
   }
 
@@ -16,7 +29,7 @@ export class RegionService {
     if (country === 'indonesia') {
       return await this.indonesiaRegionService.getCity(provinceId);
     } else {
-      return 'not implemented';
+      return await this.globalRegionService.getChildren(provinceId);
     }
   }
 
@@ -24,7 +37,7 @@ export class RegionService {
     if (country === 'indonesia') {
       return await this.indonesiaRegionService.getDistrict(cityId);
     } else {
-      return 'not implemented';
+      return await this.globalRegionService.getChildren(cityId);
     }
   }
 
@@ -32,7 +45,7 @@ export class RegionService {
     if (country === 'indonesia') {
       return await this.indonesiaRegionService.getSubDistrict(districtId);
     } else {
-      return 'not implemented';
+      return await this.globalRegionService.getChildren(districtId);
     }
   }
 
