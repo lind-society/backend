@@ -40,7 +40,7 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
       exceptionFactory(errors) {
-        console.log(validationExceptionFactory(errors));
+        console.error(validationExceptionFactory(errors));
 
         return new UnprocessableEntityException(errors);
       },
