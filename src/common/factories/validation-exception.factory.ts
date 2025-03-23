@@ -1,6 +1,6 @@
 import { ValidationError } from '@nestjs/common';
 
-function extractChildrenErrors(children: ValidationError[]): string[] {
+export function extractChildrenErrors(children: ValidationError[]): string[] {
   if (!children || children.length === 0) return [];
   return children.flatMap((child) =>
     Object.values(child.constraints || {}).concat(

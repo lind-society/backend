@@ -18,6 +18,7 @@ import {
 import { QueryFailedError } from 'typeorm';
 import { XenditSdkError } from 'xendit-node';
 import { DefaultHttpStatus } from '../enums';
+import { extractChildrenErrors } from '../factories/validation-exception.factory';
 import { GCPExceptionFilter } from './gcp-exception.filter';
 import { MulterExceptionFilter } from './multer-exception.filter';
 import { TypeOrmExceptionFilter } from './typeorm-exception.filter';
@@ -123,7 +124,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
           code: status,
           data: errors.map((error) => ({
             field: error.property,
-            message: Object.values(error.constraints ?? {}),
+            message: Object.values(error.constraints ?? {}).concat(
+              extractChildrenErrors(error.children),
+            ),
           })),
           message: 'Unprocessable entity',
           status: DefaultHttpStatus.Fail,
