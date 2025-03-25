@@ -7,7 +7,7 @@ export interface IBookingPaymentDto
 
 export interface IBookingPaymentWithRelationsDto extends IBookingPaymentDto {
   booking?: BookingDto[];
-  currency?: CurrencyDto[];
+  currency?: CurrencyDto;
 }
 
 export class BookingPaymentDto implements IBookingPaymentDto {
@@ -27,5 +27,5 @@ export class BookingPaymentWithRelationsDto
   implements IBookingPaymentWithRelationsDto
 {
   readonly bookings?: BookingDto[];
-  readonly currency?: CurrencyDto[];
+  readonly currency?: CurrencyDto;
 }

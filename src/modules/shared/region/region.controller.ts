@@ -55,7 +55,6 @@ export class RegionController {
     @Query('city') city: string,
     @Query('provinceCode') provinceCode: string,
     @Query('secondaryProvinceCode') secondaryProvinceCode: string,
-    @Query('subDistrictId') subDistrictId: string,
     @Query('country') country: string,
   ) {
     const payload: GetGlobalPostalCodePayload = {
@@ -64,7 +63,6 @@ export class RegionController {
       city,
       provinceCode,
       secondaryProvinceCode,
-      subDistrictId,
       country,
     };
 

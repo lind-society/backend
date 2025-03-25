@@ -1,26 +1,24 @@
 import { Review } from 'src/database/entities';
 import { ActivityDto } from 'src/modules/activity/dto';
+import { BookingDto } from 'src/modules/booking/dto';
 import { PropertyDto } from 'src/modules/property/dto';
 import { VillaDto } from 'src/modules/villa/dto';
 
 export interface IReviewDto
-  extends Omit<Review, 'activity' | 'property' | 'villa'> {}
+  extends Omit<Review, 'activity' | 'booking' | 'property' | 'villa'> {}
 
 export interface IReviewWithRelationsDto extends IReviewDto {
   activity?: ActivityDto;
+  booking?: BookingDto;
   property?: PropertyDto;
   villa?: VillaDto;
 }
 
 export class ReviewDto implements IReviewDto {
   readonly id!: string;
-  readonly name!: string | null;
-  readonly country!: string | null;
-  readonly checkIn!: Date | null;
-  readonly checkOut!: Date | null;
   readonly rating!: number;
   readonly message!: string;
-  readonly bookingId!: string | null;
+  readonly bookingId!: string;
   readonly activityId!: string | null;
   readonly propertyId!: string | null;
   readonly villaId!: string | null;
@@ -34,6 +32,7 @@ export class ReviewWithRelationsDto
   implements IReviewWithRelationsDto
 {
   readonly activity?: ActivityDto;
+  readonly booking?: BookingDto;
   readonly property?: PropertyDto;
   readonly villa?: VillaDto;
 }

@@ -16,13 +16,13 @@ import {
 export class BookingCustomerService {
   constructor(
     @InjectRepository(BookingCustomer)
-    private bookingRepository: Repository<BookingCustomer>,
+    private bookingCustomer: Repository<BookingCustomer>,
   ) {}
 
   async create(payload: CreateBookingCustomerDto): Promise<BookingCustomerDto> {
-    const createdBookingCustomer = this.bookingRepository.create(payload);
+    const createdBookingCustomer = this.bookingCustomer.create(payload);
 
-    return await this.bookingRepository.save(createdBookingCustomer);
+    return await this.bookingCustomer.save(createdBookingCustomer);
   }
 
   async findAll(
@@ -30,12 +30,15 @@ export class BookingCustomerService {
   ): Promise<PaginateResponseDataProps<BookingCustomerWithRelationsDto[]>> {
     const paginatedBookingCustomer = await paginate(
       query,
-      this.bookingRepository,
+      this.bookingCustomer,
       {
         sortableColumns: ['createdAt'],
         defaultSortBy: [['createdAt', 'DESC']],
         defaultLimit: 10,
         searchableColumns: ['name'],
+        relations: {
+          bookings: true,
+        },
       },
     );
 
@@ -43,9 +46,12 @@ export class BookingCustomerService {
   }
 
   async findOne(id: string): Promise<BookingCustomerWithRelationsDto> {
-    const bookingCustomer = await this.bookingRepository.findOne({
+    const bookingCustomer = await this.bookingCustomer.findOne({
       where: {
         id,
+      },
+      relations: {
+        bookings: true,
       },
     });
 
@@ -62,7 +68,7 @@ export class BookingCustomerService {
   ): Promise<BookingCustomerWithRelationsDto> {
     await this.findOne(id);
 
-    await this.bookingRepository.update(id, payload);
+    await this.bookingCustomer.update(id, payload);
 
     return await this.findOne(id);
   }
@@ -70,6 +76,6 @@ export class BookingCustomerService {
   async remove(id: string) {
     await this.findOne(id);
 
-    await this.bookingRepository.delete(id);
+    await this.bookingCustomer.delete(id);
   }
 }

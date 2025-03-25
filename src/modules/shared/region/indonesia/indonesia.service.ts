@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { startCase, toLower } from 'lodash';
 import { AxiosService } from '../../axios/axios.service';
 import {
   IndonesiaPostalCodeDto,
@@ -105,7 +106,7 @@ export class IndonesiaRegionService {
   ): IndonesiaRegionPayloadDto[] {
     return data.map((item) => ({
       id: item.id,
-      name: item.nama,
+      name: startCase(toLower(item.nama)),
     })) as IndonesiaRegionPayloadDto[];
   }
 

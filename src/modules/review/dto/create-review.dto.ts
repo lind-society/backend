@@ -1,7 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
-  IsDate,
   IsEmpty,
   IsNotEmpty,
   IsNumber,
@@ -20,24 +19,6 @@ import {
 import { ReviewWithRelationsDto } from './review.dto';
 
 export class CreateReviewDto {
-  @IsString()
-  @IsNotEmpty()
-  readonly name!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  readonly country!: string;
-
-  @Type(() => Date)
-  @IsDate()
-  @IsNotEmpty()
-  readonly checkIn!: Date;
-
-  @Type(() => Date)
-  @IsDate()
-  @IsNotEmpty()
-  readonly checkOut!: Date;
-
   @Type(() => Number)
   @IsNumber(
     { allowNaN: false, allowInfinity: false },
@@ -52,21 +33,20 @@ export class CreateReviewDto {
   @IsNotEmpty()
   readonly message!: string;
 
-  // Should be not null (updated when adding admin entity)
-  @IsUUID()
-  @IsOptional()
-  readonly bookingId?: string | null;
-
   @IsUUID()
   @IsNotEmpty()
+  readonly bookingId: string;
+
+  @IsUUID()
+  @IsOptional()
   readonly activityId!: string;
 
   @IsUUID()
-  @IsNotEmpty()
+  @IsOptional()
   readonly propertyId!: string;
 
   @IsUUID()
-  @IsNotEmpty()
+  @IsOptional()
   readonly villaId!: string;
 
   @ValidateIf((o) => !o.activityId && !o.propertyId && !o.villaId)

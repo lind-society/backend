@@ -36,16 +36,11 @@ export class ReviewService {
       ? { villaId: payload.villaId }
       : undefined;
 
-    const paginatedVilla = await paginate(query, this.reviewRepository, {
+    const paginatedReview = await paginate(query, this.reviewRepository, {
       sortableColumns: ['createdAt'],
       defaultSortBy: [['createdAt', 'DESC']],
       defaultLimit: 10,
-      searchableColumns: [
-        'name',
-        'activity.name',
-        'property.name',
-        'villa.name',
-      ],
+      searchableColumns: ['activity.name', 'property.name', 'villa.name'],
       where: whereCondition,
       relations: {
         activity: true,
@@ -54,7 +49,7 @@ export class ReviewService {
       },
     });
 
-    return paginateResponseMapper(paginatedVilla);
+    return paginateResponseMapper(paginatedReview);
   }
 
   async findOne(id: string) {

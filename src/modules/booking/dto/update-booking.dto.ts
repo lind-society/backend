@@ -8,9 +8,7 @@ import {
 import { BookingWithRelationsDto } from './booking.dto';
 import { CreateBookingDto } from './create-booking.dto';
 
-export class UpdateBookingWithRelationsDto extends PartialType(
-  CreateBookingDto,
-) {}
+export class UpdateBookingDto extends PartialType(CreateBookingDto) {}
 
 export class UpdateBookingSuccessResponse
   extends HttpResponseDefaultProps

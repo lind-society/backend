@@ -130,6 +130,9 @@ export class PropertyService {
         'propertyFeatures.feature.name',
       ],
       relations: {
+        currency: true,
+        owner: true,
+        reviews: true,
         propertyAdditionals: { additional: true },
         propertyFeatures: { feature: { currency: true } },
         propertyFacilities: { facility: true },

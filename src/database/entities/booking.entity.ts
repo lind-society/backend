@@ -6,12 +6,14 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { BookingCustomer } from './booking-customer.entity';
 import { BookingPayment } from './booking-payment.entity';
 import { Currency } from './currency.entity';
+import { Review } from './review.entity';
 
 export enum BookingStatus {
   Requested = 'requested',
@@ -55,6 +57,11 @@ export class Booking {
 
   @Column({ name: 'customer_id', type: 'uuid' })
   customerId!: string;
+
+  @OneToOne(() => Review, (review) => review.booking, {
+    nullable: true,
+  })
+  review?: Review;
 
   @OneToMany(() => BookingPayment, (bookingPayment) => bookingPayment.booking)
   payments: BookingPayment[];
