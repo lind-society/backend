@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsUUID,
   Min,
 } from 'class-validator';
@@ -14,6 +15,7 @@ import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
+import { CreateBookingCustomerDto } from '../customer/dto';
 import { BookingWithRelationsDto } from './booking.dto';
 
 export class CreateBookingDto {
@@ -53,8 +55,12 @@ export class CreateBookingDto {
   readonly currencyId!: string;
 
   @IsUUID()
+  @IsOptional()
+  readonly customerId?: string | null;
+
+  @Type(() => CreateBookingCustomerDto)
   @IsNotEmpty()
-  readonly customerId!: string;
+  readonly customer!: CreateBookingCustomerDto;
 }
 
 export class CreateBookinguccessResponse

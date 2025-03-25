@@ -43,9 +43,22 @@ export class ReviewService {
       searchableColumns: ['activity.name', 'property.name', 'villa.name'],
       where: whereCondition,
       relations: {
-        activity: true,
-        villa: true,
-        property: true,
+        booking: {
+          customer: true,
+          currency: true,
+        },
+        activity: {
+          owner: true,
+          currency: true,
+        },
+        villa: {
+          owner: true,
+          currency: true,
+        },
+        property: {
+          owner: true,
+          currency: true,
+        },
       },
     });
 
@@ -58,7 +71,22 @@ export class ReviewService {
         id,
       },
       relations: {
-        villa: true,
+        booking: {
+          customer: true,
+          currency: true,
+        },
+        activity: {
+          owner: true,
+          currency: true,
+        },
+        villa: {
+          owner: true,
+          currency: true,
+        },
+        property: {
+          owner: true,
+          currency: true,
+        },
       },
     });
 
