@@ -4,7 +4,6 @@ import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import {
-  groupAndSort,
   paginateResponseMapper,
   validatePayloadFromObjectKey,
 } from 'src/common/helpers';
@@ -50,37 +49,25 @@ export class VillaService {
         'villaPolicies',
       ]),
 
-      additionals: groupAndSort(
-        villa.villaAdditionals.map(({ id, additional }) => ({
-          pivotId: id,
-          ...additional,
-        })),
-        'type',
-        'name',
-      ),
+      additionals: villa.villaAdditionals.map(({ id, additional }) => ({
+        pivotId: id,
+        ...additional,
+      })),
 
-      facilities: groupAndSort(
-        villa.villaFacilities.map(({ id, facility }) => ({
-          pivotId: id,
-          ...facility,
-        })),
-        'type',
-        'name',
-      ),
+      facilities: villa.villaFacilities.map(({ id, facility }) => ({
+        pivotId: id,
+        ...facility,
+      })),
 
       features: villa.villaFeatures.map(({ id, feature }) => ({
         pivotId: id,
         ...feature,
       })),
 
-      policies: groupAndSort(
-        villa.villaPolicies.map(({ id, policy }) => ({
-          pivotId: id,
-          ...policy,
-        })),
-        'type',
-        'name',
-      ),
+      policies: villa.villaPolicies.map(({ id, policy }) => ({
+        pivotId: id,
+        ...policy,
+      })),
     });
   }
 

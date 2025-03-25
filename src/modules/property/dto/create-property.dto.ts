@@ -123,7 +123,7 @@ export class CreatePropertyDto {
 
   @IsUUID()
   @IsNotEmpty()
-  readonly currencyId?: string;
+  readonly currencyId!: string;
 
   @IsUUID()
   @IsOptional()

@@ -26,7 +26,7 @@ export class BookingPayment {
   status!: string;
 
   @Column({ name: 'currency_id', type: 'uuid' })
-  currencyId!: string | null;
+  currencyId!: string;
 
   @Column({ name: 'booking_id', type: 'uuid' })
   bookingId: string;

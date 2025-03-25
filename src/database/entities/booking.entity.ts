@@ -13,6 +13,15 @@ import { BookingCustomer } from './booking-customer.entity';
 import { BookingPayment } from './booking-payment.entity';
 import { Currency } from './currency.entity';
 
+export enum BookingStatus {
+  Requested = 'requested',
+  Negotiation = 'negotiation',
+  WaitingForPayment = 'waiting for payment',
+  Booked = 'booked',
+  Done = 'done',
+  Canceled = 'canceled',
+}
+
 @Entity({ name: 'bookings' })
 export class Booking {
   @PrimaryGeneratedColumn('uuid')
@@ -29,21 +38,23 @@ export class Booking {
     type: 'decimal',
     precision: 15,
     scale: 2,
-    nullable: true,
   })
   totalAmount!: number;
 
-  @Column({ name: 'check_in_date', type: 'timestamptz', nullable: true })
-  checkInDate!: Date | null;
+  @Column({ name: 'check_in_date', type: 'timestamptz' })
+  checkInDate!: Date;
 
-  @Column({ name: 'check_out_date', type: 'timestamptz', nullable: true })
-  checkOutDate!: Date | null;
+  @Column({ name: 'check_out_date', type: 'timestamptz' })
+  checkOutDate!: Date;
+
+  @Column({ type: 'enum', enum: BookingStatus })
+  status!: BookingStatus;
 
   @Column({ name: 'currency_id', type: 'uuid' })
-  currencyId!: string | null;
+  currencyId!: string;
 
   @Column({ name: 'customer_id', type: 'uuid' })
-  customerId!: string | null;
+  customerId!: string;
 
   @OneToMany(() => BookingPayment, (bookingPayment) => bookingPayment.booking)
   payments: BookingPayment[];

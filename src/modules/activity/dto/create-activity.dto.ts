@@ -159,7 +159,7 @@ export class CreateActivityDto {
 
   @IsUUID()
   @IsNotEmpty()
-  readonly currencyId?: string;
+  readonly currencyId!: string;
 
   @IsUUID()
   @IsOptional()
