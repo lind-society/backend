@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Activity } from './activity.entity';
 import { Property } from './property.entity';
 import { Villa } from './villa.entity';
 
@@ -48,6 +49,9 @@ export class Owner {
 
   @Column({ type: 'enum', enum: OwnerStatus })
   status!: OwnerStatus;
+
+  @OneToMany(() => Activity, (property) => property.owner)
+  activities!: Activity[];
 
   @OneToMany(() => Property, (property) => property.owner)
   properties!: Property[];

@@ -21,6 +21,7 @@ import { ActivityModule } from './modules/activity/activity.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { BookingModule } from './modules/booking/booking.module';
 import { CurrencyModule } from './modules/currency/currency.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { OwnerModule } from './modules/owner/owner.module';
@@ -69,19 +70,20 @@ import { VillaModule } from './modules/villa/villa.module';
       }),
     }),
     LoggerModule,
+    AxiosModule,
+    StorageModule,
     AuthModule,
     AdminModule,
+    ActivityModule,
     BlogModule,
+    BookingModule,
+    CurrencyModule,
     FacilityModule,
     PropertyModule,
     OwnerModule,
-    StorageModule,
+    RegionModule,
     VillaModule,
     ReviewModule,
-    CurrencyModule,
-    ActivityModule,
-    RegionModule,
-    AxiosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

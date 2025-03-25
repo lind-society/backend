@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -41,8 +41,8 @@ export class CreateFeatureDto {
   readonly free?: boolean | null;
 
   @IsUUID()
-  @IsOptional()
-  readonly currencyId?: string | null;
+  @IsNotEmpty()
+  readonly currencyId!: string;
 
   @Type(() => Number)
   @IsNumber(

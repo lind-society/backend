@@ -174,7 +174,7 @@ export class Activity {
   @JoinColumn({ name: 'currency_id' })
   currency!: Currency;
 
-  @ManyToOne(() => Owner, (owner) => owner.properties, {
+  @ManyToOne(() => Owner, (owner) => owner.activities, {
     onDelete: 'SET NULL',
     nullable: true,
   })

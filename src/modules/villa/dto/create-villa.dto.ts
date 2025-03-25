@@ -208,8 +208,8 @@ export class CreateVillaDto {
   readonly video360s?: string[] | null;
 
   @IsUUID()
-  @IsOptional()
-  readonly currencyId?: string;
+  @IsNotEmpty()
+  readonly currencyId!: string;
 
   @IsUUID()
   @IsOptional()

@@ -39,6 +39,7 @@ export class OwnerService {
         'status',
       ],
       relations: {
+        activities: true,
         properties: true,
         villas: true,
       },
@@ -51,6 +52,7 @@ export class OwnerService {
     const owner = await this.ownerRepository.findOne({
       where: { id },
       relations: {
+        activities: true,
         properties: true,
         villas: true,
       },

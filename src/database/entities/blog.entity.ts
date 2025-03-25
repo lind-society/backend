@@ -26,7 +26,7 @@ export class Blog {
   authorId!: string;
 
   @Column({ name: 'category_id', type: 'uuid' })
-  categoryId!: string | null;
+  categoryId!: string;
 
   @ManyToOne(() => Admin, (admin) => admin.blogs, {
     onDelete: 'SET NULL',
