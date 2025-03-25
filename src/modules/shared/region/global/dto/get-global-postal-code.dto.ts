@@ -4,6 +4,5 @@ export class GetGlobalPostalCodePayload {
   subDistrict?: string;
   provinceCode?: string;
   secondaryProvinceCode?: string;
-  subDistrictId?: string;
   country?: string;
 }

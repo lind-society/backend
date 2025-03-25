@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumberString, IsString } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -12,11 +12,11 @@ export class CreateBookingCustomerDto {
   @IsNotEmpty()
   readonly name!: string;
 
-  @IsString()
+  @IsEmail()
   @IsNotEmpty()
   readonly email!: string;
 
-  @IsString()
+  @IsNumberString()
   @IsNotEmpty()
   readonly phoneNumber!: string;
 }

@@ -53,15 +53,17 @@ export class RegionService {
   async getPostalCode(payload: GetGlobalPostalCodePayload) {
     if (payload.country === 'indonesia') {
       if (!payload.subDistrict) {
-        throw new BadRequestException('please input subdistrict id');
+        throw new BadRequestException('please input subdistrict');
       }
 
       return await this.indonesiaRegionService.getPostalCode(
-        payload.subDistrictId,
+        payload.subDistrict,
       );
     } else {
       if (!payload.subDistrict || !payload.district || !payload.city) {
-        throw new BadRequestException('please input region name');
+        throw new BadRequestException(
+          'please input region detail (subDistrict, district, or city',
+        );
       }
       return await this.globalRegionService.getPostalCode(
         payload.provinceCode,

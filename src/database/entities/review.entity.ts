@@ -5,10 +5,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Activity } from './activity.entity';
+import { Booking } from './booking.entity';
 import { Property } from './property.entity';
 import { Villa } from './villa.entity';
 
@@ -17,27 +19,13 @@ export class Review {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  // name, country, check in, and checkot filled from booking with status finish
-  @Column({ nullable: true })
-  name!: string | null;
-
-  @Column({ nullable: true })
-  country!: string | null;
-
-  @Column({ name: 'check_in', type: 'timestamptz', nullable: true })
-  checkIn!: Date | null;
-
-  @Column({ name: 'check_out', type: 'timestamptz', nullable: true })
-  checkOut!: Date | null;
-
   @Column({ type: 'decimal', precision: 5, scale: 2 })
   rating!: number;
 
   @Column({ type: 'text' })
   message!: string;
 
-  // purpose : get customer data who rent or buy villa and property (get from bookingId, currently nullable since booking not created)
-  @Column({ name: 'booking_id', type: 'uuid', nullable: true })
+  @Column({ name: 'booking_id', type: 'uuid' })
   bookingId!: string | null;
 
   @Column({ name: 'activity_id', type: 'uuid', nullable: true })
@@ -48,6 +36,10 @@ export class Review {
 
   @Column({ name: 'villa_id', type: 'uuid', nullable: true })
   villaId!: string | null;
+
+  @OneToOne(() => Booking, (booking) => booking.review)
+  @JoinColumn({ name: 'booking_id' })
+  booking: Booking;
 
   @ManyToOne(() => Activity, (activity) => activity.reviews, {
     onDelete: 'SET NULL',

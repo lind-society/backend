@@ -7,9 +7,9 @@ export interface IBookingDto
   extends Omit<Booking, 'payments' | 'currency' | 'customer'> {}
 
 export interface IBookingWithRelationsDto extends IBookingDto {
+  currency?: CurrencyDto;
+  customer?: BookingCustomerDto;
   payments?: BookingPaymentDto[];
-  currency?: CurrencyDto[];
-  customer?: BookingCustomerDto[];
 }
 
 export class BookingDto implements IBookingDto {
@@ -30,7 +30,7 @@ export class BookingWithRelationsDto
   extends BookingDto
   implements IBookingWithRelationsDto
 {
+  readonly currency?: CurrencyDto;
+  readonly customer?: BookingCustomerDto;
   readonly payments?: BookingPaymentDto[];
-  readonly currency?: CurrencyDto[];
-  readonly customer?: BookingCustomerDto[];
 }

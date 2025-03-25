@@ -17,7 +17,7 @@ export class CreateBookingPaymentDto {
   @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0, { message: 'minimum amount is 0' })
   @IsNotEmpty()
-  readonly amount!: string;
+  readonly amount!: number;
 
   @IsString()
   @IsNotEmpty()
