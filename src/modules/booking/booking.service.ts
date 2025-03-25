@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Booking } from 'src/database/entities';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
+import { BookingCustomerService } from './customer/customer.service';
 import {
   BookingWithRelationsDto,
   CreateBookingDto,
@@ -14,40 +15,48 @@ import {
 @Injectable()
 export class BookingService {
   constructor(
+    private datasource: DataSource,
     @InjectRepository(Booking)
-    private bookingPaymentRepository: Repository<Booking>,
+    private bookingRepository: Repository<Booking>,
+    private bookingCustomerService: BookingCustomerService,
   ) {}
 
   async create(payload: CreateBookingDto): Promise<BookingWithRelationsDto> {
-    const createdBooking = this.bookingPaymentRepository.create(payload);
+    return await this.datasource.transaction(async (manager: EntityManager) => {
+      const createdBookingCustomer = await this.bookingCustomerService.create(
+        payload.customer,
+        manager,
+      );
 
-    return await this.bookingPaymentRepository.save(createdBooking);
+      const createdBooking = await manager.save(Booking, {
+        ...payload,
+        customerId: createdBookingCustomer.id,
+      });
+
+      return createdBooking;
+    });
   }
 
   async findAll(
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<BookingWithRelationsDto[]>> {
-    const paginatedBooking = await paginate(
-      query,
-      this.bookingPaymentRepository,
-      {
-        sortableColumns: ['createdAt'],
-        defaultSortBy: [['createdAt', 'DESC']],
-        defaultLimit: 10,
-        searchableColumns: ['status'],
-        relations: {
-          customer: true,
-          currency: true,
-          payments: true,
-        },
+    const paginatedBooking = await paginate(query, this.bookingRepository, {
+      sortableColumns: ['createdAt'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      defaultLimit: 10,
+      searchableColumns: ['status'],
+      relations: {
+        customer: true,
+        currency: true,
+        payments: true,
       },
-    );
+    });
 
     return paginateResponseMapper(paginatedBooking);
   }
 
   async findOne(id: string): Promise<BookingWithRelationsDto> {
-    const bookingPayment = await this.bookingPaymentRepository.findOne({
+    const bookingPayment = await this.bookingRepository.findOne({
       where: {
         id,
       },
@@ -69,9 +78,21 @@ export class BookingService {
     id: string,
     payload: UpdateBookingDto,
   ): Promise<BookingWithRelationsDto> {
-    await this.findOne(id);
+    const initialBooking = await this.findOne(id);
 
-    await this.bookingPaymentRepository.update(id, payload);
+    const { customer: customerData, ...bookingData } = payload;
+
+    await this.datasource.transaction(async (manager: EntityManager) => {
+      if (payload.customer) {
+        await this.bookingCustomerService.update(
+          initialBooking.customerId,
+          customerData,
+          manager,
+        );
+      }
+
+      await manager.update(Booking, id, bookingData);
+    });
 
     return await this.findOne(id);
   }
@@ -79,6 +100,6 @@ export class BookingService {
   async remove(id: string) {
     await this.findOne(id);
 
-    await this.bookingPaymentRepository.delete(id);
+    await this.bookingRepository.delete(id);
   }
 }
