@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ActivityCategory } from './activity-category.entity';
+import { Booking } from './booking.entity';
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
@@ -158,6 +159,9 @@ export class Activity {
 
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
+
+  @OneToMany(() => Booking, (booking) => booking.activity)
+  bookings: Booking[];
 
   @OneToMany(() => Review, (review) => review.activity)
   reviews: Review[];

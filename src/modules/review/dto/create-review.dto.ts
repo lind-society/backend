@@ -1,7 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
-  IsEmpty,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -9,9 +8,11 @@ import {
   IsUUID,
   Max,
   Min,
+  Validate,
   ValidateIf,
 } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
+import { OnlyOneFieldAllowedConstraint } from 'src/common/validations';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -56,15 +57,11 @@ export class CreateReviewDto {
   })
   readonly _atLeastOneIdRequired?: string;
 
-  @ValidateIf(
-    (o) =>
-      (o.activityId && o.propertyId) ||
-      (o.activityId && o.villaId) ||
-      (o.propertyId && o.villaId),
-  )
-  @IsEmpty({
-    message: 'Only one of activityId, propertyId, or villaId can be provided',
-  })
+  @Validate(OnlyOneFieldAllowedConstraint, [
+    'activityId',
+    'propertyId',
+    'villaId',
+  ])
   readonly _onlyOneIdAllowed?: string;
 }
 

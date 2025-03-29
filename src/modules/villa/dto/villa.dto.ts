@@ -10,6 +10,7 @@ import {
   VillaFeaturePivot,
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
+import { BookingDto } from 'src/modules/booking/dto';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
 import { ReviewDto } from 'src/modules/review/dto';
@@ -23,12 +24,14 @@ export interface IVillaDto
     | 'villaFeatures'
     | 'villaAdditionals'
     | 'villaPolicies'
+    | 'bookings'
     | 'reviews'
   > {}
 
 export interface IVillaWithRelationsDto extends IVillaDto {
   currency?: CurrencyDto;
   owner?: OwnerDto;
+  bookings?: BookingDto[];
   reviews?: ReviewDto[];
   additionals?: VillaAdditionalPivot[];
   facilities?: VillaFacilityPivot[];
@@ -85,6 +88,7 @@ export class VillaWithRelationsDto
 {
   readonly currency?: CurrencyDto;
   readonly owner?: OwnerDto;
+  readonly bookings?: BookingDto[];
   readonly reviews?: ReviewDto[];
   readonly additionals?: VillaAdditionalPivot[];
   readonly facilities?: VillaFacilityPivot[];

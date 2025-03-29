@@ -8,18 +8,23 @@ import {
   Owner,
   PlaceNearby,
 } from 'src/database/entities';
+import { BookingDto } from 'src/modules/booking/dto';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
 import { ReviewDto } from 'src/modules/review/dto';
 import { ActivityCategoryDto } from '../category/dto';
 
 export interface IActivityDto
-  extends Omit<Activity, 'category' | 'currency' | 'owner' | 'reviews'> {}
+  extends Omit<
+    Activity,
+    'category' | 'currency' | 'owner' | 'bookings' | 'reviews'
+  > {}
 
 export interface IActivityWithRelationsDto extends IActivityDto {
   category?: ActivityCategoryDto;
   currency?: CurrencyDto;
   owner?: OwnerDto;
+  bookings?: BookingDto[];
   reviews?: ReviewDto[];
 }
 
@@ -69,5 +74,6 @@ export class ActivityWithRelationsDto
   readonly category?: ActivityCategory;
   readonly currency?: Currency;
   readonly owner?: Owner;
+  readonly bookings?: BookingDto[];
   readonly reviews?: ReviewDto[];
 }

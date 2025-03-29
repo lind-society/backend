@@ -53,9 +53,11 @@ export class BookingService {
       defaultLimit: 10,
       searchableColumns: ['status'],
       relations: {
+        activity: true,
         customer: true,
         currency: true,
         payments: true,
+        villa: true,
       },
     });
 
@@ -68,9 +70,11 @@ export class BookingService {
         id,
       },
       relations: {
+        activity: true,
         customer: true,
         currency: true,
         payments: true,
+        villa: true,
       },
     });
 
