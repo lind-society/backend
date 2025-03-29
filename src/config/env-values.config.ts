@@ -39,4 +39,6 @@ export const envValues: EnvironmentVariables = {
   GLOBAL_REGION_FETCH: process.env.GLOBAL_REGION_FETCH || '',
   GLOBAL_POSTAL_CODE_FETCH: process.env.GLOBAL_POSTAL_CODE_FETCH || '',
   GEONAMES_API_USERNAME: process.env.GEONAMES_API_USERNAME || '',
+  WHATSAPP_MAIN_CLIENT_ID: process.env.WHATSAPP_MAIN_CLIENT_ID || '',
+  WHATSAPP_AUTH_STRATEGY: process.env.WHATSAPP_AUTH_STRATEGY || '',
 };

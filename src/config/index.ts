@@ -8,5 +8,6 @@ export * from './jwt.config';
 export * from './postal-code.config';
 export * from './region.config';
 export * from './storage.config';
+export * from './whatsapp.config';
 export * from './winston-logger.config';
 export * from './xendit.config';
