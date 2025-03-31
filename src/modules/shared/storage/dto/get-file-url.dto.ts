@@ -11,7 +11,7 @@ export class GetFileUrlDto {
 
   @IsString()
   @IsOptional()
-  readonly bukcet?: string | null;
+  readonly bukcet?: string;
 }
 
 export class GetFileUrlSuccessResponse

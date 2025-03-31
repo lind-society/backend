@@ -11,5 +11,5 @@ export class CreatePropertyFacililtyDto {
 
   @IsString()
   @IsOptional()
-  readonly description?: string | null;
+  readonly description?: string;
 }

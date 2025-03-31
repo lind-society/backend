@@ -26,15 +26,15 @@ export class CreateCurrencyDto {
   @IsString()
   @Length(1, 5)
   @IsOptional()
-  readonly symbol?: string | null;
+  readonly symbol?: string;
 
   @IsBoolean()
   @IsOptional()
-  readonly allowDecimal!: boolean | null;
+  readonly allowDecimal!: boolean;
 
   @IsBoolean()
   @IsOptional()
-  readonly allowRound!: boolean | null;
+  readonly allowRound!: boolean;
 }
 
 export class CreateCurrencySuccessResponse

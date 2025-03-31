@@ -11,5 +11,5 @@ export class CreateVillaFacililtyDto {
 
   @IsString()
   @IsOptional()
-  readonly description?: string | null;
+  readonly description?: string;
 }
