@@ -7,7 +7,7 @@ export class CreateVillaFacililtyDto {
 
   @IsUUID()
   @IsNotEmpty()
-  readonly facilityId!: string;
+  readonly id!: string;
 
   @IsString()
   @IsOptional()
