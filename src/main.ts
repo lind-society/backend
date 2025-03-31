@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
-import { validationExceptionFactory } from './common/factories/validation-exception.factory';
+import { validationExceptionFactory } from './common/factories';
 import { HttpExceptionFilter } from './common/filters';
 import { winstonConfig } from './config/winston-logger.config';
 import { WinstonLoggerService } from './modules/shared/logger/logger.service';

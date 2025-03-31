@@ -96,7 +96,7 @@ export class PropertyService {
           PropertyFacilityPivot,
           facilities.map((facility: CreatePropertyFacililtyDto) => ({
             propertyId: createdProperty.id,
-            facilityId: facility.facilityId,
+            facilityId: facility.id,
             description: facility.description,
           })),
         );
@@ -217,7 +217,7 @@ export class PropertyService {
             PropertyFacilityPivot,
             facilities.map((facility: CreatePropertyFacililtyDto) => ({
               propertyId: id,
-              facilityId: facility.facilityId,
+              facilityId: facility.id,
               description: facility.description,
             })),
           );
@@ -270,9 +270,9 @@ export class PropertyService {
     }
 
     if (Array.isArray(facilities) && facilities.length > 0) {
-      const facilityIds = facilities.map((facility) => facility.facilityId);
+      const ids = facilities.map((facility) => facility.id);
 
-      await this.facilityService.validateFaciliies(facilityIds);
+      await this.facilityService.validateFaciliies(ids);
     }
   }
 

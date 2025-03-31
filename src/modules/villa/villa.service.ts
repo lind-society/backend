@@ -118,7 +118,7 @@ export class VillaService {
             VillaFacilityPivot,
             facilities.map((facility: CreateVillaFacililtyDto) => ({
               villaId: createdVilla.id,
-              facilityId: facility.facilityId,
+              facilityId: facility.id,
               description: facility.description,
             })),
           );
@@ -253,7 +253,7 @@ export class VillaService {
             VillaFacilityPivot,
             facilities.map((facility) => ({
               villaId: id,
-              facilityId: facility.facilityId,
+              facilityId: facility.id,
               description: facility.description,
             })),
           );
@@ -322,9 +322,9 @@ export class VillaService {
     }
 
     if (Array.isArray(facilities) && facilities.length > 0) {
-      const facilityIds = facilities.map((facility) => facility.facilityId);
+      const ids = facilities.map((facility) => facility.id);
 
-      await this.facilityService.validateFaciliies(facilityIds);
+      await this.facilityService.validateFaciliies(ids);
     }
   }
 

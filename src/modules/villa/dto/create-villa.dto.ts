@@ -52,43 +52,43 @@ export class CreateVillaDto {
 
   @IsString()
   @IsOptional()
-  readonly secondaryName?: string | null;
+  readonly secondaryName?: string;
 
   @IsArray()
   @IsEnum(VillaAvailability, { each: true })
   @IsNotEmpty({ each: true })
   @IsOptional()
-  readonly availability?: VillaAvailability[] | null;
+  readonly availability?: VillaAvailability[];
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0, { message: 'minimum daily price is 0' })
   @IsOptional()
-  readonly priceDaily?: number | null;
+  readonly priceDaily?: number;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0, { message: 'minimum monthly price is 0' })
   @IsOptional()
-  readonly priceMonthly?: number | null;
+  readonly priceMonthly?: number;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0, { message: 'minimum yearly price is 0' })
   @IsOptional()
-  readonly priceYearly?: number | null;
+  readonly priceYearly?: number;
 
   @IsEnum(DiscountType)
   @IsOptional()
-  discountDailyType?: DiscountType | null;
+  discountDailyType?: DiscountType;
 
   @IsEnum(DiscountType)
   @IsOptional()
-  discountMonthlyType?: DiscountType | null;
+  discountMonthlyType?: DiscountType;
 
   @IsEnum(DiscountType)
   @IsOptional()
-  discountYearlyType?: DiscountType | null;
+  discountYearlyType?: DiscountType;
 
   @ValidateIf(
     (o) => o.discountDailyType !== null && o.discountDailyType !== undefined,
@@ -104,7 +104,7 @@ export class CreateVillaDto {
   )
   @ValidateDiscountValue('discountDailyType', 'priceDaily', DiscountType)
   @IsOptional()
-  readonly discountDaily?: number | null;
+  readonly discountDaily?: number;
 
   @ValidateIf(
     (o) =>
@@ -121,7 +121,7 @@ export class CreateVillaDto {
   )
   @ValidateDiscountValue('discountMonthlyType', 'priceMonthly', DiscountType)
   @IsOptional()
-  readonly discountMonthly?: number | null;
+  readonly discountMonthly?: number;
 
   @ValidateIf(
     (o) => o.discountYearlyType !== null && o.discountYearlyType !== undefined,
@@ -136,47 +136,47 @@ export class CreateVillaDto {
     { message: 'discountYearly must be a valid number' },
   )
   @ValidateDiscountValue('discountYearlyType', 'priceyearly', DiscountType)
-  readonly discountYearly?: number | null;
+  readonly discountYearly?: number;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => VillaAvailabilityPerPriceDto)
   @IsOptional()
-  readonly availabilityPerPrice?: VillaAvailabilityPerPriceDto[] | null;
+  readonly availabilityPerPrice?: VillaAvailabilityPerPriceDto[];
 
   @IsString()
   @IsOptional()
-  readonly highlight?: string | null;
+  readonly highlight?: string;
 
   @IsString()
   @IsOptional()
-  readonly address?: string | null;
+  readonly address?: string;
 
   @IsString()
   @IsOptional()
-  readonly country?: string | null;
+  readonly country?: string;
 
   @IsString()
   @IsOptional()
-  readonly state?: string | null;
+  readonly state?: string;
 
   @IsString()
   @IsOptional()
-  readonly city?: string | null;
+  readonly city?: string;
 
   @IsNumberString()
   @IsOptional()
-  readonly postalCode?: string | null;
+  readonly postalCode?: string;
 
   @IsString()
   @IsOptional()
-  readonly mapLink?: string | null;
+  readonly mapLink?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: PlaceNearbyDto[] | null;
+  readonly placeNearby?: PlaceNearbyDto[];
 
   @IsString()
   @Matches(regexValidator.checkInHour.regex, {
@@ -195,17 +195,17 @@ export class CreateVillaDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly photos?: string[] | null;
+  readonly photos?: string[];
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly videos?: string[] | null;
+  readonly videos?: string[];
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly video360s?: string[] | null;
+  readonly video360s?: string[];
 
   @IsUUID()
   @IsNotEmpty()
@@ -213,31 +213,31 @@ export class CreateVillaDto {
 
   @IsUUID()
   @IsOptional()
-  readonly ownerId?: string | null;
+  readonly ownerId?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateVillaFacililtyDto)
   @IsOptional()
-  readonly facilities?: CreateVillaFacililtyDto[] | null;
+  readonly facilities?: CreateVillaFacililtyDto[];
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateAdditionalDto)
   @IsOptional()
-  readonly additionals?: CreateAdditionalDto[] | null;
+  readonly additionals?: CreateAdditionalDto[];
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateFeatureDto)
   @IsOptional()
-  readonly features?: CreateFeatureDto[] | null;
+  readonly features?: CreateFeatureDto[];
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateVillaPolicyDto)
   @IsOptional()
-  readonly policies?: CreateVillaPolicyDto[] | null;
+  readonly policies?: CreateVillaPolicyDto[];
 }
 
 export class CreateVillaSuccessResponse

@@ -34,7 +34,7 @@ export class CreatePropertyDto {
 
   @IsString()
   @IsOptional()
-  readonly secondaryName?: string | null;
+  readonly secondaryName?: string;
 
   @Type(() => Number)
   @IsNumber(
@@ -49,7 +49,7 @@ export class CreatePropertyDto {
     message: `discount type be one of: ${Object.values(DiscountType).join(', ')}`,
   })
   @IsOptional()
-  discountType?: DiscountType | null;
+  discountType?: DiscountType;
 
   @ValidateIf((o) => o.discountType !== null)
   @IsNotEmpty({
@@ -62,7 +62,7 @@ export class CreatePropertyDto {
   )
   @ValidateDiscountValue('discountType', 'price', DiscountType)
   @IsOptional()
-  readonly discount?: number | null;
+  readonly discount?: number;
 
   @IsEnum(PropertyOwnershipType)
   @IsNotEmpty()
@@ -70,52 +70,52 @@ export class CreatePropertyDto {
 
   @IsString()
   @IsOptional()
-  readonly highlight?: string | null;
+  readonly highlight?: string;
 
   @IsString()
   @IsOptional()
-  readonly address?: string | null;
+  readonly address?: string;
 
   @IsString()
   @IsOptional()
-  readonly country?: string | null;
+  readonly country?: string;
 
   @IsString()
   @IsOptional()
-  readonly state?: string | null;
+  readonly state?: string;
 
   @IsString()
   @IsOptional()
-  readonly city?: string | null;
+  readonly city?: string;
 
   @IsNumberString()
   @IsOptional()
-  readonly postalCode?: string | null;
+  readonly postalCode?: string;
 
   @IsString()
   @IsOptional()
-  readonly mapLink?: string | null;
+  readonly mapLink?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: PlaceNearbyDto[] | null;
+  readonly placeNearby?: PlaceNearbyDto[];
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly photos?: string[] | null;
+  readonly photos?: string[];
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly videos?: string[] | null;
+  readonly videos?: string[];
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly video360s?: string[] | null;
+  readonly video360s?: string[];
 
   @IsBoolean()
   @IsNotEmpty()
@@ -127,25 +127,25 @@ export class CreatePropertyDto {
 
   @IsUUID()
   @IsOptional()
-  readonly ownerId?: string | null;
+  readonly ownerId?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreatePropertyFacililtyDto)
   @IsOptional()
-  readonly facilities?: CreatePropertyFacililtyDto[] | null;
+  readonly facilities?: CreatePropertyFacililtyDto[];
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateAdditionalDto)
   @IsOptional()
-  readonly additionals?: CreateAdditionalDto[] | null;
+  readonly additionals?: CreateAdditionalDto[];
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateFeatureDto)
   @IsOptional()
-  readonly features?: CreateFeatureDto[] | null;
+  readonly features?: CreateFeatureDto[];
 }
 
 export class CreatePropertySuccessResponse

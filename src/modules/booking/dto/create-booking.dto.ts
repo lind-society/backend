@@ -56,7 +56,7 @@ export class CreateBookingDto {
 
   @IsUUID()
   @IsOptional()
-  readonly customerId?: string | null;
+  readonly customerId?: string;
 
   @Type(() => CreateBookingCustomerDto)
   @IsNotEmpty()

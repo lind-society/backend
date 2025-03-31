@@ -7,9 +7,9 @@ export class CreatePropertyFacililtyDto {
 
   @IsUUID()
   @IsNotEmpty()
-  readonly facilityId!: string;
+  readonly id!: string;
 
   @IsString()
   @IsOptional()
-  readonly description?: string | null;
+  readonly description?: string;
 }

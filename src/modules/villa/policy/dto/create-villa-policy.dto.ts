@@ -27,12 +27,12 @@ export class CreateVillaPolicyDto {
 
   @IsString()
   @IsOptional()
-  readonly description?: string | null;
+  readonly description?: string;
 
   @ValidateNested()
   @Type(() => IconDto)
   @IsOptional()
-  readonly icon?: IconDto | null;
+  readonly icon?: IconDto;
 }
 
 export class CreateVillaPolicySuccessResponse
