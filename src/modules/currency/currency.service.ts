@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Currency } from 'src/database/entities';
 import { Repository } from 'typeorm';
@@ -23,9 +23,16 @@ export class CurrencyService {
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<CurrencyDto[]>> {
     const paginatedCurrency = await paginate(query, this.currencyRepository, {
-      sortableColumns: ['createdAt'],
+      sortableColumns: ['createdAt', 'code', 'name', 'symbol'],
       defaultSortBy: [['createdAt', 'DESC']],
+      nullSort: 'last',
       defaultLimit: 10,
+      maxLimit: 100,
+      filterableColumns: {
+        allowDecimal: [FilterOperator.EQ],
+        allowRound: [FilterOperator.EQ],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+      },
       searchableColumns: ['code', 'name', 'symbol'],
     });
 

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { CurrencyConverter } from 'src/database/entities';
 import { PaginateResponseDataProps } from 'src/modules/shared/dto';
@@ -59,14 +59,22 @@ export class CurrencyConverterService {
       query,
       this.currencyConverterRepository,
       {
-        sortableColumns: ['createdAt'],
+        sortableColumns: ['createdAt', 'exchangeRate'],
         defaultSortBy: [['createdAt', 'DESC']],
+        nullSort: 'last',
         defaultLimit: 10,
-        searchableColumns: [
-          'baseCurrencyId',
-          'targetCurrencyId',
-          'exchangeRate',
-        ],
+        maxLimit: 100,
+        filterableColumns: {
+          baseCurrencyId: [FilterOperator.EQ],
+          targetCurrencyId: [FilterOperator.EQ],
+          exchangeRate: [
+            FilterOperator.EQ,
+            FilterOperator.GTE,
+            FilterOperator.LTE,
+          ],
+          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        },
+        searchableColumns: ['description'],
         relations: {
           baseCurrency: true,
           targetCurrency: true,

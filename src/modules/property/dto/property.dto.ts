@@ -52,6 +52,7 @@ export class PropertyDto implements IPropertyDto {
   readonly videos!: string[];
   readonly video360s!: string[];
   readonly soldStatus!: boolean;
+  readonly averageRating!: number | null;
   readonly currencyId!: string;
   readonly ownerId!: string | null;
   readonly createdAt!: Date;

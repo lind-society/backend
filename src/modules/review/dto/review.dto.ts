@@ -5,11 +5,11 @@ import { PropertyDto } from 'src/modules/property/dto';
 import { VillaDto } from 'src/modules/villa/dto';
 
 export interface IReviewDto
-  extends Omit<Review, 'activity' | 'booking' | 'property' | 'villa'> {}
+  extends Omit<Review, 'booking' | 'activity' | 'property' | 'villa'> {}
 
 export interface IReviewWithRelationsDto extends IReviewDto {
-  activity?: ActivityDto;
   booking?: BookingDto;
+  activity?: ActivityDto;
   property?: PropertyDto;
   villa?: VillaDto;
 }
@@ -31,8 +31,8 @@ export class ReviewWithRelationsDto
   extends ReviewDto
   implements IReviewWithRelationsDto
 {
-  readonly activity?: ActivityDto;
   readonly booking?: BookingDto;
+  readonly activity?: ActivityDto;
   readonly property?: PropertyDto;
   readonly villa?: VillaDto;
 }

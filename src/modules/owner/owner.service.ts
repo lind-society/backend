@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Owner } from 'src/database/entities';
 import { Repository } from 'typeorm';
@@ -26,18 +26,17 @@ export class OwnerService {
 
   async findAll(query: PaginateQuery) {
     const paginatedOwner = await paginate(query, this.ownerRepository, {
-      sortableColumns: ['createdAt'],
+      sortableColumns: ['createdAt', 'name', 'type', 'status'],
       defaultSortBy: [['createdAt', 'DESC']],
+      nullSort: 'last',
       defaultLimit: 10,
-      searchableColumns: [
-        'name',
-        'companyName',
-        'email',
-        'phoneNumber',
-        'website',
-        'type',
-        'status',
-      ],
+      filterableColumns: {
+        type: [FilterOperator.EQ],
+        status: [FilterOperator.EQ],
+        phoneNumber: [FilterOperator.EQ],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+      },
+      searchableColumns: ['name', 'companyName', 'email', 'address', 'website'],
       relations: {
         activities: true,
         properties: true,

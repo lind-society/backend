@@ -7,17 +7,18 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { Public } from 'src/common/decorators';
+import { AuthorizedRequest } from 'src/common/types';
 import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import { BlogService } from './blog.service';
 import {
   CreateBlogDto,
   CreateBlogSuccessResponse,
-  GetBlogsDto,
   GetBlogsSuccessResponse,
   GetBlogSuccessResponse,
   UpdateBlogDto,
@@ -30,19 +31,22 @@ export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
   @Post()
-  async create(@Body() payload: CreateBlogDto) {
-    const result = await this.blogService.create(payload);
+  async create(
+    @Request() req: AuthorizedRequest,
+    @Body() payload: CreateBlogDto,
+  ) {
+    const result = await this.blogService.create({
+      ...payload,
+      authorId: req.user.id,
+    });
 
     return new CreateBlogSuccessResponse(result);
   }
 
   @Public()
   @Get()
-  async findAll(
-    @Paginate() query: PaginateQuery,
-    @Body() payload: GetBlogsDto,
-  ) {
-    const result = await this.blogService.findAll(query, payload);
+  async findAll(@Paginate() query: PaginateQuery) {
+    const result = await this.blogService.findAll(query);
 
     return new GetBlogsSuccessResponse(result);
   }

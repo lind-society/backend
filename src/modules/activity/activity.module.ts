@@ -16,5 +16,6 @@ import { ActivityCategoryModule } from './category/activity-category.module';
     CurrencyModule,
     OwnerModule,
   ],
+  exports: [ActivityService],
 })
 export class ActivityModule {}

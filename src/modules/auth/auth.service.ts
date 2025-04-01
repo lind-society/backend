@@ -14,8 +14,10 @@ export class AuthService {
     private jwtService: JwtService,
     private adminService: AdminService,
   ) {}
+
   // to do :
-  // request reset password
+  // request reset password (send otp or link via email/whatsapp)
+
   async validateAdmin(payload: LoginRequestDto) {
     const adminCredentials = await this.adminService.findCredentialByIdentifier(
       payload.identifier,
@@ -41,7 +43,6 @@ export class AuthService {
   }
 
   async register(payload: CreateAdminDto) {
-    // add validation for checking unique input for username, email, phone number
     const admin = await this.adminService.create(payload);
 
     return admin;

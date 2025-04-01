@@ -1,14 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
-import { Review } from 'src/database/entities';
-import { Repository } from 'typeorm';
+import { Activity, Property, Review, Villa } from 'src/database/entities';
+import { DataSource, EntityManager, Repository } from 'typeorm';
+import { ActivityService } from '../activity/activity.service';
+import { PropertyService } from '../property/property.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { VillaService } from '../villa/villa.service';
 import {
   CreateReviewDto,
-  GetReviewsDto,
+  ReviewDto,
   ReviewWithRelationsDto,
   UpdateReviewDto,
 } from './dto';
@@ -16,32 +18,53 @@ import {
 @Injectable()
 export class ReviewService {
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(Review)
     private reviewRepository: Repository<Review>,
+    private activityService: ActivityService,
+    private propertyService: PropertyService,
     private villaService: VillaService,
   ) {}
   async create(payload: CreateReviewDto): Promise<ReviewWithRelationsDto> {
-    await this._validateVilla(payload.villaId);
+    return this.dataSource.transaction(async (manager) => {
+      const review = this.reviewRepository.create(payload);
 
-    const review = this.reviewRepository.create(payload);
+      const createdReview = await manager.save(Review, review);
 
-    return await this.reviewRepository.save(review);
+      await this._validateRelatedEntities(
+        manager,
+        payload.activityId,
+        payload.propertyId,
+        payload.villaId,
+      );
+
+      return createdReview;
+    });
   }
 
   async findAll(
     query: PaginateQuery,
-    payload: GetReviewsDto,
   ): Promise<PaginateResponseDataProps<ReviewWithRelationsDto[]>> {
-    const whereCondition = payload.villaId
-      ? { villaId: payload.villaId }
-      : undefined;
-
     const paginatedReview = await paginate(query, this.reviewRepository, {
-      sortableColumns: ['createdAt'],
+      sortableColumns: ['createdAt', 'rating'],
       defaultSortBy: [['createdAt', 'DESC']],
+      nullSort: 'last',
       defaultLimit: 10,
-      searchableColumns: ['activity.name', 'property.name', 'villa.name'],
-      where: whereCondition,
+      maxLimit: 100,
+      filterableColumns: {
+        rating: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+        bookingId: [FilterOperator.EQ],
+        activityId: [FilterOperator.EQ],
+        propertyId: [FilterOperator.EQ],
+        villaId: [FilterOperator.EQ],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+      },
+      searchableColumns: [
+        'booking.customer.name',
+        'activity.name',
+        'property.name',
+        'villa.name',
+      ],
       relations: {
         booking: {
           customer: true,
@@ -65,8 +88,12 @@ export class ReviewService {
     return paginateResponseMapper(paginatedReview);
   }
 
-  async findOne(id: string) {
-    const review = await this.reviewRepository.findOne({
+  async findOne(id: string, entityManager?: EntityManager) {
+    const repository = entityManager
+      ? entityManager.getRepository(Review)
+      : this.reviewRepository;
+
+    const review = await repository.findOne({
       where: {
         id,
       },
@@ -101,11 +128,20 @@ export class ReviewService {
     id: string,
     payload: UpdateReviewDto,
   ): Promise<ReviewWithRelationsDto> {
-    await this.findOne(id);
+    await this.dataSource.transaction(async (manager) => {
+      const initialReview = await this.findOne(id, manager);
 
-    await this.reviewRepository.update(id, payload);
+      await manager.update(Review, id, payload);
 
-    return this.findOne(id);
+      await this._validateRelatedEntities(
+        manager,
+        initialReview.activityId,
+        initialReview.propertyId,
+        initialReview.villaId,
+      );
+    });
+
+    return await this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
@@ -114,11 +150,59 @@ export class ReviewService {
     await this.reviewRepository.delete(id);
   }
 
-  private async _validateVilla(villaId: string): Promise<void> {
-    const validCategory = await this.villaService.findOne(villaId);
+  private async _validateRelatedEntities(
+    manager: EntityManager,
+    activityId?: string,
+    propertyId?: string,
+    villaId?: string,
+  ): Promise<void> {
+    if (activityId) {
+      await this.activityService.findOne(activityId, manager);
 
-    if (!validCategory) {
-      throw new NotFoundException('Blog category not found');
+      const reviews = await manager.find(Review, {
+        where: { activityId },
+        select: ['rating'],
+      });
+
+      const averageRating = this._calculateAverageRating(reviews);
+
+      await manager.update(Activity, activityId, { averageRating });
     }
+
+    if (propertyId) {
+      await this.propertyService.findOne(propertyId, manager);
+
+      const reviews = await manager.find(Review, {
+        where: { propertyId },
+        select: ['rating'],
+      });
+
+      const averageRating = this._calculateAverageRating(reviews);
+
+      await manager.update(Property, propertyId, { averageRating });
+    }
+
+    if (villaId) {
+      await this.villaService.findOne(villaId, manager);
+
+      const reviews = await manager.find(Review, {
+        where: { villaId },
+        select: ['rating'],
+      });
+
+      const averageRating = this._calculateAverageRating(reviews);
+
+      await manager.update(Villa, villaId, { averageRating });
+    }
+  }
+
+  private _calculateAverageRating(reviews: ReviewDto[]): number {
+    return reviews.length > 0
+      ? reviews.reduce(
+          (sum: number, review: ReviewDto) =>
+            sum + parseFloat(review.rating.toString()),
+          0,
+        ) / reviews.length
+      : 0;
   }
 }

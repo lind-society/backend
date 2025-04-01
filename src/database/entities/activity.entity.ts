@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ActivityCategory } from './activity-category.entity';
+import { Booking } from './booking.entity';
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
@@ -150,6 +151,15 @@ export class Activity {
   @Column({ name: 'video_360', type: 'varchar', array: true, nullable: true })
   video360s!: string[] | null;
 
+  @Column({
+    name: 'average_rating',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  averageRating!: number | null;
+
   @Column({ name: 'category_id', type: 'uuid' })
   categoryId: string;
 
@@ -161,6 +171,9 @@ export class Activity {
 
   @OneToMany(() => Review, (review) => review.activity)
   reviews: Review[];
+
+  @OneToMany(() => Booking, (booking) => booking.activity)
+  bookings: Booking[];
 
   @ManyToOne(() => ActivityCategory, {
     onDelete: 'SET NULL',

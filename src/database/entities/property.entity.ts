@@ -115,6 +115,15 @@ export class Property {
   })
   soldStatus!: boolean;
 
+  @Column({
+    name: 'average_rating',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  averageRating!: number | null;
+
   @Column({ name: 'currency_id', type: 'uuid' })
   currencyId: string;
 
