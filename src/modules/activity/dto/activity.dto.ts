@@ -14,7 +14,10 @@ import { ReviewDto } from 'src/modules/review/dto';
 import { ActivityCategoryDto } from '../category/dto';
 
 export interface IActivityDto
-  extends Omit<Activity, 'category' | 'currency' | 'owner' | 'reviews'> {}
+  extends Omit<
+    Activity,
+    'category' | 'currency' | 'owner' | 'bookings' | 'reviews'
+  > {}
 
 export interface IActivityWithRelationsDto extends IActivityDto {
   category?: ActivityCategoryDto;
@@ -54,6 +57,7 @@ export class ActivityDto implements IActivityDto {
   readonly photos!: string[];
   readonly videos!: string[];
   readonly video360s!: string[];
+  readonly averageRating!: number | null;
   readonly categoryId!: string;
   readonly currencyId!: string;
   readonly ownerId!: string | null;

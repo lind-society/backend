@@ -10,10 +10,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Activity } from './activity.entity';
 import { BookingCustomer } from './booking-customer.entity';
 import { BookingPayment } from './booking-payment.entity';
 import { Currency } from './currency.entity';
 import { Review } from './review.entity';
+import { Villa } from './villa.entity';
 
 export enum BookingStatus {
   Requested = 'requested',
@@ -58,6 +60,12 @@ export class Booking {
   @Column({ name: 'customer_id', type: 'uuid' })
   customerId!: string;
 
+  @Column({ name: 'activity_id', type: 'uuid', nullable: true })
+  activityId!: string | null;
+
+  @Column({ name: 'villa_id', type: 'uuid', nullable: true })
+  villaId!: string | null;
+
   @OneToOne(() => Review, (review) => review.booking, {
     nullable: true,
   })
@@ -81,6 +89,20 @@ export class Booking {
   )
   @JoinColumn({ name: 'customer_id' })
   customer!: BookingCustomer;
+
+  @ManyToOne(() => Activity, (activity) => activity.bookings, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'activity_id' })
+  activity!: Activity | null;
+
+  @ManyToOne(() => Villa, (villa) => villa.bookings, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'villa_id' })
+  villa!: Villa | null;
 
   @CreateDateColumn({
     name: 'created_at',

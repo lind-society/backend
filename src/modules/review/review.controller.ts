@@ -12,7 +12,6 @@ import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreateReviewDto,
   CreateReviewSuccessResponse,
-  GetReviewsDto,
   GetReviewsSuccessResponse,
   GetReviewSuccessResponse,
   UpdateReviewDto,
@@ -32,11 +31,8 @@ export class ReviewController {
   }
 
   @Get()
-  async findAll(
-    @Paginate() query: PaginateQuery,
-    @Body() payload: GetReviewsDto,
-  ) {
-    const result = await this.reviewService.findAll(query, payload);
+  async findAll(@Paginate() query: PaginateQuery) {
+    const result = await this.reviewService.findAll(query);
 
     return new GetReviewsSuccessResponse(result);
   }

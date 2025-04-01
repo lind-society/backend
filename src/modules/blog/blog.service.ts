@@ -1,18 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Blog } from 'src/database/entities';
 import { Repository } from 'typeorm';
 import { AdminService } from '../admin/admin.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { BlogCategoryService } from './category/blog-category.service';
-import {
-  BlogWithRelationsDto,
-  CreateBlogDto,
-  GetBlogsDto,
-  UpdateBlogDto,
-} from './dto';
+import { BlogWithRelationsDto, CreateBlogDto, UpdateBlogDto } from './dto';
 
 @Injectable()
 export class BlogService {
@@ -33,18 +28,19 @@ export class BlogService {
 
   async findAll(
     query: PaginateQuery,
-    payload: GetBlogsDto,
   ): Promise<PaginateResponseDataProps<BlogWithRelationsDto[]>> {
-    const whereCondition = payload.categoryId
-      ? { categoryId: payload.categoryId }
-      : undefined;
-
     const paginatedBlog = await paginate(query, this.blogRepository, {
-      sortableColumns: ['createdAt'],
+      sortableColumns: ['createdAt', 'title', 'authorId', 'categoryId'],
       defaultSortBy: [['createdAt', 'DESC']],
+      nullSort: 'last',
       defaultLimit: 10,
+      maxLimit: 100,
+      filterableColumns: {
+        categoryId: [FilterOperator.EQ],
+        authorId: [FilterOperator.EQ],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+      },
       searchableColumns: ['title', 'category.name'],
-      where: whereCondition,
       relations: {
         author: true,
         category: true,

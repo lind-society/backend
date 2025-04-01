@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { DiscountType, Feature } from 'src/database/entities';
 import { Repository } from 'typeorm';
@@ -35,9 +35,21 @@ export class FeatureService {
       query,
       this.featureRepository,
       {
-        sortableColumns: ['createdAt'],
+        sortableColumns: ['createdAt', 'name', 'type'],
         defaultSortBy: [['createdAt', 'DESC']],
+        nullSort: 'last',
         defaultLimit: 10,
+        maxLimit: 100,
+        filterableColumns: {
+          type: [FilterOperator.EQ],
+          free: [FilterOperator.EQ],
+          discountType: [FilterOperator.EQ],
+          discount: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+          price: [FilterOperator.GTE, FilterOperator.LTE],
+          priceAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        },
+        searchableColumns: ['name'],
       },
     );
 

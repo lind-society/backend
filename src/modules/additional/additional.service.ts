@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Additional } from 'src/database/entities';
 import { Repository } from 'typeorm';
@@ -18,7 +18,7 @@ export class AdditionalService {
     @InjectRepository(Additional)
     private additionalRepository: Repository<Additional>,
   ) {}
-  
+
   async create(payload: CreateAdditionalDto): Promise<AdditionalDto> {
     const additional = this.additionalRepository.create(payload);
 
@@ -32,9 +32,16 @@ export class AdditionalService {
       query,
       this.additionalRepository,
       {
-        sortableColumns: ['createdAt'],
+        sortableColumns: ['createdAt', 'name', 'type'],
         defaultSortBy: [['createdAt', 'DESC']],
+        nullSort: 'last',
         defaultLimit: 10,
+        maxLimit: 100,
+        filterableColumns: {
+          type: [FilterOperator.EQ],
+          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        },
+        searchableColumns: ['name'],
       },
     );
 

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import {
   Additional,
@@ -35,31 +35,6 @@ export class PropertyService {
     private featureService: FeatureService,
     private ownerService: OwnerService,
   ) {}
-
-  private mapPropertyData(property: Property) {
-    return plainToInstance(PropertyWithRelationsDto, {
-      ...omit(property, [
-        'propertyAdditionals',
-        'propertyFacilities',
-        'propertyFeatures',
-      ]),
-
-      additionals: property.propertyAdditionals.map(({ id, additional }) => ({
-        pivotId: id,
-        ...additional,
-      })),
-
-      facilities: property.propertyFacilities.map(({ id, facility }) => ({
-        pivotId: id,
-        ...facility,
-      })),
-
-      features: property.propertyFeatures.map(({ id, feature }) => ({
-        pivotId: id,
-        ...feature,
-      })),
-    });
-  }
 
   async create(payload: CreatePropertyDto): Promise<PropertyWithRelationsDto> {
     this._handleDefaultDiscountType(payload);
@@ -120,19 +95,58 @@ export class PropertyService {
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<PropertyWithRelationsDto[]>> {
     const paginatedProperties = await paginate(query, this.propertyRepository, {
-      sortableColumns: ['createdAt'],
-      defaultSortBy: [['createdAt', 'DESC']],
+      sortableColumns: [
+        'createdAt',
+        'name',
+        'secondaryName',
+        'soldStatus',
+        'ownershipType',
+        'averageRating',
+      ],
+      defaultSortBy: [
+        ['averageRating', 'DESC'],
+        ['createdAt', 'DESC'],
+      ],
+      nullSort: 'last',
       defaultLimit: 10,
+      maxLimit: 100,
+      filterableColumns: {
+        currencyId: [FilterOperator.EQ],
+        ownerId: [FilterOperator.EQ],
+
+        discountType: [FilterOperator.EQ],
+        discount: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+        price: [FilterOperator.GTE, FilterOperator.LTE],
+        priceAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+
+        soldStatus: [FilterOperator.EQ],
+        ownershipType: [FilterOperator.EQ],
+        averageRating: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+
+        'placeNearby.name': [FilterOperator.ILIKE],
+        'propertyAdditionals.additional.name': [FilterOperator.ILIKE],
+        'propertyFacilities.facility.name': [FilterOperator.ILIKE],
+        'propertyFeatures.feature.name': [FilterOperator.ILIKE],
+      },
       searchableColumns: [
         'name',
-        'propertyAdditionals.additional.name',
-        'propertyFacilities.facility.name',
-        'propertyFeatures.feature.name',
+        'secondaryName',
+        'address',
+        'country',
+        'state',
+        'city',
+        'postalCode',
+        'mapLink',
       ],
       relations: {
         currency: true,
         owner: true,
-        reviews: true,
+        reviews: { booking: { customer: true } },
         propertyAdditionals: { additional: true },
         propertyFeatures: { feature: { currency: true } },
         propertyFacilities: { facility: true },
@@ -140,7 +154,7 @@ export class PropertyService {
     });
 
     const mappedPaginatedProperties = paginatedProperties.data.map((property) =>
-      this.mapPropertyData(property),
+      this._mapPropertyData(property),
     );
 
     return paginateResponseMapper(
@@ -149,15 +163,22 @@ export class PropertyService {
     );
   }
 
-  async findOne(id: string): Promise<PropertyWithRelationsDto> {
-    const property = await this.propertyRepository.findOne({
+  async findOne(
+    id: string,
+    entityManager?: EntityManager,
+  ): Promise<PropertyWithRelationsDto> {
+    const repository = entityManager
+      ? entityManager.getRepository(Property)
+      : this.propertyRepository;
+
+    const property = await repository.findOne({
       where: {
         id,
       },
       relations: {
         currency: true,
         owner: true,
-        reviews: true,
+        reviews: { booking: { customer: true } },
         propertyAdditionals: { additional: true },
         propertyFeatures: { feature: { currency: true } },
         propertyFacilities: { facility: true },
@@ -168,15 +189,13 @@ export class PropertyService {
       throw new NotFoundException(`property not found`);
     }
 
-    return this.mapPropertyData(property);
+    return this._mapPropertyData(property);
   }
 
   async update(
     id: string,
     payload: UpdatePropertyDto,
   ): Promise<PropertyWithRelationsDto> {
-    await this.findOne(id);
-
     this._handleDefaultDiscountType(payload);
 
     const { additionals, facilities, features, ...propertyData } = payload;
@@ -188,6 +207,8 @@ export class PropertyService {
     );
 
     await this.datasource.transaction(async (manager: EntityManager) => {
+      await this.findOne(id, manager);
+
       const updatedProperty = await manager.update(Property, id, propertyData);
 
       if (Array.isArray(additionals)) {
@@ -227,7 +248,7 @@ export class PropertyService {
       if (Array.isArray(features)) {
         await manager.delete(PropertyFeaturePivot, { propertyId: id });
 
-        if (facilities.length > 0) {
+        if (features.length > 0) {
           features.map((feature) =>
             this.featureService.handleDefaultDiscountType(feature),
           );
@@ -254,6 +275,34 @@ export class PropertyService {
     await this.findOne(id);
 
     await this.propertyRepository.delete(id);
+  }
+
+  private _mapPropertyData(property: Property) {
+    return plainToInstance(PropertyWithRelationsDto, {
+      ...omit(property, [
+        'propertyAdditionals',
+        'propertyFacilities',
+        'propertyFeatures',
+      ]),
+
+      additionals: property.propertyAdditionals.map(({ id, additional }) => ({
+        pivotId: id,
+        ...additional,
+      })),
+
+      facilities: property.propertyFacilities.map(
+        ({ id, description, facility }) => ({
+          pivotId: id,
+          description,
+          ...facility,
+        }),
+      ),
+
+      features: property.propertyFeatures.map(({ id, feature }) => ({
+        pivotId: id,
+        ...feature,
+      })),
+    });
   }
 
   private async _validateRelatedEntities(

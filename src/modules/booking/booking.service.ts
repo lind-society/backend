@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Booking } from 'src/database/entities';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
-import { BookingCustomerService } from './customer/customer.service';
+import { BookingCustomerService } from './customer/booking-customer.service';
 import {
   BookingWithRelationsDto,
   CreateBookingDto,
@@ -41,14 +41,52 @@ export class BookingService {
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<BookingWithRelationsDto[]>> {
     const paginatedBooking = await paginate(query, this.bookingRepository, {
-      sortableColumns: ['createdAt'],
+      sortableColumns: [
+        'createdAt',
+        'totalAmount',
+        'totalGuest',
+        'checkInDate',
+        'checkOutDate',
+        'status',
+      ],
       defaultSortBy: [['createdAt', 'DESC']],
+      nullSort: 'last',
       defaultLimit: 10,
-      searchableColumns: ['status'],
+      maxLimit: 100,
+      filterableColumns: {
+        totalAmount: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        totalGuest: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+        checkInDate: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        checkOutDate: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        status: [FilterOperator.EQ],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+      },
+      searchableColumns: ['customer.name', 'activity.name', 'villa.name'],
       relations: {
         customer: true,
         currency: true,
-        payments: true,
+        activity: {
+          owner: true,
+          currency: true,
+        },
+        villa: {
+          owner: true,
+          currency: true,
+        },
+        review: true,
+        payments: { currency: true },
       },
     });
 
@@ -63,7 +101,16 @@ export class BookingService {
       relations: {
         customer: true,
         currency: true,
-        payments: true,
+        activity: {
+          owner: true,
+          currency: true,
+        },
+        villa: {
+          owner: true,
+          currency: true,
+        },
+        review: true,
+        payments: { currency: true },
       },
     });
 

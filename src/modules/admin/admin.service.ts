@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { compareHash, hash, paginateResponseMapper } from 'src/common/helpers';
 import { Admin } from 'src/database/entities';
 import { Repository } from 'typeorm';
@@ -40,9 +40,14 @@ export class AdminService {
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<AdminWithRelationDto[]>> {
     const paginatedAdmin = await paginate(query, this.adminRepository, {
-      sortableColumns: ['createdAt'],
+      sortableColumns: ['createdAt', 'name', 'email', 'phoneNumber'],
       defaultSortBy: [['createdAt', 'DESC']],
+      nullSort: 'last',
       defaultLimit: 10,
+      maxLimit: 100,
+      filterableColumns: {
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+      },
       searchableColumns: ['name', 'username', 'email', 'phoneNumber'],
       relations: {
         blogs: true,

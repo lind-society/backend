@@ -17,7 +17,7 @@ export class CreateBlogDto {
   readonly content!: string;
 
   @IsUUID()
-  @IsNotEmpty()
+  @IsOptional()
   readonly authorId?: string;
 
   @IsUUID()

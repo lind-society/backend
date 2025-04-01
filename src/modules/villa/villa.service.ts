@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import {
   paginateResponseMapper,
   validatePayloadFromObjectKey,
@@ -39,37 +39,6 @@ export class VillaService {
     private featureService: FeatureService,
     private ownerService: OwnerService,
   ) {}
-
-  private mapVillaData(villa: Villa) {
-    return plainToInstance(VillaWithRelationsDto, {
-      ...omit(villa, [
-        'villaAdditionals',
-        'villaFacilities',
-        'villaFeatures',
-        'villaPolicies',
-      ]),
-
-      additionals: villa.villaAdditionals.map(({ id, additional }) => ({
-        pivotId: id,
-        ...additional,
-      })),
-
-      facilities: villa.villaFacilities.map(({ id, facility }) => ({
-        pivotId: id,
-        ...facility,
-      })),
-
-      features: villa.villaFeatures.map(({ id, feature }) => ({
-        pivotId: id,
-        ...feature,
-      })),
-
-      policies: villa.villaPolicies.map(({ id, policy }) => ({
-        pivotId: id,
-        ...policy,
-      })),
-    });
-  }
 
   async create(payload: CreateVillaDto): Promise<VillaWithRelationsDto> {
     this._handleDefaultDiscountType(payload);
@@ -155,20 +124,110 @@ export class VillaService {
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<VillaWithRelationsDto[]>> {
     const paginatedVilla = await paginate(query, this.villaRepository, {
-      sortableColumns: ['createdAt'],
-      defaultSortBy: [['createdAt', 'DESC']],
+      sortableColumns: [
+        'createdAt',
+        'name',
+        'secondaryName',
+        'priceDaily',
+        'priceMonthly',
+        'priceYearly',
+        'discountDailyType',
+        'discountMonthlyType',
+        'discountYearlyType',
+        'discountDaily',
+        'discountMonthly',
+        'discountYearly',
+        'priceDailyAfterDiscount',
+        'priceMonthlyAfterDiscount',
+        'priceYearlyAfterDiscount',
+        'checkInHour',
+        'checkOutHour',
+        'averageRating',
+        'availabilityPerPrice.quota',
+      ],
+      defaultSortBy: [
+        ['averageRating', 'DESC'],
+        ['createdAt', 'DESC'],
+      ],
+      nullSort: 'last',
       defaultLimit: 10,
+      maxLimit: 100,
+      filterableColumns: {
+        currencyId: [FilterOperator.EQ],
+        ownerId: [FilterOperator.EQ],
+
+        discountDailyType: [FilterOperator.EQ],
+        discountMonthlyType: [FilterOperator.EQ],
+        discountYearlyType: [FilterOperator.EQ],
+        discountDaily: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        discountMonthly: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        discountYearly: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        priceDaily: [FilterOperator.GTE, FilterOperator.LTE],
+        priceMonthly: [FilterOperator.GTE, FilterOperator.LTE],
+        priceYearly: [FilterOperator.GTE, FilterOperator.LTE],
+        priceDailyAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+        priceMonthlyAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+        priceYearlyAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+
+        availability: [FilterOperator.IN, FilterOperator.CONTAINS],
+        checkInHour: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        checkOutHour: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        averageRating: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+
+        'placeNearby.name': [FilterOperator.ILIKE],
+        'availabilityPerPrice.availability': [
+          FilterOperator.IN,
+          FilterOperator.CONTAINS,
+        ],
+        'availabilityPerPrice.quota': [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        'villaAdditionals.additional.name': [FilterOperator.ILIKE],
+        'villaFacilities.facility.name': [FilterOperator.ILIKE],
+        'villaFeatures.feature.name': [FilterOperator.ILIKE],
+        'villaPolicies.policy.name': [FilterOperator.ILIKE],
+      },
       searchableColumns: [
         'name',
-        'villaAdditionals.additional.name',
-        'villaFacilities.facility.name',
-        'villaFeatures.feature.name',
-        'villaPolicies.policy.name',
+        'secondaryName',
+        'address',
+        'country',
+        'state',
+        'city',
+        'postalCode',
+        'mapLink',
       ],
       relations: {
         currency: true,
         owner: true,
-        reviews: true,
+        reviews: { booking: { customer: true } },
         villaAdditionals: { additional: true },
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
@@ -177,21 +236,28 @@ export class VillaService {
     });
 
     const mappedPaginatedVilla = paginatedVilla.data.map((villa) =>
-      this.mapVillaData(villa),
+      this._mapVillaData(villa),
     );
 
     return paginateResponseMapper(paginatedVilla, mappedPaginatedVilla);
   }
 
-  async findOne(id: string): Promise<VillaWithRelationsDto> {
-    const villa = await this.villaRepository.findOne({
+  async findOne(
+    id: string,
+    entityManager?: EntityManager,
+  ): Promise<VillaWithRelationsDto> {
+    const repository = entityManager
+      ? entityManager.getRepository(Villa)
+      : this.villaRepository;
+
+    const villa = await repository.findOne({
       where: {
         id,
       },
       relations: {
         currency: true,
         owner: true,
-        reviews: true,
+        reviews: { booking: { customer: true } },
         villaAdditionals: { additional: true },
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
@@ -203,15 +269,13 @@ export class VillaService {
       throw new NotFoundException(`villa not found`);
     }
 
-    return this.mapVillaData(villa);
+    return this._mapVillaData(villa);
   }
 
   async update(
     id: string,
     payload: UpdateVillaDto,
   ): Promise<VillaWithRelationsDto> {
-    await this.findOne(id);
-
     this._handleDefaultDiscountType(payload);
 
     const { additionals, facilities, features, policies, ...villaData } =
@@ -224,6 +288,8 @@ export class VillaService {
     );
 
     await this.datasource.transaction(async (manager) => {
+      await this.findOne(id, manager);
+
       const updatedVilla = await manager.update(Villa, id, villaData);
 
       if (Array.isArray(additionals)) {
@@ -306,6 +372,40 @@ export class VillaService {
     await this.findOne(id);
 
     await this.villaRepository.delete(id);
+  }
+
+  private _mapVillaData(villa: Villa) {
+    return plainToInstance(VillaWithRelationsDto, {
+      ...omit(villa, [
+        'villaAdditionals',
+        'villaFacilities',
+        'villaFeatures',
+        'villaPolicies',
+      ]),
+
+      additionals: villa.villaAdditionals.map(({ id, additional }) => ({
+        pivotId: id,
+        ...additional,
+      })),
+
+      facilities: villa.villaFacilities.map(
+        ({ id, description, facility }) => ({
+          pivotId: id,
+          description,
+          ...facility,
+        }),
+      ),
+
+      features: villa.villaFeatures.map(({ id, feature }) => ({
+        pivotId: id,
+        ...feature,
+      })),
+
+      policies: villa.villaPolicies.map(({ id, policy }) => ({
+        pivotId: id,
+        ...policy,
+      })),
+    });
   }
 
   private async _validateRelatedEntities(

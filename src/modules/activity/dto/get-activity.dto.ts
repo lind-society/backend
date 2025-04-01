@@ -1,5 +1,4 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsOptional, IsUUID } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -7,12 +6,6 @@ import {
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
 import { ActivityWithRelationsDto } from './activity.dto';
-
-export class GetActivitiesDto {
-  @IsUUID()
-  @IsOptional()
-  categoryId?: string;
-}
 
 export class GetActivityPaginateDto extends PaginateResponseDefaultDataProps {
   readonly data!: ActivityWithRelationsDto[];

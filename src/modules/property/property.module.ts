@@ -18,5 +18,6 @@ import { PropertyService } from './property.service';
     FeatureModule,
     OwnerModule,
   ],
+  exports: [PropertyService],
 })
 export class PropertyModule {}

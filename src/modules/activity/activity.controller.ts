@@ -17,7 +17,6 @@ import { ActivityService } from './activity.service';
 import {
   CreateActivityDto,
   CreateActivitySuccessResponse,
-  GetActivitiesDto,
   GetActivitiesSuccessResponse,
   GetActivitySuccessResponse,
   UpdateActivityDto,
@@ -38,11 +37,8 @@ export class ActivityController {
 
   @Public()
   @Get()
-  async findAll(
-    @Paginate() query: PaginateQuery,
-    @Body() payload: GetActivitiesDto,
-  ) {
-    const result = await this.activityService.findAll(query, payload);
+  async findAll(@Paginate() query: PaginateQuery) {
+    const result = await this.activityService.findAll(query);
 
     return new GetActivitiesSuccessResponse(result);
   }

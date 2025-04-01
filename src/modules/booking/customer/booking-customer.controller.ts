@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
-import { BookingCustomerService } from './customer.service';
+import { BookingCustomerService } from './booking-customer.service';
 import {
   CreateBookingCustomerDto,
   CreateBookingCustomerSuccessResponse,

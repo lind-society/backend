@@ -12,6 +12,7 @@ import {
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { PriceConverterInterceptor } from 'src/common/interceptors';
 import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
+import { BookingPaymentService } from './booking-payment.service';
 import {
   CreateBookingPaymentDto,
   CreateBookingPaymentSuccessResponse,
@@ -20,7 +21,6 @@ import {
   UpdateBookingPaymentDto,
   UpdateBookingPaymentSuccessResponse,
 } from './dto';
-import { BookingPaymentService } from './payment.service';
 
 @UseInterceptors(PriceConverterInterceptor)
 @Controller('booking-payments')

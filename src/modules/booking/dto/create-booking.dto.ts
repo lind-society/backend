@@ -8,8 +8,11 @@ import {
   IsOptional,
   IsUUID,
   Min,
+  Validate,
+  ValidateIf,
 } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
+import { OnlyOneFieldAllowedConstraint } from 'src/common/validations';
 import { BookingStatus } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
@@ -58,9 +61,26 @@ export class CreateBookingDto {
   @IsOptional()
   readonly customerId?: string;
 
+  @IsUUID()
+  @IsOptional()
+  readonly activityId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  readonly villaId?: string;
+
   @Type(() => CreateBookingCustomerDto)
   @IsNotEmpty()
   readonly customer!: CreateBookingCustomerDto;
+
+  @ValidateIf((o) => !o.activityId && !o.villaId)
+  @IsNotEmpty({
+    message: 'At least one of activityId or villaId must be provided',
+  })
+  readonly _atLeastOneIdRequired?: string;
+
+  @Validate(OnlyOneFieldAllowedConstraint, ['activityId', 'villaId'])
+  readonly _onlyOneIdAllowed?: never;
 }
 
 export class CreateBookinguccessResponse
