@@ -169,11 +169,11 @@ export class Activity {
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
 
-  @OneToMany(() => Review, (review) => review.activity)
-  reviews: Review[];
-
   @OneToMany(() => Booking, (booking) => booking.activity)
   bookings: Booking[];
+
+  @OneToMany(() => Review, (review) => review.activity)
+  reviews: Review[];
 
   @ManyToOne(() => ActivityCategory, {
     onDelete: 'SET NULL',
