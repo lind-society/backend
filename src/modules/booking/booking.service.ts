@@ -5,6 +5,7 @@ import { paginateResponseMapper } from 'src/common/helpers';
 import { Booking } from 'src/database/entities';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
+import { WhatsappService } from '../shared/whatsapp/whatsapp.service';
 import { BookingCustomerService } from './customer/booking-customer.service';
 import {
   BookingWithRelationsDto,
@@ -19,6 +20,7 @@ export class BookingService {
     @InjectRepository(Booking)
     private bookingRepository: Repository<Booking>,
     private bookingCustomerService: BookingCustomerService,
+    private whatsappService: WhatsappService,
   ) {}
 
   async create(payload: CreateBookingDto): Promise<BookingWithRelationsDto> {
@@ -31,6 +33,11 @@ export class BookingService {
       const createdBooking = await manager.save(Booking, {
         ...payload,
         customerId: createdBookingCustomer.id,
+      });
+
+      await this.whatsappService.sendMessage({
+        phoneNumber: payload.customer.phoneNumber,
+        message: `thank you for booking ${createdBooking.id}`,
       });
 
       return createdBooking;

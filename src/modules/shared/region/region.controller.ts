@@ -6,9 +6,9 @@ import { RegionService } from './region.service';
 export class RegionController {
   constructor(private readonly regionService: RegionService) {}
 
-  @Get('continents')
-  async getContinent() {
-    return await this.regionService.getContinent();
+  @Get('phone-codes')
+  async getPhoneCode() {
+    return await this.regionService.getPhoneCode();
   }
 
   @Get('countries')

@@ -16,6 +16,7 @@ import {
   regionConfig,
   storageConfig,
   validateEnv,
+  whatsappConfig,
   xenditConfig,
 } from './config';
 import { ActivityModule } from './modules/activity/activity.module';
@@ -32,6 +33,7 @@ import { AxiosModule } from './modules/shared/axios/axios.module';
 import { LoggerModule } from './modules/shared/logger/logger.module';
 import { RegionModule } from './modules/shared/region/region.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
+import { WhatsappModule } from './modules/shared/whatsapp/whatsapp.module';
 import { VillaModule } from './modules/villa/villa.module';
 
 @Module({
@@ -54,6 +56,7 @@ import { VillaModule } from './modules/villa/villa.module';
         postalCodeConfig,
         regionConfig,
         storageConfig,
+        whatsappConfig,
         xenditConfig,
       ],
     }),
@@ -86,6 +89,7 @@ import { VillaModule } from './modules/villa/villa.module';
     RegionModule,
     VillaModule,
     ReviewModule,
+    WhatsappModule,
   ],
   controllers: [AppController],
   providers: [AppService],

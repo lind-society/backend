@@ -150,6 +150,18 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   GEONAMES_API_USERNAME!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  WHATSAPP_MAIN_CLIENT_ID!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  WHATSAPP_AUTH_STRATEGY!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  COUNTRY_PHONE_CODE_JSON_PATH!: string;
   
   @IsString()
   @IsNotEmpty()

@@ -250,11 +250,11 @@ export class Villa {
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
 
-  @OneToMany(() => Review, (review) => review.villa)
-  reviews: Review[];
-
   @OneToMany(() => Booking, (booking) => booking.villa)
   bookings: Booking[];
+
+  @OneToMany(() => Review, (review) => review.villa)
+  reviews: Review[];
 
   @OneToMany(
     () => VillaFacilityPivot,
