@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { BlogCategory } from 'src/database/entities';
 import { PaginateResponseDataProps } from 'src/modules/shared/dto';
@@ -31,9 +31,15 @@ export class BlogCategoryService {
       query,
       this.blogCateogryRepository,
       {
-        sortableColumns: ['createdAt'],
+        sortableColumns: ['createdAt', 'name', 'blogs.id'],
         defaultSortBy: [['createdAt', 'DESC']],
+        nullSort: 'last',
         defaultLimit: 10,
+        maxLimit: 100,
+        filterableColumns: {
+          'blogs.id': [FilterOperator.EQ],
+          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        },
         searchableColumns: ['name'],
         relations: { blogs: true },
       },

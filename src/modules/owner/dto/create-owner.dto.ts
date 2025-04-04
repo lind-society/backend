@@ -28,7 +28,7 @@ export class CreateOwnerDto {
 
   @IsString()
   @IsOptional()
-  readonly companyName!: string | null;
+  readonly companyName!: string;
 
   @IsEmail()
   @IsNotEmpty()
@@ -44,7 +44,7 @@ export class CreateOwnerDto {
 
   @IsString()
   @IsOptional()
-  readonly website!: string | null;
+  readonly website!: string;
 
   @IsEnum(OwnerStatus)
   @IsNotEmpty()

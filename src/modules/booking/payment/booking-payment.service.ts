@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { BookingPayment } from 'src/database/entities';
 import { PaginateResponseDataProps } from 'src/modules/shared/dto';
@@ -33,10 +33,17 @@ export class BookingPaymentService {
       query,
       this.bookingPaymentRepository,
       {
-        sortableColumns: ['createdAt'],
+        sortableColumns: ['createdAt', 'amount', 'status', 'paymentMethod'],
         defaultSortBy: [['createdAt', 'DESC']],
+        nullSort: 'last',
         defaultLimit: 10,
-        searchableColumns: ['status', 'paymentMethod'],
+        maxLimit: 100,
+        filterableColumns: {
+          amount: [FilterOperator.GTE, FilterOperator.LTE],
+          status: [FilterOperator.EQ],
+          paymentMethod: [FilterOperator.EQ],
+          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        },
         relations: {
           booking: { customer: true },
           currency: true,

@@ -36,19 +36,19 @@ export class CreateReviewDto {
 
   @IsUUID()
   @IsNotEmpty()
-  readonly bookingId: string;
+  readonly bookingId!: string;
 
   @IsUUID()
   @IsOptional()
-  readonly activityId!: string;
+  readonly activityId?: string;
 
   @IsUUID()
   @IsOptional()
-  readonly propertyId!: string;
+  readonly propertyId?: string;
 
   @IsUUID()
   @IsOptional()
-  readonly villaId!: string;
+  readonly villaId?: string;
 
   @ValidateIf((o) => !o.activityId && !o.propertyId && !o.villaId)
   @IsNotEmpty({

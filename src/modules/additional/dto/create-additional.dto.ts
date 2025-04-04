@@ -27,7 +27,7 @@ export class CreateAdditionalDto {
 
   @IsString()
   @IsOptional()
-  readonly description?: string | null;
+  readonly description?: string;
 
   @IsArray()
   @IsString({ each: true })

@@ -28,8 +28,8 @@ export class BookingDto implements IBookingDto {
   readonly status: BookingStatus;
   readonly currencyId!: string;
   readonly customerId!: string;
-  readonly activityId!: string | null;
-  readonly villaId!: string | null;
+  readonly activityId: string | null;
+  readonly villaId: string | null;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
   readonly deletedAt!: Date | null;

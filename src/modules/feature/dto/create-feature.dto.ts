@@ -34,11 +34,11 @@ export class CreateFeatureDto {
   @ValidateNested()
   @Type(() => IconDto)
   @IsOptional()
-  readonly icon?: IconDto | null;
+  readonly icon?: IconDto;
 
   @IsBoolean()
   @IsOptional()
-  readonly free?: boolean | null;
+  readonly free?: boolean;
 
   @IsUUID()
   @IsNotEmpty()
@@ -51,11 +51,11 @@ export class CreateFeatureDto {
   )
   @Min(0, { message: 'minimum price is 0' })
   @IsOptional()
-  readonly price?: number | null;
+  readonly price?: number;
 
   @IsEnum(DiscountType)
   @IsOptional()
-  discountType?: DiscountType | null;
+  discountType?: DiscountType;
 
   @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
   @IsNotEmpty({
@@ -68,7 +68,7 @@ export class CreateFeatureDto {
   )
   @ValidateDiscountValue('discountType', 'price', DiscountType)
   @IsOptional()
-  readonly discount?: number | null;
+  readonly discount?: number;
 }
 
 export class CreateFeatureSuccessResponse

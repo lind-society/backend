@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Activity, DiscountType } from 'src/database/entities';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { CurrencyService } from '../currency/currency.service';
 import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
@@ -12,7 +12,6 @@ import { ActivityCategoryService } from './category/activity-category.service';
 import {
   ActivityWithRelationsDto,
   CreateActivityDto,
-  GetActivitiesDto,
   UpdateActivityDto,
 } from './dto';
 
@@ -42,30 +41,99 @@ export class ActivityService {
 
   async findAll(
     query: PaginateQuery,
-    payload: GetActivitiesDto,
   ): Promise<PaginateResponseDataProps<ActivityWithRelationsDto[]>> {
-    const whereCondition = payload.categoryId
-      ? { categoryId: payload.categoryId }
-      : undefined;
-
     const paginatedActivity = await paginate(query, this.activityRepository, {
-      sortableColumns: ['createdAt'],
-      defaultSortBy: [['createdAt', 'DESC']],
+      sortableColumns: [
+        'createdAt',
+        'name',
+        'secondaryName',
+        'pricePerPerson',
+        'pricePerSession',
+        'discountType',
+        'discount',
+        'pricePerPersonAfterDiscount',
+        'pricePerSessionAfterDiscount',
+        'duration',
+        'country',
+        'state',
+        'city',
+        'openingHour',
+        'closingHour',
+        'startDate',
+        'endDate',
+        'averageRating',
+      ],
+      defaultSortBy: [
+        ['averageRating', 'DESC'],
+        ['createdAt', 'DESC'],
+      ],
+      nullSort: 'last',
       defaultLimit: 10,
-      searchableColumns: ['name', 'secondaryName', 'category.name'],
-      where: whereCondition,
+      maxLimit: 100,
+      filterableColumns: {
+        categoryId: [FilterOperator.EQ],
+        currencyId: [FilterOperator.EQ],
+        ownerId: [FilterOperator.EQ],
+
+        discountType: [FilterOperator.EQ],
+        discount: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+        pricePerPerson: [FilterOperator.GTE, FilterOperator.LTE],
+        pricePerSession: [FilterOperator.GTE, FilterOperator.LTE],
+        pricePerPersonAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+        pricePerSessionAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+
+        duration: [FilterOperator.EQ],
+        averageRating: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        openingHour: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        closingHour: [
+          FilterOperator.EQ,
+          FilterOperator.GTE,
+          FilterOperator.LTE,
+        ],
+        startDate: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+        endDate: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+
+        'placeNearby.name': [FilterOperator.ILIKE],
+      },
+      searchableColumns: [
+        'name',
+        'secondaryName',
+        'address',
+        'country',
+        'state',
+        'city',
+        'postalCode',
+        'mapLink',
+      ],
       relations: {
         category: true,
         currency: true,
         owner: true,
+        reviews: { booking: { customer: true } },
       },
     });
 
     return paginateResponseMapper(paginatedActivity);
   }
 
-  async findOne(id: string): Promise<ActivityWithRelationsDto> {
-    const activity = await this.activityRepository.findOne({
+  async findOne(
+    id: string,
+    entityManager?: EntityManager,
+  ): Promise<ActivityWithRelationsDto> {
+    const repository = entityManager
+      ? entityManager.getRepository(Activity)
+      : this.activityRepository;
+
+    const activity = await repository.findOne({
       where: {
         id,
       },
@@ -73,6 +141,7 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
+        reviews: { booking: { customer: true } },
       },
     });
 

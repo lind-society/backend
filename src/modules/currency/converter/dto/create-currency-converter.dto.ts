@@ -33,7 +33,7 @@ export class CreateCurrencyConverterDto {
 
   @IsString()
   @IsOptional()
-  readonly description?: string | null;
+  readonly description?: string;
 }
 
 export class CreateCurrencyConverterSuccessResponse

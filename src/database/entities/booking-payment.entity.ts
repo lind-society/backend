@@ -31,7 +31,10 @@ export class BookingPayment {
   @Column({ name: 'booking_id', type: 'uuid' })
   bookingId: string;
 
-  @ManyToOne(() => Booking, (booking) => booking.payments)
+  @ManyToOne(() => Booking, (booking) => booking.payments, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'booking_id' })
   booking: Booking;
 
   @ManyToOne(() => Currency, {

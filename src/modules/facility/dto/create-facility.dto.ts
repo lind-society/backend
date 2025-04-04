@@ -24,7 +24,7 @@ export class CreateFacilityDto {
   @ValidateNested()
   @Type(() => IconDto)
   @IsOptional()
-  readonly icon?: IconDto | null;
+  readonly icon?: IconDto;
 
   @IsEnum(FacilityType, {
     message: `facility type must be one of: ${Object.values(FacilityType).join(', ')}`,
@@ -33,7 +33,7 @@ export class CreateFacilityDto {
   @Transform(({ value }) =>
     value === undefined ? FacilityType.Optional : value,
   )
-  readonly type?: FacilityType | null;
+  readonly type?: FacilityType;
 }
 
 export class CreateFacilitySuccessResponse

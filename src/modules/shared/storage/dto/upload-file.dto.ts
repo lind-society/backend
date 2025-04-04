@@ -14,7 +14,7 @@ export class UploadFileRequestDto {
 
   @IsString()
   @IsOptional()
-  readonly bucket?: string | null;
+  readonly bucket?: string;
 }
 
 export class UploadFilesResponseDto {

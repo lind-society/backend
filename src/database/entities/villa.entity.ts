@@ -235,6 +235,15 @@ export class Villa {
   @Column({ name: 'video_360', type: 'varchar', array: true, nullable: true })
   video360s!: string[] | null;
 
+  @Column({
+    name: 'average_rating',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  averageRating!: number | null;
+
   @Column({ name: 'currency_id', type: 'uuid' })
   currencyId: string;
 
@@ -246,6 +255,9 @@ export class Villa {
 
   @OneToMany(() => Review, (review) => review.villa)
   reviews: Review[];
+
+  @OneToMany(() => Booking, (booking) => booking.villa)
+  bookings: Booking[];
 
   @OneToMany(
     () => VillaFacilityPivot,

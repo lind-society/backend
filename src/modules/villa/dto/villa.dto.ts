@@ -75,6 +75,7 @@ export class VillaDto implements IVillaDto {
   readonly photos!: string[];
   readonly videos!: string[];
   readonly video360s!: string[];
+  readonly averageRating!: number | null;
   readonly currencyId!: string;
   readonly ownerId!: string | null;
   readonly createdAt!: Date;

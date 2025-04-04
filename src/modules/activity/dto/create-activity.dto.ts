@@ -33,11 +33,11 @@ export class CreateActivityDto {
 
   @IsString()
   @IsOptional()
-  readonly secondaryName?: string | null;
+  readonly secondaryName?: string;
 
   @IsString()
   @IsOptional()
-  readonly highlight?: string | null;
+  readonly highlight?: string;
 
   @Type(() => Number)
   @IsNumber(
@@ -59,7 +59,7 @@ export class CreateActivityDto {
 
   @IsEnum(DiscountType)
   @IsOptional()
-  discountType?: DiscountType | null;
+  discountType?: DiscountType;
 
   @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
   @IsNotEmpty({
@@ -86,72 +86,72 @@ export class CreateActivityDto {
 
   @IsString()
   @IsOptional()
-  readonly address?: string | null;
+  readonly address?: string;
 
   @IsString()
   @IsOptional()
-  readonly country?: string | null;
+  readonly country?: string;
 
   @IsString()
   @IsOptional()
-  readonly state?: string | null;
+  readonly state?: string;
 
   @IsString()
   @IsOptional()
-  readonly city?: string | null;
+  readonly city?: string;
 
   @IsNumberString()
   @IsOptional()
-  readonly postalCode?: string | null;
+  readonly postalCode?: string;
 
   @IsString()
   @IsOptional()
-  readonly mapLink?: string | null;
+  readonly mapLink?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: PlaceNearbyDto[] | null;
+  readonly placeNearby?: PlaceNearbyDto[];
 
   @IsString()
   @Matches(regexValidator.openingHour.regex, {
     message: regexValidator.openingHour.message,
   })
   @IsNotEmpty()
-  readonly openingHour?: string | null;
+  readonly openingHour?: string;
 
   @IsString()
   @Matches(regexValidator.closingHour.regex, {
     message: regexValidator.closingHour.message,
   })
   @IsNotEmpty()
-  readonly closingHour?: string | null;
+  readonly closingHour?: string;
 
   @Type(() => Date)
   @IsDate({ message: 'start date must be a valid date' })
   @IsOptional()
-  readonly startDate?: Date | null;
+  readonly startDate?: Date;
 
   @Type(() => Date)
   @IsDate({ message: 'end date must be a valid date' })
   @IsOptional()
-  readonly endDate?: Date | null;
+  readonly endDate?: Date;
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly photos?: string[] | null;
+  readonly photos?: string[];
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly videos?: string[] | null;
+  readonly videos?: string[];
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly video360s?: string[] | null;
+  readonly video360s?: string[];
 
   @IsUUID()
   @IsNotEmpty()
@@ -163,7 +163,7 @@ export class CreateActivityDto {
 
   @IsUUID()
   @IsOptional()
-  readonly ownerId?: string | null;
+  readonly ownerId?: string;
 }
 
 export class CreateActivitySuccessResponse

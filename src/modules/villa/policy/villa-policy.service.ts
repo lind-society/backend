@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { VillaPolicy } from 'src/database/entities';
 import { PaginateResponseDataProps } from 'src/modules/shared/dto';
@@ -31,9 +31,16 @@ export class VillaPolicyService {
       query,
       this.villaPolicyRepository,
       {
-        sortableColumns: ['createdAt'],
+        sortableColumns: ['createdAt', 'name', 'type'],
         defaultSortBy: [['createdAt', 'DESC']],
+        nullSort: 'last',
         defaultLimit: 10,
+        maxLimit: 100,
+        filterableColumns: {
+          type: [FilterOperator.EQ],
+          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        },
+        searchableColumns: ['name'],
       },
     );
 
