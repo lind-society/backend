@@ -38,6 +38,9 @@ export class Owner {
   @Column()
   email!: string;
 
+  @Column({ name: 'phone_country_code' })
+  phoneCountryCode!: string;
+
   @Column({ name: 'phone_number' })
   phoneNumber!: string;
 

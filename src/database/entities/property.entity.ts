@@ -19,8 +19,8 @@ import { DiscountType } from './shared-enum.entity';
 import { PlaceNearby } from './shared-interface.entity';
 
 export enum PropertyOwnershipType {
-  Leasehold = 'leasehold',
-  Freehold = 'freehold',
+  Leasehold = 'Leasehold',
+  Freehold = 'Freehold',
 }
 
 @Entity({ name: 'properties' })

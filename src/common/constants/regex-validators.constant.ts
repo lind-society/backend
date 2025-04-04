@@ -1,4 +1,3 @@
-// Regex for validating email, username, or phone number upon login
 export interface IRegexValidator {
   regex: RegExp;
   message: string;
@@ -31,5 +30,9 @@ export const regexValidator: Record<string, IRegexValidator> = {
   checkOutHour: {
     regex: /^([01]\d|2[0-3]):([0-5]\d)$/,
     message: 'check out hour must be in HH:mm format',
+  },
+  phoneCountryCode: {
+    regex: /^\+\d+$/,
+    message: 'phone country code must start with + and contain only numbers',
   },
 };
