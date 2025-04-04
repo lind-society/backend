@@ -86,7 +86,9 @@ export class PriceConverterInterceptor implements NestInterceptor {
     const currencyId = obj.currencyId;
 
     if (!currencyId || currencyId === baseCurrencyId) {
-      return obj;
+      const trasformedData = await this._formatPricesFromPayload(obj);
+
+      return trasformedData;
     }
 
     const convertedCurrency =
@@ -129,13 +131,13 @@ export class PriceConverterInterceptor implements NestInterceptor {
         if (obj[priceField] !== undefined && obj[priceField] !== null) {
           const convertedPrice =
             await this.currencyConverterService.convertPriceToBasePrice({
-              price: obj[priceField],
-              priceCurrencyId: currencyId,
-              baseCurrencyId,
+              basePrice: obj[priceField],
+              baseCurrencyId: currencyId,
+              targetCurrencyId: baseCurrencyId,
             });
 
           converted[priceField] = formatPrice(
-            convertedPrice.basePrice,
+            convertedPrice.converted.price,
             allowDecimal,
             allowRound,
           );
@@ -149,7 +151,7 @@ export class PriceConverterInterceptor implements NestInterceptor {
           if (
             obj.discount !== undefined &&
             obj.discount !== null &&
-            convertedPrice.basePrice !== null
+            convertedPrice.converted.price !== null
           ) {
             // Use the numeric discount value for calculation
             const discountValue = this._getDiscountValue(obj.discount);
@@ -168,13 +170,13 @@ export class PriceConverterInterceptor implements NestInterceptor {
         if (obj[priceField] !== undefined && obj[priceField] !== null) {
           const convertedPrice =
             await this.currencyConverterService.convertPriceToBasePrice({
-              price: obj[priceField],
-              priceCurrencyId: currencyId,
-              baseCurrencyId,
+              basePrice: obj[priceField],
+              baseCurrencyId: currencyId,
+              targetCurrencyId: baseCurrencyId,
             });
 
           converted[priceField] = formatPrice(
-            convertedPrice.basePrice,
+            convertedPrice.converted.price,
             allowDecimal,
             allowRound,
           );
@@ -188,7 +190,7 @@ export class PriceConverterInterceptor implements NestInterceptor {
           if (
             obj[discountField] !== undefined &&
             obj[discountField] !== null &&
-            convertedPrice.basePrice !== null
+            convertedPrice.converted.price !== null
           ) {
             // Use the numeric discount value for calculation
             const discountValue = this._getDiscountValue(
@@ -208,13 +210,13 @@ export class PriceConverterInterceptor implements NestInterceptor {
       if (obj.price !== undefined && obj.price !== null) {
         const convertedPrice =
           await this.currencyConverterService.convertPriceToBasePrice({
-            price: obj.price,
-            priceCurrencyId: currencyId,
-            baseCurrencyId,
+            basePrice: obj.price,
+            baseCurrencyId: currencyId,
+            targetCurrencyId: baseCurrencyId,
           });
 
         converted.price = formatPrice(
-          convertedPrice.basePrice,
+          convertedPrice.converted.price,
           allowDecimal,
           allowRound,
         );
@@ -223,13 +225,13 @@ export class PriceConverterInterceptor implements NestInterceptor {
         if (
           obj.discount !== undefined &&
           obj.discount !== null &&
-          convertedPrice.basePrice !== null
+          convertedPrice.converted.price !== null
         ) {
           // Use the numeric discount value for calculation
           const discountValue = this._getDiscountValue(obj.discount);
           converted.priceAfterDiscount = formatPrice(
-            convertedPrice.basePrice -
-              (convertedPrice.basePrice * discountValue) / 100,
+            convertedPrice.converted.price -
+              (convertedPrice.converted.price * discountValue) / 100,
             allowDecimal,
             allowRound,
           );
@@ -262,14 +264,14 @@ export class PriceConverterInterceptor implements NestInterceptor {
             ) {
               const featureConvertedPrice =
                 await this.currencyConverterService.convertPriceToBasePrice({
-                  price: feature.price,
-                  priceCurrencyId: feature.currencyId,
-                  baseCurrencyId,
+                  basePrice: feature.price,
+                  baseCurrencyId: feature.currencyId,
+                  targetCurrencyId: baseCurrencyId,
                 });
 
               // Update feature price
               convertedFeature.price = formatPrice(
-                featureConvertedPrice.basePrice,
+                featureConvertedPrice.converted.price,
                 allowDecimal,
                 allowRound,
               );

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AxiosModule } from '../../axios/axios.module';
-import { IndonesiaRegionService } from './indonesia.service';
+import { IndonesiaRegionService } from './indonesia-region.service';
 
 @Module({
   providers: [IndonesiaRegionService],

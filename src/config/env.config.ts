@@ -162,6 +162,10 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   COUNTRY_PHONE_CODE_JSON_PATH!: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  BASE_CURRENCY_CODE!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {

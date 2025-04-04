@@ -23,7 +23,10 @@ export class FeatureService {
   async create(payload: CreateFeatureDto): Promise<FeatureDto> {
     await this._validateRelatedEntities(payload.currencyId);
 
-    const feature = this.featureRepository.create(payload);
+    const convertedBasePriceFeature =
+      await this._convertToBaseCurrency(payload);
+
+    const feature = this.featureRepository.create(convertedBasePriceFeature);
 
     return await this.featureRepository.save(feature);
   }
@@ -81,7 +84,10 @@ export class FeatureService {
 
     await this._validateRelatedEntities(payload.currencyId);
 
-    await this.update(id, payload);
+    const convertedBasePriceFeature =
+      await this._convertToBaseCurrency(payload);
+
+    await this.update(id, convertedBasePriceFeature);
 
     return await this.findOne(id);
   }
@@ -92,15 +98,36 @@ export class FeatureService {
     await this.remove(id);
   }
 
-  private async _validateRelatedEntities(currencyId?: string): Promise<void> {
-    if (currencyId) {
-      await this.currencyService.findOne(currencyId);
-    }
+  private async _convertToBaseCurrency(
+    feature: CreateFeatureDto | UpdateFeatureDto,
+  ): Promise<CreateFeatureDto | UpdateFeatureDto> {
+    return {
+      ...feature,
+      currencyId: await this.currencyService.findBaseCurrencyId(),
+      price: await this.currencyService.convertToBaseCurrency(
+        feature.currencyId,
+        feature.price,
+      ),
+    };
+  }
+
+  async convertFeaturesToBaseCurrency(
+    features: (CreateFeatureDto | UpdateFeatureDto)[],
+  ): Promise<(CreateFeatureDto | UpdateFeatureDto)[]> {
+    return Promise.all(
+      features.map((feature) => this._convertToBaseCurrency(feature)),
+    );
   }
 
   handleDefaultDiscountType(payload: CreateFeatureDto | UpdateFeatureDto) {
     if (payload.discount && !payload.discountType) {
       payload.discountType = DiscountType.Percentage;
+    }
+  }
+
+  private async _validateRelatedEntities(currencyId?: string): Promise<void> {
+    if (currencyId) {
+      await this.currencyService.findOne(currencyId);
     }
   }
 }

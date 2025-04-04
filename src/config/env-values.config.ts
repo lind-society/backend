@@ -42,4 +42,5 @@ export const envValues: EnvironmentVariables = {
   COUNTRY_PHONE_CODE_JSON_PATH: process.env.COUNTRY_PHONE_CODE_JSON_PATH || '',
   WHATSAPP_MAIN_CLIENT_ID: process.env.WHATSAPP_MAIN_CLIENT_ID || '',
   WHATSAPP_AUTH_STRATEGY: process.env.WHATSAPP_AUTH_STRATEGY || '',
+  BASE_CURRENCY_CODE: process.env.BASE_CURRENCY_CODE || '',
 };

@@ -3,10 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
-import {
-  paginateResponseMapper,
-  validatePayloadFromObjectKey,
-} from 'src/common/helpers';
+import { paginateResponseMapper } from 'src/common/helpers';
 import {
   Additional,
   DiscountType,
@@ -54,25 +51,20 @@ export class VillaService {
 
     const createdVilla = await this.datasource.transaction(
       async (manager: EntityManager) => {
-        validatePayloadFromObjectKey(payload, {
-          additionals,
-          facilities,
-          features,
-          policies,
-        });
+        const convertedBasePriceVillaData =
+          await this._convertToBaseCurrency(villaData);
 
-        const createdVilla = await manager.save(Villa, villaData);
-        const createdAdditionals = await manager.save(Additional, additionals);
-
-        features.map((feature) =>
-          this.featureService.handleDefaultDiscountType(feature),
+        const createdVilla = await manager.save(
+          Villa,
+          convertedBasePriceVillaData,
         );
 
-        const createdFeatures = await manager.save(Feature, features);
-
-        const createdPolicies = await manager.save(VillaPolicy, policies);
-
         if (Array.isArray(additionals) && additionals.length > 0) {
+          const createdAdditionals = await manager.save(
+            Additional,
+            additionals,
+          );
+
           await manager.save(
             VillaAdditionalPivot,
             createdAdditionals.map((additional: Additional) => ({
@@ -94,6 +86,18 @@ export class VillaService {
         }
 
         if (Array.isArray(features) && features.length > 0) {
+          features.map((feature) =>
+            this.featureService.handleDefaultDiscountType(feature),
+          );
+
+          const convertedBasePriceFeatures =
+            await this.featureService.convertFeaturesToBaseCurrency(features);
+
+          const createdFeatures = await manager.save(
+            Feature,
+            convertedBasePriceFeatures,
+          );
+
           await manager.save(
             VillaFeaturePivot,
             createdFeatures.map((feature: Feature) => ({
@@ -104,6 +108,8 @@ export class VillaService {
         }
 
         if (Array.isArray(policies) && policies.length > 0) {
+          const createdPolicies = await manager.save(VillaPolicy, policies);
+
           await manager.save(
             VillaPolicyPivot,
             createdPolicies.map((policy: VillaPolicy) => ({
@@ -290,7 +296,14 @@ export class VillaService {
     await this.datasource.transaction(async (manager) => {
       await this.findOne(id, manager);
 
-      const updatedVilla = await manager.update(Villa, id, villaData);
+      const convertedBasePriceVillaData =
+        await this._convertToBaseCurrency(villaData);
+
+      const updatedVilla = await manager.update(
+        Villa,
+        id,
+        convertedBasePriceVillaData,
+      );
 
       if (Array.isArray(additionals)) {
         await manager.delete(VillaAdditionalPivot, { villaId: id });
@@ -334,7 +347,13 @@ export class VillaService {
             this.featureService.handleDefaultDiscountType(feature),
           );
 
-          const updatedFeatures = await manager.save(Feature, features);
+          const convertedBasePriceFeatures =
+            await this.featureService.convertFeaturesToBaseCurrency(features);
+
+          const updatedFeatures = await manager.save(
+            Feature,
+            convertedBasePriceFeatures,
+          );
 
           await manager.save(
             VillaFeaturePivot,
@@ -426,6 +445,27 @@ export class VillaService {
 
       await this.facilityService.validateFaciliies(ids);
     }
+  }
+
+  private async _convertToBaseCurrency(
+    villaData: CreateVillaDto | UpdateVillaDto,
+  ): Promise<CreateVillaDto | UpdateVillaDto> {
+    return {
+      ...villaData,
+      currencyId: await this.currencyService.findBaseCurrencyId(),
+      priceDaily: await this.currencyService.convertToBaseCurrency(
+        villaData.currencyId,
+        villaData.priceDaily,
+      ),
+      priceMonthly: await this.currencyService.convertToBaseCurrency(
+        villaData.currencyId,
+        villaData.priceMonthly,
+      ),
+      priceYearly: await this.currencyService.convertToBaseCurrency(
+        villaData.currencyId,
+        villaData.priceYearly,
+      ),
+    };
   }
 
   private async _handleDefaultDiscountType(

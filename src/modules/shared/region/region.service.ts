@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { GetGlobalPostalCodePayload } from './global/dto';
-import { GlobalRegionService } from './global/global.service';
-import { IndonesiaRegionService } from './indonesia/indonesia.service';
+import { GlobalRegionService } from './global/global-region.service';
+import { IndonesiaRegionService } from './indonesia/indonesia-region.service';
 import { PhoneCodeService } from './phone-code/phone-code.service';
 
 @Injectable()
