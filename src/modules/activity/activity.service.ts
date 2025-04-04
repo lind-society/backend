@@ -34,7 +34,12 @@ export class ActivityService {
       payload.ownerId,
     );
 
-    const createdActivity = this.activityRepository.create(payload);
+    const convertedBasePriceActivity =
+      await this._convertToBaseCurrency(payload);
+
+    const createdActivity = this.activityRepository.create(
+      convertedBasePriceActivity,
+    );
 
     return await this.activityRepository.save(createdActivity);
   }
@@ -166,7 +171,10 @@ export class ActivityService {
       payload.ownerId,
     );
 
-    await this.activityRepository.update(id, payload);
+    const convertedBasePriceActivity =
+      await this._convertToBaseCurrency(payload);
+
+    await this.activityRepository.update(id, convertedBasePriceActivity);
 
     return await this.findOne(id);
   }
@@ -191,6 +199,23 @@ export class ActivityService {
     if (ownerId) {
       await this.ownerService.findOne(ownerId);
     }
+  }
+
+  private async _convertToBaseCurrency(
+    activityData: CreateActivityDto | UpdateActivityDto,
+  ): Promise<CreateActivityDto | UpdateActivityDto> {
+    return {
+      ...activityData,
+      currencyId: await this.currencyService.findBaseCurrencyId(),
+      pricePerPerson: await this.currencyService.convertToBaseCurrency(
+        activityData.currencyId,
+        activityData.pricePerPerson,
+      ),
+      pricePerSession: await this.currencyService.convertToBaseCurrency(
+        activityData.currencyId,
+        activityData.pricePerSession,
+      ),
+    };
   }
 
   private async _handleDefaultDiscountType(

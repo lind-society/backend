@@ -39,4 +39,5 @@ export const envValues: EnvironmentVariables = {
   GLOBAL_REGION_FETCH: process.env.GLOBAL_REGION_FETCH || '',
   GLOBAL_POSTAL_CODE_FETCH: process.env.GLOBAL_POSTAL_CODE_FETCH || '',
   GEONAMES_API_USERNAME: process.env.GEONAMES_API_USERNAME || '',
+  BASE_CURRENCY_CODE: process.env.BASE_CURRENCY_CODE || '',
 };

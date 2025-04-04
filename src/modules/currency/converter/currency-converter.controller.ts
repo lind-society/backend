@@ -15,8 +15,8 @@ import { Public } from 'src/common/decorators';
 import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
 import { CurrencyConverterService } from './currency-converter.service';
 import {
-  ConvertPriceToBasePriceRequestDto,
-  ConvertPriceToBasePriceSuccessResponse,
+  ConvertedPriceRequestDto,
+  ConvertedPriceSuccessResponse,
   CreateCurrencyConverterDto,
   CreateCurrencyConverterSuccessResponse,
   GetCurrencyConvertersSuccessResponse,
@@ -33,13 +33,11 @@ export class CurrencyConverterController {
 
   @HttpCode(HttpStatus.OK)
   @Post('base')
-  async convertPriceToBasePrice(
-    @Body() payload: ConvertPriceToBasePriceRequestDto,
-  ) {
+  async convertPriceToBasePrice(@Body() payload: ConvertedPriceRequestDto) {
     const result =
       await this.currencyConverterService.convertPriceToBasePrice(payload);
 
-    return new ConvertPriceToBasePriceSuccessResponse(result);
+    return new ConvertedPriceSuccessResponse(result);
   }
 
   @Post()

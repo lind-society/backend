@@ -1,4 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsNotEmpty,
@@ -17,6 +18,7 @@ export class CreateCurrencyDto {
   @IsString()
   @Length(3, 3)
   @IsNotEmpty()
+  @Transform(({ value }) => value.toUpperCase())
   readonly code!: string;
 
   @IsString()

@@ -22,4 +22,3 @@ export class GlobalCountryGeoNamesDetailDto {
   continentName: string | null;
   currencyCode: string | null;
 }
-

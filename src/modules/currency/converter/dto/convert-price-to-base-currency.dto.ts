@@ -7,10 +7,10 @@ import {
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
 
-export class ConvertPriceToBasePriceRequestDto {
+export class ConvertedPriceRequestDto {
   @IsUUID()
   @IsNotEmpty()
-  readonly priceCurrencyId!: string;
+  readonly baseCurrencyId!: string;
 
   @Type(() => Number)
   @IsNumber(
@@ -18,27 +18,33 @@ export class ConvertPriceToBasePriceRequestDto {
     { message: 'price must be a valid number' },
   )
   @IsNotEmpty()
-  readonly price!: number;
+  readonly basePrice!: number;
 
   @IsUUID()
   @IsNotEmpty()
-  readonly baseCurrencyId!: string;
+  readonly targetCurrencyId!: string;
 }
 
-export class ConvertPriceToBasePriceResponsetDto {
-  readonly basePrice!: number;
-  readonly basePriceCode!: string | null;
-  readonly basePriceName!: string | null;
-  readonly basePriceSymbol!: string | null;
+export class ConvertedPriceResponsetDto {
+  readonly initial: priceDetailDto;
+  readonly converted: priceDetailDto;
 }
 
-export class ConvertPriceToBasePriceSuccessResponse
+export class priceDetailDto {
+  readonly price!: number;
+  readonly currencyId: string;
+  readonly currencyCode!: string;
+  readonly currencyName!: string;
+  readonly currencySymbol!: string;
+}
+
+export class ConvertedPriceSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<ConvertPriceToBasePriceResponsetDto>
+  implements HttpResponseOptions<ConvertedPriceResponsetDto>
 {
-  readonly data: ConvertPriceToBasePriceResponsetDto;
+  readonly data: ConvertedPriceResponsetDto;
 
-  constructor(data: ConvertPriceToBasePriceResponsetDto) {
+  constructor(data: ConvertedPriceResponsetDto) {
     super({
       code: HttpStatus.OK,
       message: 'convert price to base price success',

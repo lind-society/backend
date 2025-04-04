@@ -49,23 +49,28 @@ export class PropertyService {
 
     const createdProperty = await this.datasource.transaction(
       async (manager: EntityManager) => {
-        const createdProperty = await manager.save(Property, propertyData);
+        const convertedBasePricePropertyData =
+          await this._convertToBaseCurrency(propertyData);
 
-        const createdAdditionals = await manager.save(Additional, additionals);
-
-        features.map((feature) =>
-          this.featureService.handleDefaultDiscountType(feature),
+        const createdProperty = await manager.save(
+          Property,
+          convertedBasePricePropertyData,
         );
 
-        const createdFeatures = await manager.save(Feature, features);
+        if (Array.isArray(additionals) && additionals.length > 0) {
+          const createdAdditionals = await manager.save(
+            Additional,
+            additionals,
+          );
 
-        await manager.save(
-          PropertyAdditionalPivot,
-          createdAdditionals.map((additional: Additional) => ({
-            propertyId: createdProperty.id,
-            additionalId: additional.id,
-          })),
-        );
+          await manager.save(
+            PropertyAdditionalPivot,
+            createdAdditionals.map((additional: Additional) => ({
+              propertyId: createdProperty.id,
+              additionalId: additional.id,
+            })),
+          );
+        }
 
         await manager.save(
           PropertyFacilityPivot,
@@ -76,13 +81,27 @@ export class PropertyService {
           })),
         );
 
-        await manager.save(
-          PropertyFeaturePivot,
-          createdFeatures.map((feature: Feature) => ({
-            propertyId: createdProperty.id,
-            featureId: feature.id,
-          })),
-        );
+        if (Array.isArray(additionals) && additionals.length > 0) {
+          features.map((feature) =>
+            this.featureService.handleDefaultDiscountType(feature),
+          );
+
+          const convertedBasePriceFeatures =
+            await this.featureService.convertFeaturesToBaseCurrency(features);
+
+          const createdFeatures = await manager.save(
+            Feature,
+            convertedBasePriceFeatures,
+          );
+
+          await manager.save(
+            PropertyFeaturePivot,
+            createdFeatures.map((feature: Feature) => ({
+              propertyId: createdProperty.id,
+              featureId: feature.id,
+            })),
+          );
+        }
 
         return createdProperty;
       },
@@ -323,6 +342,19 @@ export class PropertyService {
 
       await this.facilityService.validateFaciliies(ids);
     }
+  }
+
+  private async _convertToBaseCurrency(
+    propertyData: CreatePropertyDto | UpdatePropertyDto,
+  ): Promise<CreatePropertyDto | UpdatePropertyDto> {
+    return {
+      ...propertyData,
+      currencyId: await this.currencyService.findBaseCurrencyId(),
+      price: await this.currencyService.convertToBaseCurrency(
+        propertyData.currencyId,
+        propertyData.price,
+      ),
+    };
   }
 
   private async _handleDefaultDiscountType(

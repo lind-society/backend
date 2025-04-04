@@ -150,6 +150,10 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   GEONAMES_API_USERNAME!: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  BASE_CURRENCY_CODE!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {

@@ -6,8 +6,8 @@ import { CurrencyConverter } from 'src/database/entities';
 import { PaginateResponseDataProps } from 'src/modules/shared/dto';
 import { Repository } from 'typeorm';
 import {
-  ConvertPriceToBasePriceRequestDto,
-  ConvertPriceToBasePriceResponsetDto,
+  ConvertedPriceRequestDto,
+  ConvertedPriceResponsetDto,
   CreateCurrencyConverterDto,
   CurrencyConverterDto,
   UpdateCurrencyConverterDto,
@@ -20,30 +20,38 @@ export class CurrencyConverterService {
   ) {}
 
   async convertPriceToBasePrice(
-    payload: ConvertPriceToBasePriceRequestDto,
-  ): Promise<ConvertPriceToBasePriceResponsetDto> {
+    payload: ConvertedPriceRequestDto,
+  ): Promise<ConvertedPriceResponsetDto> {
     const exchangeRate = await this.currencyConverterRepository.findOne({
       where: {
-        baseCurrencyId: payload.priceCurrencyId,
-        targetCurrencyId: payload.baseCurrencyId,
+        baseCurrencyId: payload.baseCurrencyId,
+        targetCurrencyId: payload.targetCurrencyId,
       },
       select: {
         id: true,
         exchangeRate: true,
+        baseCurrency: {
+          id: true,
+          code: true,
+          name: true,
+          symbol: true,
+        },
         targetCurrency: {
+          id: true,
           code: true,
           name: true,
           symbol: true,
         },
       },
       relations: {
+        baseCurrency: true,
         targetCurrency: true,
       },
     });
 
     return exchangeRate
-      ? this._mapConvertedPrice(payload.price, exchangeRate)
-      : this._mapConvertedPrice(payload.price);
+      ? this._mapConvertedPrice(payload.basePrice, exchangeRate)
+      : this._mapConvertedPrice(payload.basePrice);
   }
 
   async create(payload: CreateCurrencyConverterDto) {
@@ -123,16 +131,26 @@ export class CurrencyConverterService {
   _mapConvertedPrice(
     price: number,
     convertedPrice?: CurrencyConverter,
-  ): ConvertPriceToBasePriceResponsetDto {
+  ): ConvertedPriceResponsetDto {
     const calculatedPrice = convertedPrice
       ? price * convertedPrice.exchangeRate
       : price;
 
-    const convertedPriceResult: ConvertPriceToBasePriceResponsetDto = {
-      basePrice: calculatedPrice,
-      basePriceCode: convertedPrice?.targetCurrency.code ?? '',
-      basePriceName: convertedPrice?.targetCurrency.name ?? '',
-      basePriceSymbol: convertedPrice?.targetCurrency.symbol ?? '',
+    const convertedPriceResult: ConvertedPriceResponsetDto = {
+      initial: {
+        price,
+        currencyId: convertedPrice?.baseCurrency.id ?? '',
+        currencyCode: convertedPrice?.baseCurrency.code ?? '',
+        currencyName: convertedPrice?.baseCurrency.name ?? '',
+        currencySymbol: convertedPrice?.baseCurrency.symbol ?? '',
+      },
+      converted: {
+        price: calculatedPrice,
+        currencyId: convertedPrice?.targetCurrency.id ?? '',
+        currencyCode: convertedPrice?.targetCurrency.code ?? '',
+        currencyName: convertedPrice?.targetCurrency.name ?? '',
+        currencySymbol: convertedPrice?.targetCurrency.symbol ?? '',
+      },
     };
 
     return convertedPriceResult;

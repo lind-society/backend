@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { envPaths } from './common/constants';
 import {
   appConfig,
+  currencyConfig,
   databaseConfig,
   fileConfig,
   gcpConfig,
@@ -45,6 +46,7 @@ import { VillaModule } from './modules/villa/villa.module';
       },
       load: [
         appConfig,
+        currencyConfig,
         databaseConfig,
         fileConfig,
         gcpConfig,
