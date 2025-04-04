@@ -175,9 +175,6 @@ export class Activity {
   @OneToMany(() => Review, (review) => review.activity)
   reviews: Review[];
 
-  @OneToMany(() => Booking, (booking) => booking.activity)
-  bookings: Booking[];
-
   @ManyToOne(() => ActivityCategory, {
     onDelete: 'SET NULL',
   })

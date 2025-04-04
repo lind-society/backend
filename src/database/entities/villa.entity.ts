@@ -256,9 +256,6 @@ export class Villa {
   @OneToMany(() => Review, (review) => review.villa)
   reviews: Review[];
 
-  @OneToMany(() => Booking, (booking) => booking.villa)
-  bookings: Booking[];
-
   @OneToMany(
     () => VillaFacilityPivot,
     (villaFacilityPivot) => villaFacilityPivot.villa,

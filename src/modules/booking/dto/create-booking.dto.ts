@@ -69,14 +69,6 @@ export class CreateBookingDto {
   @IsOptional()
   readonly villaId?: string;
 
-  @IsUUID()
-  @IsOptional()
-  readonly activityId?: string | null;
-
-  @IsUUID()
-  @IsOptional()
-  readonly villaId?: string | null;
-
   @Type(() => CreateBookingCustomerDto)
   @IsNotEmpty()
   readonly customer!: CreateBookingCustomerDto;
