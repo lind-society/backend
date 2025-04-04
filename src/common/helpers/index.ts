@@ -1,4 +1,5 @@
 export * from './calculate-discounted-price.helper';
+export * from './extract-coordinate-from-google-map';
 export * from './format-price.helper';
 export * from './group-and-sort.helper';
 export * from './hash.helper';

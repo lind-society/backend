@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import * as http from 'http';
 import * as https from 'https';
 import { AxiosService } from './axios.service';
+import { CustomAxiosModule } from './redirect/custom-axios.module';
 
 @Module({
   providers: [AxiosService],
@@ -21,6 +22,7 @@ import { AxiosService } from './axios.service';
         maxSockets: 30,
       }),
     }),
+    CustomAxiosModule,
   ],
   exports: [AxiosService],
 })

@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { continents } from 'src/common/constants';
+import { extractLatLngFromGoogleMapsUrl } from 'src/common/helpers';
 import { AxiosService } from '../../axios/axios.service';
 import {
+  CoordinateDto,
   GlobalCountryGeoNamesDetailDto,
   GlobalCountryGeoNamesDto,
   GlobalPostalCodeDetailDto,
@@ -106,6 +108,19 @@ export class GlobalRegionService {
       return null;
     } catch (error) {
       throw error;
+    }
+  }
+
+  // Extract Longitude and Latitude from Google Map Link
+  async getCoordinatesFromShortLink(shortUrl: string): Promise<CoordinateDto> {
+    const longUrl = await this.axiosService.getRedirectUrl(shortUrl);
+
+    const coordinates = extractLatLngFromGoogleMapsUrl(longUrl);
+
+    if (coordinates) {
+      return coordinates;
+    } else {
+      throw new BadRequestException('invalid google map url format');
     }
   }
 

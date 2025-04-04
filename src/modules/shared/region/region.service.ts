@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { GetGlobalPostalCodePayload } from './global/dto';
+import { CoordinateDto, GetGlobalPostalCodePayload } from './global/dto';
 import { GlobalRegionService } from './global/global-region.service';
 import { IndonesiaRegionService } from './indonesia/indonesia-region.service';
 import { PhoneCodeService } from './phone-code/phone-code.service';
@@ -79,5 +79,9 @@ export class RegionService {
         payload.city,
       );
     }
+  }
+
+  async getCoordinates(shortUrl: string): Promise<CoordinateDto> {
+    return await this.globalRegionService.getCoordinatesFromShortLink(shortUrl);
   }
 }

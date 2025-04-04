@@ -68,4 +68,9 @@ export class RegionController {
 
     return await this.regionService.getPostalCode(payload);
   }
+
+  @Get('coordinates')
+  async getCoordinates(@Query('shortUrl') shortUrl: string) {
+    return await this.regionService.getCoordinates(shortUrl);
+  }
 }
