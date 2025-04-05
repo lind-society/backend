@@ -6,9 +6,8 @@ import {
   IsNumberString,
   IsOptional,
   IsString,
-  Matches,
 } from 'class-validator';
-import { regexValidator } from 'src/common/constants';
+import { RegexValidator } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import { OwnerStatus, OwnerType } from 'src/database/entities';
 import {
@@ -38,9 +37,7 @@ export class CreateOwnerDto {
 
   @IsString()
   @IsNotEmpty()
-  @Matches(regexValidator.phoneCountryCode.regex, {
-    message: regexValidator.phoneCountryCode.message,
-  })
+  @RegexValidator('phoneCountryCode')
   readonly phoneCountryCode!: string;
 
   @IsNumberString()

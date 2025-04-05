@@ -1,12 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsNumberString,
-  IsString,
-  Matches,
-} from 'class-validator';
-import { regexValidator } from 'src/common/constants';
+import { IsEmail, IsNotEmpty, IsNumberString, IsString } from 'class-validator';
+import { RegexValidator } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -28,9 +22,7 @@ export class CreateAdminDto {
   readonly email!: string;
 
   @IsString()
-  @Matches(regexValidator.password.regex, {
-    message: regexValidator.password.message,
-  })
+  @RegexValidator('password')
   @IsNotEmpty()
   readonly password!: string;
 

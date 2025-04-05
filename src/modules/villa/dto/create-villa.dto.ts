@@ -10,13 +10,11 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  Matches,
   Min,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import { regexValidator } from 'src/common/constants';
-import { ValidateDiscountValue } from 'src/common/decorators';
+import { RegexValidator, ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   DiscountType,
@@ -179,16 +177,12 @@ export class CreateVillaDto {
   readonly placeNearby?: PlaceNearbyDto[];
 
   @IsString()
-  @Matches(regexValidator.checkInHour.regex, {
-    message: regexValidator.checkInHour.message,
-  })
+  @RegexValidator('checkInHour')
   @IsNotEmpty()
   readonly checkInHour!: string;
 
   @IsString()
-  @Matches(regexValidator.checkOutHour.regex, {
-    message: regexValidator.checkOutHour.message,
-  })
+  @RegexValidator('checkOutHour')
   @IsNotEmpty()
   readonly checkOutHour!: string;
 

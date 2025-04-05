@@ -10,13 +10,14 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  Matches,
   Min,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import { regexValidator } from 'src/common/constants';
-import { ValidateDiscountValueFromMultiplePrice } from 'src/common/decorators';
+import {
+  RegexValidator,
+  ValidateDiscountValueFromMultiplePrice,
+} from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import { ActivityDuration, DiscountType } from 'src/database/entities';
 import {
@@ -115,16 +116,12 @@ export class CreateActivityDto {
   readonly placeNearby?: PlaceNearbyDto[];
 
   @IsString()
-  @Matches(regexValidator.openingHour.regex, {
-    message: regexValidator.openingHour.message,
-  })
+  @RegexValidator('openingHour')
   @IsNotEmpty()
   readonly openingHour?: string;
 
   @IsString()
-  @Matches(regexValidator.closingHour.regex, {
-    message: regexValidator.closingHour.message,
-  })
+  @RegexValidator('closingHour')
   @IsNotEmpty()
   readonly closingHour?: string;
 

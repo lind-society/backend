@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
-import { regexValidator } from 'src/common/constants';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { RegexValidator } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -10,9 +10,7 @@ import {
 
 export class LoginRequestDto {
   @IsString()
-  @Matches(regexValidator.identifier.regex, {
-    message: regexValidator.identifier.message,
-  })
+  @RegexValidator('identifier')
   @IsNotEmpty()
   readonly identifier!: string;
 
