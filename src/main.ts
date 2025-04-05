@@ -1,6 +1,10 @@
-import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  UnprocessableEntityException,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
 import { validationExceptionFactory } from './common/factories';
@@ -46,6 +50,8 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   await app.listen(port, () => {
     logger.log(`env : ${env}`);

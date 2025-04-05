@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Owner } from 'src/database/entities';
@@ -21,7 +22,9 @@ export class OwnerService {
   async create(payload: CreateOwnerDto): Promise<OwnerDto> {
     const owner = this.ownerRepository.create(payload);
 
-    return await this.ownerRepository.save(owner);
+    const savedOwner = await this.ownerRepository.save(owner);
+
+    return plainToInstance(OwnerDto, savedOwner);
   }
 
   async findAll(query: PaginateQuery) {
@@ -61,7 +64,7 @@ export class OwnerService {
       throw new NotFoundException('owner not found');
     }
 
-    return owner;
+    return plainToInstance(OwnerDto, owner);
   }
 
   async update(

@@ -1,4 +1,4 @@
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   Activity,
   ActivityCategory,
@@ -72,9 +72,10 @@ export class ActivityWithRelationsDto
   extends ActivityDto
   implements IActivityWithRelationsDto
 {
-  readonly category?: ActivityCategory;
-  readonly currency?: Currency;
-  readonly owner?: Owner;
+  readonly category?: ActivityCategoryDto;
+  readonly currency?: CurrencyDto;
+  @Type(() => OwnerDto)
+  readonly owner?: OwnerDto;
   readonly bookings?: BookingDto[];
   readonly reviews?: ReviewDto[];
 }

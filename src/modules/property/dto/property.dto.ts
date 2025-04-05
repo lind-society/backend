@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   DiscountType,
   PlaceNearby,
@@ -65,6 +66,7 @@ export class PropertyWithRelationsDto
   implements IPropertyWithRelationsDto
 {
   readonly currency?: CurrencyDto;
+  @Type(() => OwnerDto)
   readonly owner?: OwnerDto;
   readonly reviews?: ReviewDto[];
   readonly facilities?: PropertyFacilityPivot[];

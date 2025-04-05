@@ -41,7 +41,11 @@ export class ActivityService {
       convertedBasePriceActivity,
     );
 
-    return await this.activityRepository.save(createdActivity);
+    const savedActivity = await this.activityRepository.save(createdActivity);
+
+    return plainToInstance(ActivityWithRelationsDto, savedActivity, {
+      enableImplicitConversion: true,
+    });
   }
 
   async findAll(

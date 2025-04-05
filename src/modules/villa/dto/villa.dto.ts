@@ -1,4 +1,4 @@
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   DiscountType,
   PlaceNearby,
@@ -88,6 +88,7 @@ export class VillaWithRelationsDto
   implements IVillaWithRelationsDto
 {
   readonly currency?: CurrencyDto;
+  @Type(() => OwnerDto)
   readonly owner?: OwnerDto;
   readonly bookings?: BookingDto[];
   readonly reviews?: ReviewDto[];

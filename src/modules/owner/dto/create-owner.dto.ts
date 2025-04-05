@@ -7,7 +7,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { RegexValidator } from 'src/common/decorators';
+import { PhoneNumberValidator, RegexValidator } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import { OwnerStatus, OwnerType } from 'src/database/entities';
 import {
@@ -36,11 +36,13 @@ export class CreateOwnerDto {
   readonly email!: string;
 
   @IsString()
-  @IsNotEmpty()
   @RegexValidator('phoneCountryCode')
+  @IsNotEmpty()
   readonly phoneCountryCode!: string;
 
   @IsNumberString()
+  @RegexValidator('phoneNumber')
+  @PhoneNumberValidator('phoneCountryCode')
   @IsNotEmpty()
   readonly phoneNumber!: string;
 

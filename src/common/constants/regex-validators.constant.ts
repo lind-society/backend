@@ -35,4 +35,9 @@ export const regexValidator: Record<string, IRegexValidator> = {
     regex: /^\+\d+$/,
     message: 'phone country code must start with + and contain only numbers',
   },
+  phoneNumber: {
+    regex: /^[1-9]\d{6,14}$/,
+    message:
+      'phoneNumber must not start with 0 and must be 7 to 15 digits long',
+  },
 } as const;

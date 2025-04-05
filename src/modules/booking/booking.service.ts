@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
-import { paginateResponseMapper } from 'src/common/helpers';
+import { constructPhoneNumber, paginateResponseMapper } from 'src/common/helpers';
 import { Booking } from 'src/database/entities';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
@@ -36,7 +36,7 @@ export class BookingService {
       });
 
       await this.whatsappService.sendMessage({
-        phoneNumber: payload.customer.phoneNumber,
+        phoneNumber: constructPhoneNumber(payload.customer.phoneCountryCode, payload.customer.phoneNumber),
         message: `thank you for booking ${createdBooking.id}`,
       });
 
