@@ -35,4 +35,4 @@ export const regexValidator: Record<string, IRegexValidator> = {
     regex: /^\+\d+$/,
     message: 'phone country code must start with + and contain only numbers',
   },
-};
+} as const;

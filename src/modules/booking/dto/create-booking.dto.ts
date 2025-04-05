@@ -10,6 +10,7 @@ import {
   Min,
   Validate,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
 import { OnlyOneFieldAllowedConstraint } from 'src/common/validations';
@@ -70,6 +71,7 @@ export class CreateBookingDto {
   readonly villaId?: string;
 
   @Type(() => CreateBookingCustomerDto)
+  @ValidateNested({ each: true })
   @IsNotEmpty()
   readonly customer!: CreateBookingCustomerDto;
 

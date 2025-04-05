@@ -12,6 +12,7 @@ export class BookingCustomerDto implements IBookingCustomerDto {
   readonly id!: string;
   readonly name!: string;
   readonly email!: string;
+  readonly phoneCountryCode!: string;
   readonly phoneNumber!: string;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;

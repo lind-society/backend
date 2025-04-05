@@ -1,5 +1,12 @@
 import { HttpStatus } from '@nestjs/common';
-import { IsEmail, IsNotEmpty, IsNumberString, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumberString,
+  IsString,
+  Matches,
+} from 'class-validator';
+import { regexValidator } from 'src/common/constants';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -15,6 +22,13 @@ export class CreateBookingCustomerDto {
   @IsEmail()
   @IsNotEmpty()
   readonly email!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Matches(regexValidator.phoneCountryCode.regex, {
+    message: regexValidator.phoneCountryCode.message,
+  })
+  readonly phoneCountryCode!: string;
 
   @IsNumberString()
   @IsNotEmpty()
