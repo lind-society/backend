@@ -79,6 +79,11 @@ export class BookingService {
         ],
         status: [FilterOperator.EQ],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+
+        customerId: [FilterOperator.EQ],
+        'payments.id': [FilterOperator.EQ],
+        villaId: [FilterOperator.EQ],
+        activityId: [FilterOperator.EQ],
       },
       searchableColumns: ['customer.name', 'activity.name', 'villa.name'],
       relations: {
