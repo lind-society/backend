@@ -1,5 +1,4 @@
 import { HttpStatus } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
 import { DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
@@ -15,7 +14,6 @@ export class RefreshTokenSuccessResponse
   extends HttpResponseDefaultProps
   implements HttpResponseOptions<RefreshTokenResponseDto>
 {
-  @ApiProperty({ type: RefreshTokenResponseDto })
   readonly data: RefreshTokenResponseDto;
 
   constructor(data: RefreshTokenResponseDto) {

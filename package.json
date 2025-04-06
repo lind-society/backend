@@ -18,13 +18,13 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typeorm": "npm run build && npx typeorm",
-    "migration:run": "npm run typeorm -- migration:run -d dist/database/data-source.js",
-    "migration:generate": "npm run typeorm -- migration:generate -d dist/database/data-source.js src/database/migrations/migration",
-    "migration:create": "npm run typeorm -- migration:create src/database/migrations/migration",
-    "migration:revert": "npm run typeorm -- migration:revert -d dist/database/data-source.js",
-    "migration:show": "npm run typeorm -- migration:show -d dist/database/data-source.js",
-    "migration:reset": "npm run typeorm -- schema:drop -d dist/database/data-source.js"
+    "typeorm": "pnpm build && npx typeorm",
+    "migration:run": "pnpm typeorm -- migration:run -d dist/database/data-source.js",
+    "migration:generate": "pnpm typeorm -- migration:generate -d dist/database/data-source.js src/database/migrations/migration",
+    "migration:create": "pnpm typeorm -- migration:create src/database/migrations/migration",
+    "migration:revert": "pnpm typeorm -- migration:revert -d dist/database/data-source.js",
+    "migration:show": "pnpm typeorm -- migration:show -d dist/database/data-source.js",
+    "migration:reset": "pnpm typeorm -- schema:drop -d dist/database/data-source.js"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.15.2",
@@ -37,11 +37,13 @@
     "@nestjs/platform-express": "^11.0.11",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
+    "@types/bcrypt": "^5.0.2",
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "multer": "^1.4.5-lts.1",
     "nest-winston": "^1.10.2",
@@ -62,9 +64,9 @@
     "@nestjs/cli": "^11.0.4",
     "@nestjs/schematics": "^11.0.1",
     "@nestjs/testing": "^11.0.10",
-    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/lodash": "^4.17.16",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.13.5",
@@ -87,6 +89,11 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3"
   },
+  "engines": {
+    "node": "22.14.0",
+    "pnpm": "10.7.1"
+  },
+  "packageManager": "pnpm@10.7.1",
   "jest": {
     "moduleFileExtensions": [
       "js",
@@ -103,5 +110,10 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bcrypt"
+    ]
   }
 }

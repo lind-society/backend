@@ -1,5 +1,4 @@
 import { HttpStatus } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { RegexValidator } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
@@ -28,7 +27,6 @@ export class LoginSuccessResponse
   extends HttpResponseDefaultProps
   implements HttpResponseOptions<LoginResponseDto>
 {
-  @ApiProperty({ type: LoginResponseDto })
   readonly data: LoginResponseDto;
 
   constructor(data: LoginResponseDto) {
