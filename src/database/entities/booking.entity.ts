@@ -91,14 +91,14 @@ export class Booking {
   customer!: BookingCustomer;
 
   @ManyToOne(() => Activity, (activity) => activity.bookings, {
-    onDelete: 'SET NULL',
+    onDelete: 'NO ACTION',
     nullable: true,
   })
   @JoinColumn({ name: 'activity_id' })
   activity!: Activity | null;
 
   @ManyToOne(() => Villa, (villa) => villa.bookings, {
-    onDelete: 'SET NULL',
+    onDelete: 'NO ACTION',
     nullable: true,
   })
   @JoinColumn({ name: 'villa_id' })

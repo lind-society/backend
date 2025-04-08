@@ -30,6 +30,16 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
       );
     }
 
+    if (
+      errorCode === PostgreSqlErrorCode.NotFound ||
+      errorCode === PostgreSqlErrorCode.RelationNotFound
+    ) {
+      responseCode = HttpStatus.NOT_FOUND;
+      message = sanitizePostgresqlErrorResponse(
+        driverError?.detail ?? 'not found',
+      );
+    }
+
     console.error(exception);
 
     return response.status(responseCode).json(
