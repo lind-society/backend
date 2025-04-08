@@ -5,6 +5,7 @@ import { CurrencyModule } from '../currency/currency.module';
 import { FacilityModule } from '../facility/facility.module';
 import { FeatureModule } from '../feature/feature.module';
 import { OwnerModule } from '../owner/owner.module';
+import { VillaPolicyModule } from './policy/villa-policy.module';
 import { VillaController } from './villa.controller';
 import { VillaService } from './villa.service';
 
@@ -17,6 +18,7 @@ import { VillaService } from './villa.service';
     FacilityModule,
     FeatureModule,
     OwnerModule,
+    VillaPolicyModule,
   ],
   exports: [VillaService],
 })
