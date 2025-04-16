@@ -1,25 +1,23 @@
+import { RabbitMqModule } from '@libs/rabbitmq/rabbitmq.module';
+import { RabbitMqService } from '@libs/rabbitmq/rabbitmq.service';
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientProxyFactory, ClientsModule } from '@nestjs/microservices';
 import { WHATSAPP_SERVICE } from './message-pattern';
 import { WhatsappClientService } from './whatsapp-client.service';
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: WHATSAPP_SERVICE,
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://guest:guest@localhost:5672'],
-          queue: 'whatsapp_queue',
-          queueOptions: {
-            durable: true,
-          },
-        },
+  imports: [ClientsModule, RabbitMqModule],
+  providers: [
+    {
+      provide: WHATSAPP_SERVICE,
+      useFactory: async (rabbitMqService: RabbitMqService) => {
+        const options = rabbitMqService.getOptions('whatsapp');
+        return ClientProxyFactory.create(options);
       },
-    ]),
+      inject: [RabbitMqService],
+    },
+    WhatsappClientService,
   ],
-  providers: [WhatsappClientService],
   exports: [WhatsappClientService],
 })
 export class WhatsappClientModule {}

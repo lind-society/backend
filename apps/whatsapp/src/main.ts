@@ -1,23 +1,21 @@
+import { RabbitMqService } from '@libs/rabbitmq/rabbitmq.service';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { MicroserviceOptions } from '@nestjs/microservices';
 import { WhatsappModule } from './whatsapp.module';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    WhatsappModule,
-    {
-      transport: Transport.RMQ,
-      options: {
-        urls: ['amqp://guest:guest@localhost:5672'],
-        queue: 'whatsapp_queue',
-        queueOptions: {
-          durable: true,
-        },
-      },
-    },
-  );
+  const app = await NestFactory.create(WhatsappModule);
 
-  await app.listen();
+  const rabbitMqService = app.get<RabbitMqService>(RabbitMqService);
+
+  const microserviceApp =
+    await NestFactory.createMicroservice<MicroserviceOptions>(
+      WhatsappModule,
+      rabbitMqService.getOptions('whatsapp'),
+    );
+
+  await microserviceApp.listen();
+
   console.log('WhatsApp Microservice is running...');
 }
 bootstrap();

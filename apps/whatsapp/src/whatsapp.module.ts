@@ -1,6 +1,8 @@
 import { envPaths } from '@apps/main/common/constants';
+import { RabbitMqModule } from '@libs/rabbitmq/rabbitmq.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { validateEnv } from './config/env.config';
 import { whatsappConfig } from './config/whatsapp.config';
 import { MainWhatsappClientProvider } from './providers/clients';
@@ -10,6 +12,20 @@ import { WhatsappService } from './whatsapp.service';
 
 @Module({
   imports: [
+    RabbitMqModule,
+    ClientsModule.register([
+      {
+        name: 'WHATSAPP_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://guest:guest@localhost:5672'],
+          queue: 'whatsapp_queue',
+          queueOptions: {
+            durable: true,
+          },
+        },
+      },
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: envPaths[process.env.NODE_ENV || 'development'],
