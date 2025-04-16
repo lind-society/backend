@@ -18,12 +18,19 @@ import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entit
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { CurrencyService } from '../currency/currency.service';
 import { FacilityService } from '../facility/facility.service';
+import { CreateFeatureDto } from '../feature/dto';
 import { FeatureService } from '../feature/feature.service';
 import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
-import { CreateVillaFacililtyDto, VillaWithRelationsDto } from './dto';
+import {
+  CreateVillaFacililtyPivotDto,
+  UpdateVillaFacililtyPivotDto,
+  VillaWithRelationsDto,
+} from './dto';
 import { CreateVillaDto } from './dto/create-villa.dto';
 import { UpdateVillaDto } from './dto/update-villa.dto';
+import { CreateVillaPolicyDto, UpdateVillaPolicyDto } from './policy/dto';
+import { VillaPolicyTypeService } from './policy/type/villa-policy-type.service';
 
 @Injectable()
 export class VillaService {
@@ -35,6 +42,7 @@ export class VillaService {
     private facilityService: FacilityService,
     private featureService: FeatureService,
     private ownerService: OwnerService,
+    private villaPolicyTypeService: VillaPolicyTypeService,
   ) {}
 
   async create(payload: CreateVillaDto): Promise<VillaWithRelationsDto> {
@@ -77,7 +85,7 @@ export class VillaService {
         if (Array.isArray(facilities) && facilities.length > 0) {
           await manager.save(
             VillaFacilityPivot,
-            facilities.map((facility: CreateVillaFacililtyDto) => ({
+            facilities.map((facility: CreateVillaFacililtyPivotDto) => ({
               villaId: createdVilla.id,
               facilityId: facility.id,
               description: facility.description,
@@ -86,7 +94,7 @@ export class VillaService {
         }
 
         if (Array.isArray(features) && features.length > 0) {
-          features.map((feature) =>
+          features.map((feature: CreateFeatureDto) =>
             this.featureService.handleDefaultDiscountType(feature),
           );
 
@@ -237,7 +245,7 @@ export class VillaService {
         villaAdditionals: { additional: true },
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
-        villaPolicies: { policy: true },
+        villaPolicies: { policy: { type: true } },
       },
     });
 
@@ -267,7 +275,7 @@ export class VillaService {
         villaAdditionals: { additional: true },
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
-        villaPolicies: { policy: true },
+        villaPolicies: { policy: { type: true } },
       },
     });
 
@@ -330,7 +338,7 @@ export class VillaService {
         if (facilities.length > 0) {
           await manager.save(
             VillaFacilityPivot,
-            facilities.map((facility) => ({
+            facilities.map((facility: UpdateVillaFacililtyPivotDto) => ({
               villaId: id,
               facilityId: facility.id,
               description: facility.description,
@@ -430,7 +438,10 @@ export class VillaService {
   private async _validateRelatedEntities(
     currencyId?: string,
     ownerId?: string,
-    facilities?: CreateVillaFacililtyDto[],
+    facilities?:
+      | CreateVillaFacililtyPivotDto[]
+      | UpdateVillaFacililtyPivotDto[],
+    policies?: CreateVillaPolicyDto[] | UpdateVillaPolicyDto[],
   ): Promise<void> {
     if (currencyId) {
       await this.currencyService.findOne(currencyId);
@@ -444,6 +455,14 @@ export class VillaService {
       const ids = facilities.map((facility) => facility.id);
 
       await this.facilityService.validateFaciliies(ids);
+    }
+
+    if (Array.isArray(policies) && policies.length > 0) {
+      const typeIds = policies.map(
+        (policy: CreateVillaPolicyDto | UpdateVillaPolicyDto) => policy.typeId,
+      );
+
+      await this.villaPolicyTypeService.validateVillaPolicyTypes(typeIds);
     }
   }
 

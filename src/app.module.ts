@@ -35,6 +35,7 @@ import { RegionModule } from './modules/shared/region/region.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
 import { WhatsappModule } from './modules/shared/whatsapp/whatsapp.module';
 import { VillaModule } from './modules/villa/villa.module';
+import { PackageModule } from './modules/package/package.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { VillaModule } from './modules/villa/villa.module';
     VillaModule,
     ReviewModule,
     WhatsappModule,
+    PackageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

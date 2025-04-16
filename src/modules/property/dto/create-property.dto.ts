@@ -24,7 +24,7 @@ import {
   HttpResponseOptions,
   PlaceNearbyDto,
 } from 'src/modules/shared/dto';
-import { CreatePropertyFacililtyDto } from './create-property-facility.dto';
+import { CreatePropertyFacililtyPivotDto } from './create-property-facility-pivot.dto';
 import { PropertyWithRelationsDto } from './property.dto';
 
 export class CreatePropertyDto {
@@ -131,9 +131,9 @@ export class CreatePropertyDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreatePropertyFacililtyDto)
+  @Type(() => CreatePropertyFacililtyPivotDto)
   @IsOptional()
-  readonly facilities?: CreatePropertyFacililtyDto[];
+  readonly facilities?: CreatePropertyFacililtyPivotDto[];
 
   @IsArray()
   @ValidateNested({ each: true })

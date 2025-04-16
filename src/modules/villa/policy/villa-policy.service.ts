@@ -18,6 +18,7 @@ export class VillaPolicyService {
     @InjectRepository(VillaPolicy)
     private villaPolicyRepository: Repository<VillaPolicy>,
   ) {}
+
   async create(payload: CreateVillaPolicyDto): Promise<VillaPolicyDto> {
     const villaPolicy = this.villaPolicyRepository.create(payload);
 

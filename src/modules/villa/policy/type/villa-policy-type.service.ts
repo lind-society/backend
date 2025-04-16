@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { VillaPolicyType } from 'src/database/entities/villa-policy-type.entity';
 import { PaginateResponseDataProps } from 'src/modules/shared/dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   CreateVillaPolicyTypeDto,
   UpdateVillaPolicyTypeDto,
@@ -18,6 +22,30 @@ export class VillaPolicyTypeService {
     @InjectRepository(VillaPolicyType)
     private villaPolicyTypeRepository: Repository<VillaPolicyType>,
   ) {}
+
+  async validateVillaPolicyTypes(
+    villaFacilityTypeIds: string[],
+  ): Promise<void> {
+    const validVillaPolicyTypes = await this.villaPolicyTypeRepository.find({
+      where: { id: In(villaFacilityTypeIds) },
+    });
+
+    if (validVillaPolicyTypes.length !== villaFacilityTypeIds.length) {
+      const validVillaPolicyTypeIds = validVillaPolicyTypes.map(
+        (facility) => facility.id,
+      );
+      const invalidVillaPolicyTypeIds = villaFacilityTypeIds.filter(
+        (id) => !validVillaPolicyTypeIds.includes(id),
+      );
+
+      if (invalidVillaPolicyTypeIds.length > 0) {
+        throw new BadRequestException(
+          `invalid villa policy type ids: ${invalidVillaPolicyTypeIds.join(', ')}`,
+        );
+      }
+    }
+  }
+
   async create(payload: CreateVillaPolicyTypeDto): Promise<VillaPolicyTypeDto> {
     const villaPolicyType = this.villaPolicyTypeRepository.create(payload);
 

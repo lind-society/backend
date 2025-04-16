@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
-export class CreatePropertyFacililtyDto {
+export class CreatePropertyFacililtyPivotDto {
   @IsUUID()
   @IsOptional()
   readonly propertyId?: string;

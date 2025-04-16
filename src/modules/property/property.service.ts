@@ -19,7 +19,10 @@ import { FacilityService } from '../facility/facility.service';
 import { FeatureService } from '../feature/feature.service';
 import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
-import { CreatePropertyFacililtyDto } from './dto';
+import {
+  CreatePropertyFacililtyPivotDto,
+  UpdatePropertyFacililtyPivotDto,
+} from './dto';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { PropertyWithRelationsDto } from './dto/property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
@@ -74,7 +77,7 @@ export class PropertyService {
 
         await manager.save(
           PropertyFacilityPivot,
-          facilities.map((facility: CreatePropertyFacililtyDto) => ({
+          facilities.map((facility: CreatePropertyFacililtyPivotDto) => ({
             propertyId: createdProperty.id,
             facilityId: facility.id,
             description: facility.description,
@@ -255,7 +258,7 @@ export class PropertyService {
         if (facilities.length > 0) {
           await manager.save(
             PropertyFacilityPivot,
-            facilities.map((facility: CreatePropertyFacililtyDto) => ({
+            facilities.map((facility: UpdatePropertyFacililtyPivotDto) => ({
               propertyId: id,
               facilityId: facility.id,
               description: facility.description,
@@ -327,7 +330,7 @@ export class PropertyService {
   private async _validateRelatedEntities(
     currencyId?: string,
     ownerId?: string,
-    facilities?: CreatePropertyFacililtyDto[],
+    facilities?: CreatePropertyFacililtyPivotDto[],
   ): Promise<void> {
     if (currencyId) {
       await this.currencyService.findOne(currencyId);

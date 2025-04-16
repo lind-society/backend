@@ -29,7 +29,7 @@ import {
   PlaceNearbyDto,
 } from 'src/modules/shared/dto';
 import { CreateVillaPolicyDto } from '../policy/dto';
-import { CreateVillaFacililtyDto } from './create-villa-facility.dto';
+import { CreateVillaFacililtyPivotDto } from './create-villa-facility-pivot.dto';
 import { VillaWithRelationsDto } from './villa.dto';
 
 export class VillaAvailabilityPerPriceDto extends VillaAvailabilityPerPrice {
@@ -211,9 +211,9 @@ export class CreateVillaDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateVillaFacililtyDto)
+  @Type(() => CreateVillaFacililtyPivotDto)
   @IsOptional()
-  readonly facilities?: CreateVillaFacililtyDto[];
+  readonly facilities?: CreateVillaFacililtyPivotDto[];
 
   @IsArray()
   @ValidateNested({ each: true })

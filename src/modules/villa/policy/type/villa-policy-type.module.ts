@@ -8,5 +8,6 @@ import { VillaPolicyTypeService } from './villa-policy-type.service';
   controllers: [VillaPolicyTypeController],
   providers: [VillaPolicyTypeService],
   imports: [TypeOrmModule.forFeature([VillaPolicyType])],
+  exports: [VillaPolicyTypeService],
 })
 export class VillaPolicyTypeModule {}
