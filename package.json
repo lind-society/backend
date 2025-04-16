@@ -1,5 +1,5 @@
 {
-  "name": "lind-society",
+  "name": "main",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -7,21 +7,21 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "start:prod": "node dist/apps/main/main",
+    "lint": "eslint \"{@apps/main,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e": "jest --config ./apps/main/test/jest-e2e.json",
     "typeorm": "pnpm build && npx typeorm",
     "migration:run": "pnpm typeorm -- migration:run -d dist/database/data-source.js",
-    "migration:generate": "pnpm typeorm -- migration:generate -d dist/database/data-source.js src/database/migrations/migration",
-    "migration:create": "pnpm typeorm -- migration:create src/database/migrations/migration",
+    "migration:generate": "pnpm typeorm -- migration:generate -d dist/database/data-source.js @apps/main/database/migrations/migration",
+    "migration:create": "pnpm typeorm -- migration:create @apps/main/database/migrations/migration",
     "migration:revert": "pnpm typeorm -- migration:revert -d dist/database/data-source.js",
     "migration:show": "pnpm typeorm -- migration:show -d dist/database/data-source.js",
     "migration:reset": "pnpm typeorm -- schema:drop -d dist/database/data-source.js"
@@ -33,11 +33,14 @@
     "@nestjs/core": "^11.0.10",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/mapped-types": "*",
+    "@nestjs/microservices": "^11.0.13",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.11",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
     "@types/bcrypt": "^5.0.2",
+    "amqp-connection-manager": "^4.1.14",
+    "amqplib": "^0.10.7",
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
@@ -100,7 +103,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -108,8 +111,19 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/apps/",
+      "<rootDir>/libs/"
+    ],
+    "moduleNameMapper": {
+      "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
+      "^@app/config(|/.*)$": "<rootDir>/libs/config/src/$1",
+      "^@app/logger(|/.*)$": "<rootDir>/libs/logger/src/$1",
+      "^@app/rabbitmq(|/.*)$": "<rootDir>/libs/rabbitmq/src/$1",
+      "^@app/whatsapp-client(|/.*)$": "<rootDir>/libs/whatsapp-client/src/$1"
+    }
   },
   "pnpm": {
     "onlyBuiltDependencies": [

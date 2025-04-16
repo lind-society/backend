@@ -1,0 +1,32 @@
+import { envPaths } from '@apps/main/common/constants';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { validateEnv } from './config/env.config';
+import { whatsappConfig } from './config/whatsapp.config';
+import { MainWhatsappClientProvider } from './providers/clients';
+import { WhatsappServiceController } from './whatsapp.controller';
+import { WhatsAppClientFactory } from './whatsapp.factory';
+import { WhatsappService } from './whatsapp.service';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: envPaths[process.env.NODE_ENV || 'development'],
+      validate: validateEnv,
+      validationOptions: {
+        allowUnknown: false,
+        abortEarly: true,
+      },
+      load: [whatsappConfig],
+    }),
+  ],
+  controllers: [WhatsappServiceController],
+  providers: [
+    WhatsappService,
+    WhatsAppClientFactory,
+    MainWhatsappClientProvider,
+  ],
+  exports: [WhatsappService],
+})
+export class WhatsappModule {}
