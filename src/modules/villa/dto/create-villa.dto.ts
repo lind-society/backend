@@ -2,8 +2,8 @@ import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
-  IsInt,
   IsNotEmpty,
   IsNumber,
   IsNumberString,
@@ -16,11 +16,7 @@ import {
 } from 'class-validator';
 import { RegexValidator, ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
-import {
-  DiscountType,
-  VillaAvailability,
-  VillaAvailabilityPerPrice,
-} from 'src/database/entities';
+import { DiscountType, VillaAvailability } from 'src/database/entities';
 import { CreateAdditionalDto } from 'src/modules/additional/dto';
 import { CreateFeatureDto } from 'src/modules/feature/dto';
 import {
@@ -32,15 +28,18 @@ import { CreateVillaPolicyDto } from '../policy/dto';
 import { CreateVillaFacililtyPivotDto } from './create-villa-facility-pivot.dto';
 import { VillaWithRelationsDto } from './villa.dto';
 
-export class VillaAvailabilityPerPriceDto extends VillaAvailabilityPerPrice {
-  @IsEnum(VillaAvailability)
+export class VillaAvailabilityDto extends VillaAvailability {
+  @IsBoolean()
   @IsNotEmpty()
-  availability!: VillaAvailability;
+  daily!: boolean;
 
-  @IsInt()
-  @Min(0, { message: 'minimum quota in villa availability per price is 0' })
+  @IsBoolean()
   @IsNotEmpty()
-  quota!: number;
+  monthly!: boolean;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  yearly!: boolean;
 }
 
 export class CreateVillaDto {
@@ -52,11 +51,10 @@ export class CreateVillaDto {
   @IsOptional()
   readonly secondaryName?: string;
 
-  @IsArray()
-  @IsEnum(VillaAvailability, { each: true })
-  @IsNotEmpty({ each: true })
+  @ValidateNested()
+  @Type(() => VillaAvailabilityDto)
   @IsOptional()
-  readonly availability?: VillaAvailability[];
+  readonly availability?: VillaAvailabilityDto;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
@@ -136,11 +134,23 @@ export class CreateVillaDto {
   @ValidateDiscountValue('discountYearlyType', 'priceyearly', DiscountType)
   readonly discountYearly?: number;
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => VillaAvailabilityPerPriceDto)
+  @Type(() => Number)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'availabilityQuotaPerMonth must be a valid number' },
+  )
+  @Min(0, { message: 'minimum availabilityQuotaPerMonth is 0' })
   @IsOptional()
-  readonly availabilityPerPrice?: VillaAvailabilityPerPriceDto[];
+  readonly availabilityQuotaPerMonth?: number;
+
+  @Type(() => Number)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'availabilityQuotaPerYear must be a valid number' },
+  )
+  @Min(0, { message: 'minimum availabilityQuotaPerYear is 0' })
+  @IsOptional()
+  readonly availabilityQuotaPerYear?: number;
 
   @IsString()
   @IsOptional()

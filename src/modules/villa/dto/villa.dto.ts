@@ -5,7 +5,6 @@ import {
   Villa,
   VillaAdditionalPivot,
   VillaAvailability,
-  VillaAvailabilityPerPrice,
   VillaFacilityPivot,
   VillaFeaturePivot,
 } from 'src/database/entities';
@@ -43,7 +42,7 @@ export class VillaDto implements IVillaDto {
   readonly id!: string;
   readonly name!: string;
   readonly secondaryName!: string | null;
-  readonly availability!: VillaAvailability[] | null;
+  readonly availability!: VillaAvailability | null;
   readonly priceDaily!: number | null;
   readonly priceMonthly!: number | null;
   readonly priceYearly!: number | null;
@@ -56,7 +55,8 @@ export class VillaDto implements IVillaDto {
   readonly priceDailyAfterDiscount!: number | null;
   readonly priceMonthlyAfterDiscount!: number | null;
   readonly priceYearlyAfterDiscount!: number | null;
-  readonly availabilityPerPrice!: VillaAvailabilityPerPrice[] | null;
+  readonly availabilityQuotaPerMonth!: number | null;
+  readonly availabilityQuotaPerYear!: number | null;
   readonly highlight!: string | null;
   readonly address!: string | null;
   readonly country!: string | null;

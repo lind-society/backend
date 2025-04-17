@@ -20,15 +20,10 @@ import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 import { VillaPolicyPivot } from './villa-policy-pivot.entity';
 
-export enum VillaAvailability {
-  Daily = 'daily',
-  Monthly = 'monthly',
-  Yearly = 'yearly',
-}
-
-export class VillaAvailabilityPerPrice {
-  availability!: VillaAvailability;
-  quota!: number;
+export class VillaAvailability {
+  daily!: boolean;
+  monthly!: boolean;
+  yearly!: boolean;
 }
 
 @Entity({ name: 'villas' })
@@ -43,12 +38,10 @@ export class Villa {
   secondaryName!: string | null;
 
   @Column({
-    type: 'enum',
-    enum: VillaAvailability,
-    array: true,
+    type: 'jsonb',
     nullable: true,
   })
-  availability!: VillaAvailability[] | null;
+  availability!: VillaAvailability | null;
 
   @Column({
     name: 'price_daily',
@@ -186,11 +179,18 @@ export class Villa {
   priceYearlyAfterDiscount!: number | null;
 
   @Column({
-    name: 'availability_per_price',
-    type: 'jsonb',
+    name: 'availability_quota_per_month',
+    type: 'integer',
     nullable: true,
   })
-  availabilityPerPrice!: VillaAvailabilityPerPrice[] | null;
+  availabilityQuotaPerMonth!: number | null;
+
+  @Column({
+    name: 'availability_quota_per_year',
+    type: 'integer',
+    nullable: true,
+  })
+  availabilityQuotaPerYear!: number | null;
 
   @Column({ type: 'text', nullable: true })
   highlight!: string | null;

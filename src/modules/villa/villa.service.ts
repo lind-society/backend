@@ -157,7 +157,8 @@ export class VillaService {
         'checkInHour',
         'checkOutHour',
         'averageRating',
-        'availabilityPerPrice.quota',
+        'availabilityQuotaPerMonth',
+        'availabilityQuotaPerYear',
       ],
       defaultSortBy: [
         ['averageRating', 'DESC'],
