@@ -19,6 +19,7 @@ import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
 import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 import { VillaPolicyPivot } from './villa-policy-pivot.entity';
+import { VillaPriceRulePivot } from './villa-price-rule-pivot.entity';
 
 export class VillaAvailability {
   daily!: boolean;
@@ -34,23 +35,58 @@ export class Villa {
   @Column()
   name!: string;
 
-  @Column({ name: 'secondary_name', nullable: true })
-  secondaryName!: string | null;
+  @Column({ name: 'secondary_name' })
+  secondaryName!: string;
 
   @Column({
     type: 'jsonb',
-    nullable: true,
   })
-  availability!: VillaAvailability | null;
+  availability!: VillaAvailability;
 
   @Column({
-    name: 'price_daily',
+    name: 'daily_base_price',
     type: 'decimal',
     precision: 15,
     scale: 2,
     nullable: true,
   })
-  priceDaily!: number | null;
+  dailyBasePrice!: number | null;
+
+  @Column({
+    name: 'low_season_price_rate',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  lowSeasonPriceRate!: number | null;
+
+  @Column({
+    name: 'high_season_price_rate',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  highSeasonPriceRate!: number | null;
+
+  @Column({
+    name: 'peak_season_price_rate',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  peakSeasonPriceRate!: number | null;
+
+  @Column({
+    name: 'daily_base_price_after_season_rate',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
+  dailyBasePriceAfterSeasonRate!: number | null;
 
   @Column({
     name: 'price_monthly',
@@ -71,15 +107,6 @@ export class Villa {
   priceYearly!: number | null;
 
   @Column({
-    name: 'discount_daily_type',
-    type: 'enum',
-    enum: DiscountType,
-    enumName: 'discount_type_enum',
-    nullable: true,
-  })
-  discountDailyType!: DiscountType | null;
-
-  @Column({
     name: 'discount_monthly_type',
     type: 'enum',
     enum: DiscountType,
@@ -98,15 +125,6 @@ export class Villa {
   discountYearlyType!: DiscountType | null;
 
   @Column({
-    name: 'discount_daily',
-    type: 'decimal',
-    precision: 15,
-    scale: 2,
-    nullable: true,
-  })
-  discountDaily!: number | null;
-
-  @Column({
     name: 'discount_monthly',
     type: 'decimal',
     precision: 15,
@@ -123,24 +141,6 @@ export class Villa {
     nullable: true,
   })
   discountYearly!: number | null;
-
-  @Column({
-    name: 'price_daily_after_discount',
-    type: 'decimal',
-    precision: 15,
-    scale: 2,
-    generatedType: 'STORED',
-    asExpression: `
-      CASE 
-        WHEN discount_daily_type = 'fixed' THEN 
-          GREATEST(price_daily - COALESCE(discount_daily, 0), 0)
-        ELSE 
-          GREATEST(price_daily - (price_daily * COALESCE(discount_daily, 0) / 100), 0)
-      END
-    `,
-    nullable: true,
-  })
-  priceDailyAfterDiscount!: number | null;
 
   @Column({
     name: 'price_monthly_after_discount',
@@ -192,33 +192,32 @@ export class Villa {
   })
   availabilityQuotaPerYear!: number | null;
 
-  @Column({ type: 'text', nullable: true })
-  highlight!: string | null;
+  @Column({ type: 'text' })
+  highlight!: string;
 
-  @Column({ nullable: true })
-  address!: string | null;
+  @Column()
+  address!: string;
 
-  @Column({ nullable: true })
-  country!: string | null;
+  @Column()
+  country!: string;
 
-  @Column({ nullable: true })
-  state!: string | null;
+  @Column()
+  state!: string;
 
-  @Column({ nullable: true })
-  city!: string | null;
+  @Column()
+  city!: string;
 
-  @Column({ name: 'postal_code', nullable: true })
-  postalCode!: string | null;
+  @Column({ name: 'postal_code' })
+  postalCode!: string;
 
-  @Column({ name: 'map_link', nullable: true })
-  mapLink!: string | null;
+  @Column({ name: 'map_link' })
+  mapLink!: string;
 
   @Column({
     name: 'place_nearby',
     type: 'jsonb',
-    nullable: true,
   })
-  placeNearby!: PlaceNearby[] | null;
+  placeNearby!: PlaceNearby[];
 
   @Column({ name: 'check_in_hour', type: 'time', precision: 0 })
   checkInHour!: string;
@@ -226,14 +225,17 @@ export class Villa {
   @Column({ name: 'check_out_hour', type: 'time', precision: 0 })
   checkOutHour!: string;
 
-  @Column({ type: 'varchar', array: true, nullable: true })
-  photos!: string[] | null;
+  @Column({ type: 'text', array: true })
+  photos!: string[];
 
-  @Column({ type: 'varchar', array: true, nullable: true })
-  videos!: string[] | null;
+  @Column({ type: 'text', array: true })
+  videos!: string[];
 
-  @Column({ name: 'video_360', type: 'varchar', array: true, nullable: true })
+  @Column({ name: 'video_360', type: 'text', array: true, nullable: true })
   video360s!: string[] | null;
+
+  @Column({ name: 'floor_plan', type: 'text', array: true, nullable: true })
+  floorPlan!: string[] | null;
 
   @Column({
     name: 'average_rating',
@@ -244,8 +246,8 @@ export class Villa {
   })
   averageRating!: number | null;
 
-  @Column({ name: 'currency_id', type: 'uuid' })
-  currencyId: string;
+  @Column({ name: 'currency_id', type: 'uuid', nullable: true })
+  currencyId: string | null;
 
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
@@ -280,11 +282,18 @@ export class Villa {
   )
   villaPolicies!: VillaPolicyPivot[];
 
+  @OneToMany(
+    () => VillaPriceRulePivot,
+    (villaPriceRulePivot) => villaPriceRulePivot.villa,
+  )
+  villaPriceRules!: VillaPriceRulePivot[];
+
   @ManyToOne(() => Currency, {
     onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn({ name: 'currency_id' })
-  currency!: Currency;
+  currency!: Currency | null;
 
   @ManyToOne(() => Owner, (owner) => owner.villas, {
     onDelete: 'SET NULL',

@@ -24,4 +24,6 @@ export * from './villa-facility-pivot.entity';
 export * from './villa-feature-pivot.entity';
 export * from './villa-policy-pivot.entity';
 export * from './villa-policy.entity';
+export * from './villa-price-rule-pivot.entity';
+export * from './villa-price-rule.entity';
 export * from './villa.entity';

@@ -31,7 +31,7 @@ export class Property {
   @Column()
   name!: string;
 
-  @Column({ name: 'secondary_name', nullable: true })
+  @Column({ name: 'secondary_name' })
   secondaryName!: string | null;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
@@ -70,48 +70,49 @@ export class Property {
   @Column({ name: 'ownership_type', type: 'enum', enum: PropertyOwnershipType })
   ownershipType!: PropertyOwnershipType;
 
-  @Column({ type: 'text', nullable: true })
-  highlight!: string | null;
+  @Column({ type: 'text' })
+  highlight!: string;
 
-  @Column({ nullable: true })
-  address!: string | null;
+  @Column()
+  address!: string;
 
-  @Column({ nullable: true })
-  country!: string | null;
+  @Column()
+  country!: string;
 
-  @Column({ nullable: true })
-  state!: string | null;
+  @Column()
+  state!: string;
 
-  @Column({ nullable: true })
-  city!: string | null;
+  @Column()
+  city!: string;
 
-  @Column({ name: 'postal_code', nullable: true })
-  postalCode!: string | null;
+  @Column({ name: 'postal_code' })
+  postalCode!: string;
 
-  @Column({ name: 'map_link', nullable: true })
-  mapLink!: string | null;
+  @Column({ name: 'map_link' })
+  mapLink!: string;
 
   @Column({
     name: 'place_nearby',
     type: 'jsonb',
-    nullable: true,
   })
-  placeNearby!: PlaceNearby[] | null;
+  placeNearby!: PlaceNearby[];
 
-  @Column({ type: 'varchar', array: true, nullable: true })
-  photos!: string[] | null;
+  @Column({ type: 'text', array: true })
+  photos!: string[];
 
-  @Column({ type: 'varchar', array: true, nullable: true })
-  videos!: string[] | null;
+  @Column({ type: 'text', array: true })
+  videos!: string[];
 
-  @Column({ name: 'video_360', type: 'varchar', array: true, nullable: true })
+  @Column({ name: 'video_360', type: 'text', array: true, nullable: true })
   video360s!: string[] | null;
+
+  @Column({ name: 'floor_plan', type: 'text', array: true, nullable: true })
+  floorPlan!: string[] | null;
 
   @Column({
     name: 'sold_status',
     type: 'boolean',
     default: false,
-    nullable: false,
   })
   soldStatus!: boolean;
 
@@ -124,8 +125,8 @@ export class Property {
   })
   averageRating!: number | null;
 
-  @Column({ name: 'currency_id', type: 'uuid' })
-  currencyId: string;
+  @Column({ name: 'currency_id', type: 'uuid', nullable: true })
+  currencyId: string | null;
 
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
@@ -153,9 +154,10 @@ export class Property {
 
   @ManyToOne(() => Currency, {
     onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn({ name: 'currency_id' })
-  currency!: Currency;
+  currency!: Currency | null;
 
   @ManyToOne(() => Owner, (owner) => owner.properties, {
     onDelete: 'SET NULL',

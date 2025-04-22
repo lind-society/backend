@@ -9,6 +9,7 @@ import {
   VillaFeaturePivot,
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
+import { VillaPriceRulePivot } from 'src/database/entities/villa-price-rule-pivot.entity';
 import { BookingDto } from 'src/modules/booking/dto';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
@@ -23,6 +24,7 @@ export interface IVillaDto
     | 'villaFeatures'
     | 'villaAdditionals'
     | 'villaPolicies'
+    | 'villaPriceRules'
     | 'bookings'
     | 'reviews'
   > {}
@@ -36,35 +38,37 @@ export interface IVillaWithRelationsDto extends IVillaDto {
   facilities?: VillaFacilityPivot[];
   features?: VillaFeaturePivot[];
   policies?: VillaPolicyPivot[];
+  priceRules?: VillaPriceRulePivot[];
 }
 
 export class VillaDto implements IVillaDto {
   readonly id!: string;
   readonly name!: string;
-  readonly secondaryName!: string | null;
-  readonly availability!: VillaAvailability | null;
-  readonly priceDaily!: number | null;
+  readonly secondaryName!: string;
+  readonly availability!: VillaAvailability;
+  readonly dailyBasePrice!: number | null;
+  readonly lowSeasonPriceRate!: number | null;
+  readonly highSeasonPriceRate!: number | null;
+  readonly peakSeasonPriceRate!: number | null;
+  readonly dailyBasePriceAfterSeasonRate!: number | null;
   readonly priceMonthly!: number | null;
   readonly priceYearly!: number | null;
-  readonly discountDailyType!: DiscountType | null;
   readonly discountMonthlyType!: DiscountType | null;
   readonly discountYearlyType!: DiscountType | null;
-  readonly discountDaily!: number | null;
   readonly discountMonthly!: number | null;
   readonly discountYearly!: number | null;
-  readonly priceDailyAfterDiscount!: number | null;
   readonly priceMonthlyAfterDiscount!: number | null;
   readonly priceYearlyAfterDiscount!: number | null;
   readonly availabilityQuotaPerMonth!: number | null;
   readonly availabilityQuotaPerYear!: number | null;
-  readonly highlight!: string | null;
-  readonly address!: string | null;
-  readonly country!: string | null;
-  readonly state!: string | null;
-  readonly city!: string | null;
-  readonly postalCode!: string | null;
-  readonly mapLink!: string | null;
-  readonly placeNearby!: PlaceNearby[] | null;
+  readonly highlight!: string;
+  readonly address!: string;
+  readonly country!: string;
+  readonly state!: string;
+  readonly city!: string;
+  readonly postalCode!: string;
+  readonly mapLink!: string;
+  readonly placeNearby!: PlaceNearby[];
 
   @Transform(({ value }) => (value ? value.slice(0, 5) : null))
   readonly checkInHour!: string;
@@ -74,9 +78,10 @@ export class VillaDto implements IVillaDto {
 
   readonly photos!: string[];
   readonly videos!: string[];
-  readonly video360s!: string[];
+  readonly video360s!: string[] | null;
+  readonly floorPlan!: string[] | null;
   readonly averageRating!: number | null;
-  readonly currencyId!: string;
+  readonly currencyId!: string | null;
   readonly ownerId!: string | null;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
@@ -96,4 +101,5 @@ export class VillaWithRelationsDto
   readonly facilities?: VillaFacilityPivot[];
   readonly features?: VillaFeaturePivot[];
   readonly policies?: VillaPolicyPivot[];
+  readonly priceRules?: VillaPriceRulePivot[];
 }

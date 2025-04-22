@@ -8,6 +8,7 @@ import {
   Additional,
   DiscountType,
   Feature,
+  PriceRuleSeason,
   Villa,
   VillaAdditionalPivot,
   VillaFacilityPivot,
@@ -47,6 +48,8 @@ export class VillaService {
 
   async create(payload: CreateVillaDto): Promise<VillaWithRelationsDto> {
     this._handleDefaultDiscountType(payload);
+
+    payload.dailyBasePriceAfterSeasonRate = payload.dailyBasePrice;
 
     const { additionals, facilities, features, policies, ...villaData } =
       payload;
@@ -142,16 +145,14 @@ export class VillaService {
         'createdAt',
         'name',
         'secondaryName',
-        'priceDaily',
+        'dailyBasePrice',
+        'dailyBasePriceAfterSeasonRate',
         'priceMonthly',
         'priceYearly',
-        'discountDailyType',
         'discountMonthlyType',
         'discountYearlyType',
-        'discountDaily',
         'discountMonthly',
         'discountYearly',
-        'priceDailyAfterDiscount',
         'priceMonthlyAfterDiscount',
         'priceYearlyAfterDiscount',
         'checkInHour',
@@ -171,14 +172,8 @@ export class VillaService {
         currencyId: [FilterOperator.EQ],
         ownerId: [FilterOperator.EQ],
 
-        discountDailyType: [FilterOperator.EQ],
         discountMonthlyType: [FilterOperator.EQ],
         discountYearlyType: [FilterOperator.EQ],
-        discountDaily: [
-          FilterOperator.EQ,
-          FilterOperator.GTE,
-          FilterOperator.LTE,
-        ],
         discountMonthly: [
           FilterOperator.EQ,
           FilterOperator.GTE,
@@ -189,10 +184,10 @@ export class VillaService {
           FilterOperator.GTE,
           FilterOperator.LTE,
         ],
-        priceDaily: [FilterOperator.GTE, FilterOperator.LTE],
+        dailyBasePrice: [FilterOperator.GTE, FilterOperator.LTE],
+        dailyBasePriceAfterSeasonRate: [FilterOperator.GTE, FilterOperator.LTE],
         priceMonthly: [FilterOperator.GTE, FilterOperator.LTE],
         priceYearly: [FilterOperator.GTE, FilterOperator.LTE],
-        priceDailyAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
         priceMonthlyAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
         priceYearlyAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
 
@@ -247,6 +242,7 @@ export class VillaService {
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
         villaPolicies: { policy: { type: true } },
+        villaPriceRules: { priceRule: true },
       },
     });
 
@@ -277,6 +273,7 @@ export class VillaService {
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
         villaPolicies: { policy: { type: true } },
+        villaPriceRules: { priceRule: true },
       },
     });
 
@@ -303,7 +300,12 @@ export class VillaService {
     );
 
     await this.datasource.transaction(async (manager) => {
-      await this.findOne(id, manager);
+      const initialData = await this.findOne(id, manager);
+
+      if (villaData.dailyBasePrice) {
+        villaData.dailyBasePriceAfterSeasonRate =
+          this._handleDailyBasePriceAfterSeasonRateUponUpdate(initialData);
+      }
 
       const convertedBasePriceVillaData =
         await this._convertToBaseCurrency(villaData);
@@ -402,13 +404,14 @@ export class VillaService {
     await this.villaRepository.delete(id);
   }
 
-  private _mapVillaData(villa: Villa) {
+  private _mapVillaData(villa: Villa): VillaWithRelationsDto {
     return plainToInstance(VillaWithRelationsDto, {
       ...omit(villa, [
         'villaAdditionals',
         'villaFacilities',
         'villaFeatures',
         'villaPolicies',
+        'villaPriceRules',
       ]),
 
       additionals: villa.villaAdditionals.map(({ id, additional }) => ({
@@ -432,6 +435,11 @@ export class VillaService {
       policies: villa.villaPolicies.map(({ id, policy }) => ({
         pivotId: id,
         ...policy,
+      })),
+
+      priceRules: villa.villaPriceRules.map(({ id, priceRule }) => ({
+        pivotId: id,
+        ...priceRule,
       })),
     });
   }
@@ -473,10 +481,15 @@ export class VillaService {
     return {
       ...villaData,
       currencyId: await this.currencyService.findBaseCurrencyId(),
-      priceDaily: await this.currencyService.convertToBaseCurrency(
+      dailyBasePrice: await this.currencyService.convertToBaseCurrency(
         villaData.currencyId,
-        villaData.priceDaily,
+        villaData.dailyBasePrice,
       ),
+      dailyBasePriceAfterSeasonRate:
+        await this.currencyService.convertToBaseCurrency(
+          villaData.currencyId,
+          villaData.dailyBasePriceAfterSeasonRate,
+        ),
       priceMonthly: await this.currencyService.convertToBaseCurrency(
         villaData.currencyId,
         villaData.priceMonthly,
@@ -491,16 +504,54 @@ export class VillaService {
   private async _handleDefaultDiscountType(
     payload: CreateVillaDto | UpdateVillaDto,
   ) {
-    if (payload.discountDaily && !payload.discountDailyType) {
-      payload.discountDailyType = DiscountType.Percentage;
-    }
-
     if (payload.discountMonthly && !payload.discountMonthlyType) {
       payload.discountMonthlyType = DiscountType.Percentage;
     }
 
     if (payload.discountYearly && !payload.discountYearlyType) {
       payload.discountYearlyType = DiscountType.Percentage;
+    }
+  }
+
+  private _handleDailyBasePriceAfterSeasonRateUponUpdate(
+    villaData: VillaWithRelationsDto,
+  ): number {
+    const villaPriceRules = villaData.priceRules.map(({ id, priceRule }) => ({
+      pivotId: id,
+      ...priceRule,
+    }));
+
+    const currentActiveSeasonRate = villaPriceRules.find(
+      (villaPriceRule) =>
+        villaPriceRule.startDate <= new Date() &&
+        villaPriceRule.endDate >= new Date() &&
+        villaPriceRule.isActive,
+    );
+
+    if (!currentActiveSeasonRate) {
+      return villaData.dailyBasePrice;
+    }
+
+    switch (currentActiveSeasonRate.season) {
+      case PriceRuleSeason.Low_Season:
+        return (
+          villaData.dailyBasePrice * (1 - villaData.lowSeasonPriceRate / 100)
+        );
+      case PriceRuleSeason.Regular_Season:
+        return (
+          villaData.dailyBasePrice *
+          (1 - currentActiveSeasonRate.discount / 100)
+        );
+      case PriceRuleSeason.High_Season:
+        return (
+          villaData.dailyBasePrice * (1 + villaData.highSeasonPriceRate / 100)
+        );
+      case PriceRuleSeason.Peak_Season:
+        return (
+          villaData.dailyBasePrice * (1 + villaData.peakSeasonPriceRate / 100)
+        );
+      default:
+        return villaData.dailyBasePrice;
     }
   }
 }
