@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Post,
   UploadedFiles,
@@ -82,12 +81,37 @@ export class StorageController {
         limits: {
           fileSize:
             megabyteToByte(parseInt(process.env.VIDEO360S_LIMIT_SIZE, 10)) |
-            megabyteToByte(30),
+            megabyteToByte(15),
         },
       },
     ),
   )
   async uploadVideo360s(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() payload: UploadFileRequestDto,
+  ) {
+    const receivedFiles = this.storageService.mapFiles(files, payload.key);
+
+    const result = await this.storageService.uploadFiles(receivedFiles);
+
+    return new UploadFileSuccessResponse(result);
+  }
+
+  @Post('floor-plans')
+  @UseInterceptors(
+    FilesInterceptor(
+      'files',
+      parseInt(process.env.FLOOR_PLANS_LIMIT_QUANTITY, 10) | 5,
+      {
+        limits: {
+          fileSize:
+            megabyteToByte(parseInt(process.env.FLOOR_PLANS_LIMIT_SIZE, 10)) |
+            megabyteToByte(5),
+        },
+      },
+    ),
+  )
+  async uploadFloorPlans(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() payload: UploadFileRequestDto,
   ) {
