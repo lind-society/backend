@@ -10,6 +10,7 @@ import {
   currencyConfig,
   databaseConfig,
   fileConfig,
+  frontEndConfig,
   gcpConfig,
   jwtConfig,
   postalCodeConfig,
@@ -27,6 +28,7 @@ import { BookingModule } from './modules/booking/booking.module';
 import { CurrencyModule } from './modules/currency/currency.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { OwnerModule } from './modules/owner/owner.module';
+import { PackageModule } from './modules/package/package.module';
 import { PropertyModule } from './modules/property/property.module';
 import { ReviewModule } from './modules/review/review.module';
 import { AxiosModule } from './modules/shared/axios/axios.module';
@@ -35,7 +37,6 @@ import { RegionModule } from './modules/shared/region/region.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
 import { WhatsappModule } from './modules/shared/whatsapp/whatsapp.module';
 import { VillaModule } from './modules/villa/villa.module';
-import { PackageModule } from './modules/package/package.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { PackageModule } from './modules/package/package.module';
         currencyConfig,
         databaseConfig,
         fileConfig,
+        frontEndConfig,
         gcpConfig,
         jwtConfig,
         postalCodeConfig,
