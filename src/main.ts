@@ -30,9 +30,9 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      configService.get<string>('frontEnd.development'),
-      configService.get<string>('frontEnd.staging'),
-      configService.get<string>('frontEnd.production'),
+      configService.get<string>('frontend.development'),
+      configService.get<string>('frontend.staging'),
+      configService.get<string>('frontend.production'),
     ],
     credentials: true,
   });
