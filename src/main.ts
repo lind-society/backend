@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
+import { Environment } from './common/enums';
 import { validationExceptionFactory } from './common/factories';
 import { HttpExceptionFilter } from './common/filters';
 import { winstonConfig } from './config/winston-logger.config';
@@ -60,7 +61,7 @@ async function bootstrap() {
   await app.listen(port, () => {
     logger.log(`env : ${env}`);
 
-    env === 'development'
+    env === Environment.Development
       ? logger.log(`app running on : http://${host}:${port}`)
       : logger.log(`app running on : ${host}:${port}`);
   });
