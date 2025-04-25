@@ -21,15 +21,19 @@ async function bootstrap() {
   const configService: ConfigService = app.get<ConfigService>(ConfigService);
   const httpAdapterHost = app.get(HttpAdapterHost);
 
-  const port = configService.get('app.port');
-  const apiVersion = configService.get('app.apiVersion');
-  const host = configService.get('app.host');
-  const env = configService.get('app.env');
+  const port = configService.get<string>('app.port');
+  const apiVersion = configService.get<string>('app.apiVersion');
+  const host = configService.get<string>('app.host');
+  const env = configService.get<string>('app.env');
 
   app.setGlobalPrefix(`api/${apiVersion}`);
 
   app.enableCors({
-    origin: '*',
+    origin: [
+      configService.get<string>('frontEnd.development'),
+      configService.get<string>('frontEnd.staging'),
+      configService.get<string>('frontEnd.production'),
+    ],
     credentials: true,
   });
 

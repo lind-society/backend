@@ -62,6 +62,18 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   DB_NAME!: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  FE_DEVELOPMENT!: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  FE_STAGING!: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  FE_PRODUCTION!: string;
 
   @IsString()
   @IsNotEmpty()

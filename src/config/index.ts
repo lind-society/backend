@@ -4,6 +4,7 @@ export * from './database.config';
 export * from './env-values.config';
 export * from './env.config';
 export * from './file.config';
+export * from './front-end.config';
 export * from './gcp.config';
 export * from './jwt.config';
 export * from './postal-code.config';

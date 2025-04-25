@@ -15,6 +15,9 @@ export const envValues: EnvironmentVariables = {
   DB_USER: process.env.DB_USER || '',
   DB_PASSWORD: process.env.DB_PASSWORD || '',
   DB_NAME: process.env.DB_NAME || '',
+  FE_DEVELOPMENT: process.env.FE_DEVELOPMENT || '',
+  FE_STAGING: process.env.FE_STAGING || '',
+  FE_PRODUCTION: process.env.FE_DEVELOPMENT || '',
   STORAGE_PROVIDER:
     (process.env.STORAGE_PROVIDER as StorageProvider) || StorageProvider.GCP,
   GCP_BUCKET_NAME: process.env.GCP_BUCKET_NAME || '',
