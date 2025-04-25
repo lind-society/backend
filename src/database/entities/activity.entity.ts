@@ -150,8 +150,8 @@ export class Activity {
   @Column({ name: 'video_360', type: 'text', array: true, nullable: true })
   video360s!: string[] | null;
 
-  @Column({ name: 'floor_plan', type: 'text', array: true, nullable: true })
-  floorPlan!: string[] | null;
+  @Column({ name: 'floor_plans', type: 'text', array: true, nullable: true })
+  floorPlans!: string[] | null;
 
   @Column({
     name: 'average_rating',

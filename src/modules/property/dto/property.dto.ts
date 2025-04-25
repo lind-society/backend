@@ -52,7 +52,7 @@ export class PropertyDto implements IPropertyDto {
   readonly photos!: string[];
   readonly videos!: string[];
   readonly video360s!: string[] | null;
-  readonly floorPlan!: string[] | null;
+  readonly floorPlans!: string[] | null;
   readonly soldStatus!: boolean;
   readonly averageRating!: number | null;
   readonly currencyId!: string | null;

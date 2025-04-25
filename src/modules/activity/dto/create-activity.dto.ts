@@ -154,7 +154,7 @@ export class CreateActivityDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly floorPlan?: string[];
+  readonly floorPlans?: string[];
 
   @IsUUID()
   @IsNotEmpty()

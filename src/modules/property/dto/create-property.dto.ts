@@ -123,7 +123,7 @@ export class CreatePropertyDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly floorPlan?: string[];
+  readonly floorPlans?: string[];
 
   @IsBoolean()
   @IsNotEmpty()
