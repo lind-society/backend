@@ -94,14 +94,15 @@ export class Property {
   @Column({
     name: 'place_nearby',
     type: 'jsonb',
+    nullable: true,
   })
-  placeNearby!: PlaceNearby[];
+  placeNearby!: PlaceNearby[] | null;
 
   @Column({ type: 'text', array: true })
   photos!: string[];
 
-  @Column({ type: 'text', array: true })
-  videos!: string[];
+  @Column({ type: 'text', array: true, nullable: true })
+  videos!: string[] | null;
 
   @Column({ name: 'video_360', type: 'text', array: true, nullable: true })
   video360s!: string[] | null;

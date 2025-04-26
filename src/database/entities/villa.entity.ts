@@ -216,8 +216,9 @@ export class Villa {
   @Column({
     name: 'place_nearby',
     type: 'jsonb',
+    nullable: true,
   })
-  placeNearby!: PlaceNearby[];
+  placeNearby!: PlaceNearby[] | null;
 
   @Column({ name: 'check_in_hour', type: 'time', precision: 0 })
   checkInHour!: string;
@@ -228,8 +229,8 @@ export class Villa {
   @Column({ type: 'text', array: true })
   photos!: string[];
 
-  @Column({ type: 'text', array: true })
-  videos!: string[];
+  @Column({ type: 'text', array: true, nullable: true })
+  videos!: string[] | null;
 
   @Column({ name: 'video_360', type: 'text', array: true, nullable: true })
   video360s!: string[] | null;

@@ -191,9 +191,9 @@ export class CreateVillaDto {
   readonly mapLink!: string;
 
   @IsArray()
-  @ArrayMinSize(1, { message: 'at least 1 place nearby is required' })
   @ValidateNested({ each: true })
   @Type(() => PlaceNearbyDto)
+  @IsOptional()
   readonly placeNearby!: PlaceNearbyDto[];
 
   @IsString()
@@ -212,9 +212,9 @@ export class CreateVillaDto {
   readonly photos!: string[];
 
   @IsArray()
-  @ArrayMinSize(1, { message: 'at least 1 video is required' })
   @IsString({ each: true })
-  readonly videos!: string[];
+  @IsOptional()
+  readonly videos?: string[];
 
   @IsArray()
   @IsString({ each: true })

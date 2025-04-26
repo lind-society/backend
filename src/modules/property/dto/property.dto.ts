@@ -48,9 +48,9 @@ export class PropertyDto implements IPropertyDto {
   readonly city!: string;
   readonly postalCode!: string;
   readonly mapLink!: string;
-  readonly placeNearby!: PlaceNearby[];
+  readonly placeNearby!: PlaceNearby[] | null;
   readonly photos!: string[];
-  readonly videos!: string[];
+  readonly videos!: string[] | null;
   readonly video360s!: string[] | null;
   readonly floorPlans!: string[] | null;
   readonly soldStatus!: boolean;

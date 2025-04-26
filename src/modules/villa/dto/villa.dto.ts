@@ -68,7 +68,7 @@ export class VillaDto implements IVillaDto {
   readonly city!: string;
   readonly postalCode!: string;
   readonly mapLink!: string;
-  readonly placeNearby!: PlaceNearby[];
+  readonly placeNearby!: PlaceNearby[] | null;
 
   @Transform(({ value }) => (value ? value.slice(0, 5) : null))
   readonly checkInHour!: string;
@@ -77,7 +77,7 @@ export class VillaDto implements IVillaDto {
   readonly checkOutHour!: string;
 
   readonly photos!: string[];
-  readonly videos!: string[];
+  readonly videos!: string[] | null;
   readonly video360s!: string[] | null;
   readonly floorPlans!: string[] | null;
   readonly averageRating!: number | null;

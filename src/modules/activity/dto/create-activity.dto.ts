@@ -111,9 +111,9 @@ export class CreateActivityDto {
   readonly mapLink!: string;
 
   @IsArray()
-  @ArrayMinSize(1, { message: 'at least 1 place nearby is required' })
   @ValidateNested({ each: true })
   @Type(() => PlaceNearbyDto)
+  @IsOptional()
   readonly placeNearby!: PlaceNearbyDto[];
 
   @IsString()
@@ -142,8 +142,8 @@ export class CreateActivityDto {
   readonly photos!: string[];
 
   @IsArray()
-  @ArrayMinSize(1, { message: 'at least 1 video is required' })
   @IsString({ each: true })
+  @IsOptional()
   readonly videos!: string[];
 
   @IsArray()
