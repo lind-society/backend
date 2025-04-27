@@ -13,6 +13,10 @@ import {
   video360sConfig,
   videosConfig,
 } from 'src/common/constants';
+import {
+  imageFileFilter,
+  videoFileFilter,
+} from 'src/common/validations/file-allowed.validation';
 import { DeleteResponse } from '../dto/custom-responses';
 import {
   DeleteFileDto,
@@ -34,12 +38,20 @@ export class StorageController {
         files: photosConfig.quantity,
         fileSize: photosConfig.size,
       },
+      fileFilter: imageFileFilter,
     }),
   )
   async uploadPhotos(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() payload: UploadFileRequestDto,
   ) {
+    console.log('PHOTOS_LIMIT_QUANTITY :', process.env.PHOTOS_LIMIT_QUANTITY);
+    console.log('photosConfig.quantity :', photosConfig.quantity);
+    console.log(
+      'photosConfig.quantity parsed :',
+      parseInt(process.env.PHOTOS_LIMIT_QUANTITY, 10),
+    );
+    console.log('files :', files);
     const receivedFiles = this.storageService.mapFiles(files, payload.key);
 
     const result = await this.storageService.uploadFiles(receivedFiles);
@@ -54,12 +66,15 @@ export class StorageController {
         files: videosConfig.quantity,
         fileSize: videosConfig.size,
       },
+      fileFilter: videoFileFilter,
     }),
   )
   async uploadVideos(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() payload: UploadFileRequestDto,
   ) {
+    console.log('files :', files);
+
     const receivedFiles = this.storageService.mapFiles(files, payload.key);
 
     const result = await this.storageService.uploadFiles(receivedFiles);
@@ -74,6 +89,7 @@ export class StorageController {
         files: video360sConfig.quantity,
         fileSize: video360sConfig.size,
       },
+      fileFilter: videoFileFilter,
     }),
   )
   async uploadVideo360s(
@@ -94,6 +110,7 @@ export class StorageController {
         files: floorPlansConfig.quantity,
         fileSize: floorPlansConfig.size,
       },
+      fileFilter: imageFileFilter,
     }),
   )
   async uploadFloorPlans(

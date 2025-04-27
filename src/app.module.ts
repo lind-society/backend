@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envPaths } from './common/constants';
+import { ConfigHelper } from './common/helpers/config-helper';
 import {
   appConfig,
   currencyConfig,
@@ -96,6 +97,7 @@ import { VillaModule } from './modules/villa/villa.module';
     PackageModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ConfigHelper],
+  exports: [ConfigHelper],
 })
 export class AppModule {}
