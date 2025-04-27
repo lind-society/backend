@@ -237,7 +237,7 @@ export class VillaService {
       relations: {
         currency: true,
         owner: true,
-        reviews: { booking: { customer: true } },
+        reviews: { villaBooking: { customer: true } },
         villaAdditionals: { additional: true },
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
@@ -268,7 +268,7 @@ export class VillaService {
       relations: {
         currency: true,
         owner: true,
-        reviews: { booking: { customer: true } },
+        reviews: { villaBooking: { customer: true } },
         villaAdditionals: { additional: true },
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },

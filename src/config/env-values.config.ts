@@ -33,10 +33,10 @@ export const envValues: EnvironmentVariables = {
   VIDEOS_LIMIT_QUANTITY:
     parseInt(process.env.VIDEOS_LIMIT_QUANTITY || '5', 10) || 5,
   VIDEOS_LIMIT_SIZE: parseInt(process.env.VIDEOS_LIMIT_SIZE || '20', 10) || 20,
-  VIDEO360S_LIMIT_QUANTITY:
-    parseInt(process.env.VIDEO360S_LIMIT_QUANTITY || '5', 10) || 5,
-  VIDEO360S_LIMIT_SIZE:
-    parseInt(process.env.VIDEO360S_LIMIT_SIZE || '30', 10) || 30,
+  VIDEO_360S_LIMIT_QUANTITY:
+    parseInt(process.env.VIDEO_360S_LIMIT_QUANTITY || '5', 10) || 5,
+  VIDEO_360S_LIMIT_SIZE:
+    parseInt(process.env.VIDEO_360S_LIMIT_SIZE || '30', 10) || 30,
   INDONESIA_REGION_FETCH: process.env.INDONESIA_REGION_FETCH || '',
   INDONESIA_POSTAL_CODE_FETCH: process.env.INDONESIA_POSTAL_CODE_FETCH || '',
   GLOBAL_REGION_FETCH: process.env.GLOBAL_REGION_FETCH || '',

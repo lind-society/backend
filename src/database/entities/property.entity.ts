@@ -14,7 +14,6 @@ import { Owner } from './owner.entity';
 import { PropertyAdditionalPivot } from './property-additional-pivot.entity';
 import { PropertyFacilityPivot } from './property-facility-pivot.entity';
 import { PropertyFeaturePivot } from './property-feature-pivot.entity';
-import { Review } from './review.entity';
 import { DiscountType } from './shared-enum.entity';
 import { PlaceNearby } from './shared-interface.entity';
 
@@ -131,9 +130,6 @@ export class Property {
 
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
-
-  @OneToMany(() => Review, (review) => review.property)
-  reviews: Review[];
 
   @OneToMany(
     () => PropertyFacilityPivot,

@@ -168,7 +168,6 @@ export class PropertyService {
       relations: {
         currency: true,
         owner: true,
-        reviews: { booking: { customer: true } },
         propertyAdditionals: { additional: true },
         propertyFeatures: { feature: { currency: true } },
         propertyFacilities: { facility: true },
@@ -200,7 +199,6 @@ export class PropertyService {
       relations: {
         currency: true,
         owner: true,
-        reviews: { booking: { customer: true } },
         propertyAdditionals: { additional: true },
         propertyFeatures: { feature: { currency: true } },
         propertyFacilities: { facility: true },

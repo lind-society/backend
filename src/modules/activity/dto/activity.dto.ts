@@ -5,7 +5,7 @@ import {
   DiscountType,
   PlaceNearby,
 } from 'src/database/entities';
-import { BookingDto } from 'src/modules/booking/dto';
+import { ActivityBookingDto } from 'src/modules/activity/booking/dto';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
 import { ReviewDto } from 'src/modules/review/dto';
@@ -21,7 +21,7 @@ export interface IActivityWithRelationsDto extends IActivityDto {
   category?: ActivityCategoryDto;
   currency?: CurrencyDto;
   owner?: OwnerDto;
-  bookings?: BookingDto[];
+  bookings?: ActivityBookingDto[];
   reviews?: ReviewDto[];
 }
 
@@ -74,6 +74,6 @@ export class ActivityWithRelationsDto
   readonly currency?: CurrencyDto;
   @Type(() => OwnerDto)
   readonly owner?: OwnerDto;
-  readonly bookings?: BookingDto[];
+  readonly bookings?: ActivityBookingDto[];
   readonly reviews?: ReviewDto[];
 }

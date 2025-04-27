@@ -33,8 +33,8 @@ export class MulterExceptionFilter implements ExceptionFilter {
       maxFileSize = process.env.VIDEOS_LIMIT_SIZE || '20';
     } else if (request.url.includes('video360s')) {
       entity = 'video360';
-      maxFileQuantity = process.env.VIDEO360S_LIMIT_QUANTITY || '5';
-      maxFileSize = process.env.VIDEO360S_LIMIT_SIZE || '30';
+      maxFileQuantity = process.env.VIDEO_360S_LIMIT_QUANTITY || '5';
+      maxFileSize = process.env.VIDEO_360S_LIMIT_SIZE || '30';
     }
 
     switch (exception.code) {
