@@ -1,11 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { paginateResponseMapper } from 'src/common/helpers';
-import { Activity, Property, Review, Villa } from 'src/database/entities';
+import {
+  Activity,
+  ActivityBooking,
+  ActivityBookingStatus,
+  Review,
+  Villa,
+  VillaBooking,
+  VillaBookingStatus,
+} from 'src/database/entities';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ActivityService } from '../activity/activity.service';
-import { PropertyService } from '../property/property.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { VillaService } from '../villa/villa.service';
 import {
@@ -22,11 +33,16 @@ export class ReviewService {
     @InjectRepository(Review)
     private reviewRepository: Repository<Review>,
     private activityService: ActivityService,
-    private propertyService: PropertyService,
     private villaService: VillaService,
   ) {}
   async create(payload: CreateReviewDto): Promise<ReviewWithRelationsDto> {
     return this.dataSource.transaction(async (manager) => {
+      await this._validateBookingStatus(
+        manager,
+        payload.activityBookingId,
+        payload.villaBookingId,
+      );
+
       const review = this.reviewRepository.create(payload);
 
       const createdReview = await manager.save(Review, review);
@@ -34,7 +50,6 @@ export class ReviewService {
       await this._validateRelatedEntities(
         manager,
         payload.activityId,
-        payload.propertyId,
         payload.villaId,
       );
 
@@ -53,20 +68,24 @@ export class ReviewService {
       maxLimit: 100,
       filterableColumns: {
         rating: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
-        bookingId: [FilterOperator.EQ],
+        activityBookingId: [FilterOperator.EQ],
+        villaBookingId: [FilterOperator.EQ],
         activityId: [FilterOperator.EQ],
-        propertyId: [FilterOperator.EQ],
         villaId: [FilterOperator.EQ],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE],
       },
       searchableColumns: [
-        'booking.customer.name',
+        'activityBooking.customer.name',
+        'villaBooking.customer.name',
         'activity.name',
-        'property.name',
         'villa.name',
       ],
       relations: {
-        booking: {
+        activityBooking: {
+          customer: true,
+          currency: true,
+        },
+        villaBooking: {
           customer: true,
           currency: true,
         },
@@ -75,10 +94,6 @@ export class ReviewService {
           currency: true,
         },
         villa: {
-          owner: true,
-          currency: true,
-        },
-        property: {
           owner: true,
           currency: true,
         },
@@ -98,7 +113,11 @@ export class ReviewService {
         id,
       },
       relations: {
-        booking: {
+        activityBooking: {
+          customer: true,
+          currency: true,
+        },
+        villaBooking: {
           customer: true,
           currency: true,
         },
@@ -107,10 +126,6 @@ export class ReviewService {
           currency: true,
         },
         villa: {
-          owner: true,
-          currency: true,
-        },
-        property: {
           owner: true,
           currency: true,
         },
@@ -136,7 +151,6 @@ export class ReviewService {
       await this._validateRelatedEntities(
         manager,
         initialReview.activityId,
-        initialReview.propertyId,
         initialReview.villaId,
       );
     });
@@ -150,10 +164,45 @@ export class ReviewService {
     await this.reviewRepository.delete(id);
   }
 
+  private async _validateBookingStatus(
+    manager: EntityManager,
+    activityBookingId?: string,
+    villaBookingId?: string,
+  ): Promise<void> {
+    if (activityBookingId) {
+      await this.activityService.findOne(activityBookingId, manager);
+
+      const activityBooking = await manager.findOne(ActivityBooking, {
+        where: { id: activityBookingId },
+        select: ['status'],
+      });
+
+      if (activityBooking.status !== ActivityBookingStatus.Completed) {
+        throw new BadRequestException(
+          'Activity booking status must be completed to add review',
+        );
+      }
+    }
+
+    if (villaBookingId) {
+      await this.villaService.findOne(villaBookingId, manager);
+
+      const villaBooking = await manager.findOne(VillaBooking, {
+        where: { id: villaBookingId },
+        select: ['status'],
+      });
+
+      if (villaBooking.status !== VillaBookingStatus.Done) {
+        throw new BadRequestException(
+          'Villa booking status must be done to add review',
+        );
+      }
+    }
+  }
+
   private async _validateRelatedEntities(
     manager: EntityManager,
     activityId?: string,
-    propertyId?: string,
     villaId?: string,
   ): Promise<void> {
     if (activityId) {
@@ -167,19 +216,6 @@ export class ReviewService {
       const averageRating = this._calculateAverageRating(reviews);
 
       await manager.update(Activity, activityId, { averageRating });
-    }
-
-    if (propertyId) {
-      await this.propertyService.findOne(propertyId, manager);
-
-      const reviews = await manager.find(Review, {
-        where: { propertyId },
-        select: ['rating'],
-      });
-
-      const averageRating = this._calculateAverageRating(reviews);
-
-      await manager.update(Property, propertyId, { averageRating });
     }
 
     if (villaId) {

@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,
@@ -8,21 +8,18 @@ import {
   IsOptional,
   IsUUID,
   Min,
-  Validate,
-  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { DefaultHttpStatus } from 'src/common/enums';
-import { OnlyOneFieldAllowedConstraint } from 'src/common/validations';
-import { BookingStatus } from 'src/database/entities';
+import { VillaBookingStatus } from 'src/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { CreateBookingCustomerDto } from '../customer/dto';
-import { BookingWithRelationsDto } from './booking.dto';
+import { CreateBookingCustomerDto } from '../../../booking/customer/dto';
+import { VillaBookingWithRelationsDto } from './villa-booking.dto';
 
-export class CreateBookingDto {
+export class CreateVillaBookingDto {
   @Type(() => Number)
   @IsNumber(
     { allowNaN: false, allowInfinity: false },
@@ -48,11 +45,11 @@ export class CreateBookingDto {
   @IsNotEmpty()
   readonly checkOutDate!: Date;
 
-  @IsEnum(BookingStatus, {
-    message: `booking status must be one of: ${Object.values(BookingStatus).join(', ')}`,
+  @IsEnum(VillaBookingStatus, {
+    message: `villa booking status must be one of: ${Object.values(VillaBookingStatus).join(', ')}`,
   })
   @IsNotEmpty()
-  readonly status!: BookingStatus;
+  readonly status: VillaBookingStatus = VillaBookingStatus.Requested;
 
   @IsUUID()
   @IsNotEmpty()
@@ -64,37 +61,24 @@ export class CreateBookingDto {
 
   @IsUUID()
   @IsOptional()
-  readonly activityId?: string;
-
-  @IsUUID()
-  @IsOptional()
   readonly villaId?: string;
 
   @Type(() => CreateBookingCustomerDto)
   @ValidateNested({ each: true })
   @IsNotEmpty()
   readonly customer!: CreateBookingCustomerDto;
-
-  @ValidateIf((o) => !o.activityId && !o.villaId)
-  @IsNotEmpty({
-    message: 'At least one of activityId or villaId must be provided',
-  })
-  readonly _atLeastOneIdRequired?: string;
-
-  @Validate(OnlyOneFieldAllowedConstraint, ['activityId', 'villaId'])
-  readonly _onlyOneIdAllowed?: never;
 }
 
-export class CreateBookinguccessResponse
+export class CreateVillaBookinguccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<BookingWithRelationsDto>
+  implements HttpResponseOptions<VillaBookingWithRelationsDto>
 {
-  readonly data: BookingWithRelationsDto;
+  readonly data: VillaBookingWithRelationsDto;
 
-  constructor(data: BookingWithRelationsDto) {
+  constructor(data: VillaBookingWithRelationsDto) {
     super({
       code: HttpStatus.CREATED,
-      message: 'create booking success',
+      message: 'create villa booking success',
       status: DefaultHttpStatus.Success,
     });
 

@@ -7,7 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Booking } from './booking.entity';
+import { ActivityBooking } from './activity-booking.entity';
+import { VillaBooking } from './villa-booking.entity';
 
 @Entity({ name: 'booking_customers' })
 export class BookingCustomer {
@@ -26,8 +27,14 @@ export class BookingCustomer {
   @Column({ name: 'phone_number' })
   phoneNumber!: string;
 
-  @OneToMany(() => Booking, (booking) => booking.customer)
-  bookings!: Booking[];
+  @OneToMany(
+    () => ActivityBooking,
+    (activityBooking) => activityBooking.customer,
+  )
+  activityBookings!: ActivityBooking[];
+
+  @OneToMany(() => VillaBooking, (villaBooking) => villaBooking.customer)
+  villaBookings!: VillaBooking[];
 
   @CreateDateColumn({
     name: 'created_at',

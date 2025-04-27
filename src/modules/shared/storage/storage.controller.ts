@@ -7,7 +7,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { megabyteToByte } from 'src/common/helpers';
+import {
+  floorPlansConfig,
+  photosConfig,
+  video360sConfig,
+  videosConfig,
+} from 'src/common/constants';
 import { DeleteResponse } from '../dto/custom-responses';
 import {
   DeleteFileDto,
@@ -24,17 +29,12 @@ export class StorageController {
 
   @Post('photos')
   @UseInterceptors(
-    FilesInterceptor(
-      'files',
-      parseInt(process.env.PHOTOS_LIMIT_QUANTITY, 10) | 10,
-      {
-        limits: {
-          fileSize:
-            megabyteToByte(parseInt(process.env.PHOTOS_LIMIT_SIZE, 10)) |
-            megabyteToByte(2),
-        },
+    FilesInterceptor('files', photosConfig.quantity, {
+      limits: {
+        files: photosConfig.quantity,
+        fileSize: photosConfig.size,
       },
-    ),
+    }),
   )
   async uploadPhotos(
     @UploadedFiles() files: Express.Multer.File[],
@@ -49,17 +49,12 @@ export class StorageController {
 
   @Post('videos')
   @UseInterceptors(
-    FilesInterceptor(
-      'files',
-      parseInt(process.env.VIDEOS_LIMIT_QUANTITY, 10) | 5,
-      {
-        limits: {
-          fileSize:
-            megabyteToByte(parseInt(process.env.VIDEOS_LIMIT_SIZE, 10)) |
-            megabyteToByte(20),
-        },
+    FilesInterceptor('files', videosConfig.quantity, {
+      limits: {
+        files: videosConfig.quantity,
+        fileSize: videosConfig.size,
       },
-    ),
+    }),
   )
   async uploadVideos(
     @UploadedFiles() files: Express.Multer.File[],
@@ -74,17 +69,12 @@ export class StorageController {
 
   @Post('video360s')
   @UseInterceptors(
-    FilesInterceptor(
-      'files',
-      parseInt(process.env.VIDEO360S_LIMIT_QUANTITY, 10) | 5,
-      {
-        limits: {
-          fileSize:
-            megabyteToByte(parseInt(process.env.VIDEO360S_LIMIT_SIZE, 10)) |
-            megabyteToByte(15),
-        },
+    FilesInterceptor('files', video360sConfig.quantity, {
+      limits: {
+        files: video360sConfig.quantity,
+        fileSize: video360sConfig.size,
       },
-    ),
+    }),
   )
   async uploadVideo360s(
     @UploadedFiles() files: Express.Multer.File[],
@@ -99,17 +89,12 @@ export class StorageController {
 
   @Post('floor-plans')
   @UseInterceptors(
-    FilesInterceptor(
-      'files',
-      parseInt(process.env.FLOOR_PLANS_LIMIT_QUANTITY, 10) | 5,
-      {
-        limits: {
-          fileSize:
-            megabyteToByte(parseInt(process.env.FLOOR_PLANS_LIMIT_SIZE, 10)) |
-            megabyteToByte(5),
-        },
+    FilesInterceptor('files', floorPlansConfig.quantity, {
+      limits: {
+        files: floorPlansConfig.quantity,
+        fileSize: floorPlansConfig.size,
       },
-    ),
+    }),
   )
   async uploadFloorPlans(
     @UploadedFiles() files: Express.Multer.File[],

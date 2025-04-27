@@ -127,7 +127,7 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
-        reviews: { booking: { customer: true } },
+        reviews: { activityBooking: { customer: true } },
       },
     });
 
@@ -150,7 +150,7 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
-        reviews: { booking: { customer: true } },
+        reviews: { activityBooking: { customer: true } },
       },
     });
 

@@ -10,24 +10,24 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Activity } from './activity.entity';
 import { BookingCustomer } from './booking-customer.entity';
 import { BookingPayment } from './booking-payment.entity';
 import { Currency } from './currency.entity';
 import { Review } from './review.entity';
 import { Villa } from './villa.entity';
 
-export enum BookingStatus {
-  Requested = 'requested',
-  Negotiation = 'negotiation',
-  WaitingForPayment = 'waiting for payment',
-  Booked = 'booked',
-  Done = 'done',
-  Canceled = 'canceled',
+export enum VillaBookingStatus {
+  Requested = 'Requested',
+  Negotiation = 'Negotiation',
+  WaitingForPayment = 'Waiting for Payment',
+  Booked = 'Booked',
+  CheckedIn = 'Checked In',
+  Done = 'Done',
+  Canceled = 'Canceled',
 }
 
-@Entity({ name: 'bookings' })
-export class Booking {
+@Entity({ name: 'villa_bookings' })
+export class VillaBooking {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -51,8 +51,8 @@ export class Booking {
   @Column({ name: 'check_out_date', type: 'timestamptz' })
   checkOutDate!: Date;
 
-  @Column({ type: 'enum', enum: BookingStatus })
-  status!: BookingStatus;
+  @Column({ type: 'enum', enum: VillaBookingStatus })
+  status!: VillaBookingStatus;
 
   @Column({ name: 'currency_id', type: 'uuid' })
   currencyId!: string;
@@ -60,18 +60,18 @@ export class Booking {
   @Column({ name: 'customer_id', type: 'uuid' })
   customerId!: string;
 
-  @Column({ name: 'activity_id', type: 'uuid', nullable: true })
-  activityId!: string | null;
-
   @Column({ name: 'villa_id', type: 'uuid', nullable: true })
   villaId!: string | null;
 
-  @OneToOne(() => Review, (review) => review.booking, {
+  @OneToOne(() => Review, (review) => review.villaBooking, {
     nullable: true,
   })
   review?: Review;
 
-  @OneToMany(() => BookingPayment, (bookingPayment) => bookingPayment.booking)
+  @OneToMany(
+    () => BookingPayment,
+    (bookingPayment) => bookingPayment.villaBooking,
+  )
   payments: BookingPayment[];
 
   @ManyToOne(() => Currency, {
@@ -82,20 +82,13 @@ export class Booking {
 
   @ManyToOne(
     () => BookingCustomer,
-    (bookingCustomer) => bookingCustomer.bookings,
+    (bookingCustomer) => bookingCustomer.villaBookings,
     {
       onDelete: 'SET NULL',
     },
   )
   @JoinColumn({ name: 'customer_id' })
   customer!: BookingCustomer;
-
-  @ManyToOne(() => Activity, (activity) => activity.bookings, {
-    onDelete: 'SET NULL',
-    nullable: true,
-  })
-  @JoinColumn({ name: 'activity_id' })
-  activity!: Activity | null;
 
   @ManyToOne(() => Villa, (villa) => villa.bookings, {
     onDelete: 'SET NULL',

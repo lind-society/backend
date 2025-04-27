@@ -1,11 +1,13 @@
 import { BookingCustomer } from 'src/database/entities';
-import { BookingDto } from '../../dto';
+import { ActivityBookingDto } from 'src/modules/activity/booking/dto';
+import { VillaBookingDto } from '../../../villa/booking/dto';
 
 export interface IBookingCustomerDto
-  extends Omit<BookingCustomer, 'bookings'> {}
+  extends Omit<BookingCustomer, 'activityBookings' | 'villaBookings'> {}
 
 export interface IBookingCustomerWithRelationsDto extends IBookingCustomerDto {
-  bookings?: BookingDto[];
+  activityBookings?: ActivityBookingDto[];
+  villaBookings?: VillaBookingDto[];
 }
 
 export class BookingCustomerDto implements IBookingCustomerDto {
@@ -23,5 +25,6 @@ export class BookingCustomerWithRelationsDto
   extends BookingCustomerDto
   implements IBookingCustomerWithRelationsDto
 {
-  readonly bookings?: BookingDto[];
+  readonly activityBookings?: ActivityBookingDto[];
+  readonly villaBookings?: VillaBookingDto[];
 }

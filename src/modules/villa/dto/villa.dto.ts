@@ -10,10 +10,10 @@ import {
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
 import { VillaPriceRulePivot } from 'src/database/entities/villa-price-rule-pivot.entity';
-import { BookingDto } from 'src/modules/booking/dto';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
 import { ReviewDto } from 'src/modules/review/dto';
+import { VillaBookingDto } from 'src/modules/villa/booking/dto';
 
 export interface IVillaDto
   extends Omit<
@@ -32,7 +32,7 @@ export interface IVillaDto
 export interface IVillaWithRelationsDto extends IVillaDto {
   currency?: CurrencyDto;
   owner?: OwnerDto;
-  bookings?: BookingDto[];
+  bookings?: VillaBookingDto[];
   reviews?: ReviewDto[];
   additionals?: VillaAdditionalPivot[];
   facilities?: VillaFacilityPivot[];
@@ -95,7 +95,7 @@ export class VillaWithRelationsDto
   readonly currency?: CurrencyDto;
   @Type(() => OwnerDto)
   readonly owner?: OwnerDto;
-  readonly bookings?: BookingDto[];
+  readonly bookings?: VillaBookingDto[];
   readonly reviews?: ReviewDto[];
   readonly additionals?: VillaAdditionalPivot[];
   readonly facilities?: VillaFacilityPivot[];

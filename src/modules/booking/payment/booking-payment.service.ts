@@ -45,7 +45,8 @@ export class BookingPaymentService {
           createdAt: [FilterOperator.GTE, FilterOperator.LTE],
         },
         relations: {
-          booking: { customer: true },
+          activityBooking: { customer: true },
+          villaBooking: { customer: true },
           currency: true,
         },
       },
@@ -60,7 +61,8 @@ export class BookingPaymentService {
         id,
       },
       relations: {
-        booking: { customer: true },
+        activityBooking: { customer: true },
+        villaBooking: { customer: true },
         currency: true,
       },
     });

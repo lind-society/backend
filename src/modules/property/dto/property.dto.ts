@@ -10,14 +10,12 @@ import {
 } from 'src/database/entities';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
-import { ReviewDto } from 'src/modules/review/dto';
 
 export interface IPropertyDto
   extends Omit<
     Property,
     | 'currency'
     | 'owner'
-    | 'reviews'
     | 'propertyFacilities'
     | 'propertyFeatures'
     | 'propertyAdditionals'
@@ -26,7 +24,6 @@ export interface IPropertyDto
 export interface IPropertyWithRelationsDto extends IPropertyDto {
   currency?: CurrencyDto;
   owner?: OwnerDto;
-  reviews?: ReviewDto[];
   facilities?: PropertyFacilityPivot[];
   features?: PropertyFeaturePivot[];
   additionals?: PropertyAdditionalPivot[];
@@ -69,7 +66,6 @@ export class PropertyWithRelationsDto
   readonly currency?: CurrencyDto;
   @Type(() => OwnerDto)
   readonly owner?: OwnerDto;
-  readonly reviews?: ReviewDto[];
   readonly facilities?: PropertyFacilityPivot[];
   readonly features?: PropertyFeaturePivot[];
   readonly additionals?: PropertyAdditionalPivot[];

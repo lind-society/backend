@@ -9,7 +9,12 @@ import { CreateReviewDto } from './create-review.dto';
 import { ReviewWithRelationsDto } from './review.dto';
 
 export class UpdateReviewDto extends PartialType(
-  OmitType(CreateReviewDto, ['bookingId', 'villaId'] as const),
+  OmitType(CreateReviewDto, [
+    'activityBookingId',
+    'villaBookingId',
+    'activityId',
+    'villaId',
+  ] as const),
 ) {}
 
 export class UpdateReviewSuccessResponse
