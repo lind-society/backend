@@ -62,15 +62,15 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   DB_NAME!: string;
-  
+
   @IsString()
   @IsNotEmpty()
   FE_DEVELOPMENT!: string;
-  
+
   @IsString()
   @IsNotEmpty()
   FE_STAGING!: string;
-  
+
   @IsString()
   @IsNotEmpty()
   FE_PRODUCTION!: string;
@@ -135,13 +135,13 @@ export class EnvironmentVariables {
   @Min(0)
   @Max(20)
   @IsNotEmpty()
-  VIDEO360S_LIMIT_QUANTITY!: number;
+  VIDEO_360S_LIMIT_QUANTITY!: number;
 
   @IsNumber()
   @Min(0)
   @Max(megabyteToByte(100))
   @IsNotEmpty()
-  VIDEO360S_LIMIT_SIZE!: number;
+  VIDEO_360S_LIMIT_SIZE!: number;
 
   @IsString()
   @IsNotEmpty()
@@ -174,7 +174,7 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   COUNTRY_PHONE_CODE_JSON_PATH!: string;
-  
+
   @IsString()
   @IsNotEmpty()
   BASE_CURRENCY_CODE!: string;
