@@ -19,7 +19,7 @@ export const video360sConfig: IFileConfig = {
   quantity: parseInt(process.env.VIDEO_360S_LIMIT_QUANTITY, 10) || 5,
   size:
     megabyteToByte(parseInt(process.env.VIDEO_360S_LIMIT_SIZE, 10)) ||
-    megabyteToByte(10),
+    megabyteToByte(15),
 };
 
 export const floorPlansConfig: IFileConfig = {

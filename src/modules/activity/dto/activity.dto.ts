@@ -5,7 +5,7 @@ import {
   DiscountType,
   PlaceNearby,
 } from 'src/database/entities';
-import { ActivityBookingDto } from 'src/modules/activity/booking/dto';
+import { ActivityBookingDto } from 'src/modules/booking/activity-booking/dto';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
 import { ReviewDto } from 'src/modules/review/dto';

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ActivityBooking } from 'src/database/entities';
-import { BookingCustomerModule } from '../../booking/customer/booking-customer.module';
-import { BookingPaymentModule } from '../../booking/payment/booking-payment.module';
 import { CurrencyModule } from '../../currency/currency.module';
 import { WhatsappModule } from '../../shared/whatsapp/whatsapp.module';
+import { BookingCustomerModule } from '../customer/booking-customer.module';
+import { BookingPaymentModule } from '../payment/booking-payment.module';
 import { ActivityBookingController } from './activity-booking.controller';
 import { ActivityBookingService } from './activity-booking.service';
 

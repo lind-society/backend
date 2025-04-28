@@ -1,8 +1,8 @@
 import { VillaBooking, VillaBookingStatus } from 'src/database/entities';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { VillaDto } from 'src/modules/villa/dto';
-import { BookingCustomerDto } from '../../../booking/customer/dto';
-import { BookingPaymentDto } from '../../../booking/payment/dto';
+import { BookingCustomerDto } from '../../customer/dto';
+import { BookingPaymentDto } from '../../payment/dto';
 
 export interface IVillaBookingDto
   extends Omit<VillaBooking, 'payments' | 'currency' | 'customer' | 'villa'> {}

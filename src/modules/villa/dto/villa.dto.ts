@@ -10,10 +10,10 @@ import {
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
 import { VillaPriceRulePivot } from 'src/database/entities/villa-price-rule-pivot.entity';
+import { VillaBookingDto } from 'src/modules/booking/villa-booking/dto';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { OwnerDto } from 'src/modules/owner/dto';
 import { ReviewDto } from 'src/modules/review/dto';
-import { VillaBookingDto } from 'src/modules/villa/booking/dto';
 
 export interface IVillaDto
   extends Omit<

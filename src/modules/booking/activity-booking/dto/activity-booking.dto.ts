@@ -2,8 +2,8 @@ import { ActivityBooking, ActivityBookingStatus } from 'src/database/entities';
 import { ActivityDto } from 'src/modules/activity/dto';
 import { CurrencyDto } from 'src/modules/currency/dto';
 import { ReviewDto } from 'src/modules/review/dto';
-import { BookingCustomerDto } from '../../../booking/customer/dto';
-import { BookingPaymentDto } from '../../../booking/payment/dto';
+import { BookingCustomerDto } from '../../customer/dto';
+import { BookingPaymentDto } from '../../payment/dto';
 
 export interface IActivityBookingDto
   extends Omit<

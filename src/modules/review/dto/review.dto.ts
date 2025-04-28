@@ -1,7 +1,7 @@
 import { Review } from 'src/database/entities';
-import { ActivityBookingDto } from 'src/modules/activity/booking/dto';
 import { ActivityDto } from 'src/modules/activity/dto';
-import { VillaBookingDto } from 'src/modules/villa/booking/dto';
+import { ActivityBookingDto } from 'src/modules/booking/activity-booking/dto';
+import { VillaBookingDto } from 'src/modules/booking/villa-booking/dto';
 import { VillaDto } from 'src/modules/villa/dto';
 
 export interface IReviewDto
