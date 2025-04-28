@@ -120,11 +120,9 @@ export class PackageService {
       const updatedPackage = await manager.update(Package, id, packageData);
 
       if (Array.isArray(benefits)) {
-        console.log('adalah array')
         await manager.delete(PackageBenefitPivot, { packageId: id });
         
         if (benefits.length > 0) {
-          console.log('adalah array lebih dari 0')
           await manager.save(
             PackageBenefitPivot,
             benefits.map((benefit: UpdatePackageBenefitPivotDto) => ({

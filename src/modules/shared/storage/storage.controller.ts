@@ -45,13 +45,6 @@ export class StorageController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body() payload: UploadFileRequestDto,
   ) {
-    console.log('PHOTOS_LIMIT_QUANTITY :', process.env.PHOTOS_LIMIT_QUANTITY);
-    console.log('photosConfig.quantity :', photosConfig.quantity);
-    console.log(
-      'photosConfig.quantity parsed :',
-      parseInt(process.env.PHOTOS_LIMIT_QUANTITY, 10),
-    );
-    console.log('files :', files);
     const receivedFiles = this.storageService.mapFiles(files, payload.key);
 
     const result = await this.storageService.uploadFiles(receivedFiles);
@@ -73,8 +66,6 @@ export class StorageController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body() payload: UploadFileRequestDto,
   ) {
-    console.log('files :', files);
-
     const receivedFiles = this.storageService.mapFiles(files, payload.key);
 
     const result = await this.storageService.uploadFiles(receivedFiles);
