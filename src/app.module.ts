@@ -30,6 +30,7 @@ import { CurrencyModule } from './modules/currency/currency.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { OwnerModule } from './modules/owner/owner.module';
 import { PackageModule } from './modules/package/package.module';
+import { PaymentModule } from './modules/payment/payment.module';
 import { PropertyModule } from './modules/property/property.module';
 import { ReviewModule } from './modules/review/review.module';
 import { AxiosModule } from './modules/shared/axios/axios.module';
@@ -91,6 +92,7 @@ import { VillaModule } from './modules/villa/villa.module';
     PropertyModule,
     OwnerModule,
     RegionModule,
+    PaymentModule,
     VillaModule,
     ReviewModule,
     WhatsappModule,
