@@ -1,6 +1,6 @@
 import { BookingCustomer } from 'src/database/entities';
-import { ActivityBookingDto } from 'src/modules/activity/booking/dto';
-import { VillaBookingDto } from '../../../villa/booking/dto';
+import { ActivityBookingDto } from 'src/modules/booking/activity-booking/dto';
+import { VillaBookingDto } from '../../villa-booking/dto';
 
 export interface IBookingCustomerDto
   extends Omit<BookingCustomer, 'activityBookings' | 'villaBookings'> {}

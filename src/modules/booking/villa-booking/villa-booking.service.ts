@@ -7,9 +7,9 @@ import {
 } from 'src/common/helpers';
 import { VillaBooking } from 'src/database/entities';
 import { DataSource, EntityManager, Repository } from 'typeorm';
-import { BookingCustomerService } from '../../booking/customer/booking-customer.service';
 import { PaginateResponseDataProps } from '../../shared/dto';
 import { WhatsappService } from '../../shared/whatsapp/whatsapp.service';
+import { BookingCustomerService } from '../customer/booking-customer.service';
 import {
   CreateVillaBookingDto,
   UpdateVillaBookingDto,

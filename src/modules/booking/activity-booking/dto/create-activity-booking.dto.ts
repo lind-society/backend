@@ -16,7 +16,7 @@ import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { CreateBookingCustomerDto } from '../../../booking/customer/dto';
+import { CreateBookingCustomerDto } from '../../customer/dto';
 import { ActivityBookingWithRelationsDto } from './activity-booking.dto';
 
 export class CreateActivityBookingDto {

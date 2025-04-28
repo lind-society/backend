@@ -23,7 +23,7 @@ import {
 import { VillaBookingService } from './villa-booking.service';
 
 @UseInterceptors(PriceConverterInterceptor)
-@Controller('booking/villas')
+@Controller('bookings/villas')
 export class VillaBookingController {
   constructor(private readonly villaBookingService: VillaBookingService) {}
 

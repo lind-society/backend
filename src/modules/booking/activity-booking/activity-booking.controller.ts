@@ -23,7 +23,7 @@ import {
 } from './dto';
 
 @UseInterceptors(PriceConverterInterceptor)
-@Controller('booking/activities')
+@Controller('bookings/activities')
 export class ActivityBookingController {
   constructor(
     private readonly activityBookingService: ActivityBookingService,

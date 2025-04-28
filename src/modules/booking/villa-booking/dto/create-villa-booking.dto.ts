@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,
@@ -16,7 +16,7 @@ import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from 'src/modules/shared/dto';
-import { CreateBookingCustomerDto } from '../../../booking/customer/dto';
+import { CreateBookingCustomerDto } from '../../customer/dto';
 import { VillaBookingWithRelationsDto } from './villa-booking.dto';
 
 export class CreateVillaBookingDto {
