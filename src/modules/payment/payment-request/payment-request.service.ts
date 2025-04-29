@@ -13,6 +13,7 @@ import {
   CaptureListResponse,
   PaymentRequest,
   PaymentRequestListResponse,
+  PaymentSimulation,
 } from 'xendit-node/payment_request/models';
 
 /* 
@@ -87,7 +88,6 @@ export class PaymentRequestService {
   async createPaymentRequest(
     paymentRequest: CreatePaymentRequestRequest,
   ): Promise<PaymentRequest> {
-    console.log({ paymentRequest });
     const sanitizedPaymentRequestPayload =
       this._sanitizePaymentRequestPayload(paymentRequest);
 
@@ -97,7 +97,9 @@ export class PaymentRequestService {
       data: paymentRequest.data,
     });
 
-    console.log('response :', response);
+    console.log('created payment :', response);
+
+    // await this.simulatePaymentRequest(response.id);
 
     return response;
   }
@@ -158,5 +160,15 @@ export class PaymentRequestService {
       });
 
     return paymentRequest;
+  }
+
+  async simulatePaymentRequest(paymentRequestId: string) {
+    console.log('paymentRequestId : ', paymentRequestId);
+    const response: PaymentSimulation =
+      await this.paymentRequestClient.simulatePaymentRequestPayment({
+        paymentRequestId,
+      });
+
+    console.log('simulate payment request response : ', response);
   }
 }

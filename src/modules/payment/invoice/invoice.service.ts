@@ -123,6 +123,8 @@ export class InvoiceService {
       data: sanitizedInvoicePayload,
     });
 
+    console.log('invoice :', invoice);
+
     return invoice.invoiceUrl;
   }
 

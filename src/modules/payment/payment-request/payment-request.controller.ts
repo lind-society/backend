@@ -34,12 +34,10 @@ export class PaymentRequestController {
   }
 
   @Get()
-  async getPaymentRequestById(@Param('id') paymentRequestId: string) {
+  async getAllPaymentRequest(@Body() payload: GetAllPaymentRequestsRequest) {
     try {
       const result =
-        await this.paymentRequestService.getPaymentRequestById(
-          paymentRequestId,
-        );
+        await this.paymentRequestService.getAllPaymentRequest(payload);
 
       return result;
     } catch (error) {
@@ -50,10 +48,12 @@ export class PaymentRequestController {
   }
 
   @Get(':id')
-  async getAllPaymentRequest(@Body() payload: GetAllPaymentRequestsRequest) {
+  async getPaymentRequestById(@Param('id') paymentRequestId: string) {
     try {
       const result =
-        await this.paymentRequestService.getAllPaymentRequest(payload);
+        await this.paymentRequestService.getPaymentRequestById(
+          paymentRequestId,
+        );
 
       return result;
     } catch (error) {
@@ -127,6 +127,20 @@ export class PaymentRequestController {
     try {
       const result =
         await this.paymentRequestService.resendPaymentRequestAuth(id);
+
+      return result;
+    } catch (error) {
+      console.error(error);
+
+      throw error;
+    }
+  }
+
+  @Post(':id/simulate-payment')
+  async simulatePaymentRequest(@Param('id') id: string) {
+    try {
+      const result =
+        await this.paymentRequestService.simulatePaymentRequest(id);
 
       return result;
     } catch (error) {

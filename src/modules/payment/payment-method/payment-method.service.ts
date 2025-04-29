@@ -1,11 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CreateCustomerRequest, CustomerApi } from 'xendit-node/customer/apis';
-import { CustomerRequest } from 'xendit-node/customer/models';
+import { plainToInstance } from 'class-transformer';
+import { CreateCustomerRequest } from 'xendit-node/customer/apis';
 import {
   AuthPaymentMethodRequest,
   ExpirePaymentMethodRequest,
   GetAllPaymentMethodsRequest,
-  GetPaymentMethodByIDRequest,
   GetPaymentsByPaymentMethodIdRequest,
   PatchPaymentMethodRequest,
   PaymentMethodApi,
@@ -17,7 +16,6 @@ import {
 } from 'xendit-node/payment_method/models';
 import { CustomerService } from '../customer/customer.service';
 import { ListPaymentDto, PaymentDto } from './dto/payment.dto';
-import { plainToInstance } from 'class-transformer';
 
 /* 
   This service is used to save a payment method each user
@@ -165,5 +163,15 @@ export class PaymentMethodService {
       await this.paymentMethodClient.authPaymentMethod(payload);
 
     return paymentMethod;
+  }
+
+  async simulatePaymentMethod(paymentMethodId: string) {
+    console.log('paymentMethodId : ', paymentMethodId);
+    const response =
+      await this.paymentMethodClient.simulatePayment({
+        paymentMethodId,
+      });
+
+    console.log('simulate payment method response : ', response);
   }
 }

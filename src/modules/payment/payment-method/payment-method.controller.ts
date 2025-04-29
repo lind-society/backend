@@ -7,7 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { PaymentMethodService } from './payment-method.service';
+import { CreateCustomerRequest } from 'xendit-node/customer/apis';
 import {
   AuthPaymentMethodRequest,
   ExpirePaymentMethodRequest,
@@ -15,13 +15,13 @@ import {
   GetPaymentsByPaymentMethodIdRequest,
   PatchPaymentMethodRequest,
 } from 'xendit-node/payment_method/apis';
-import { CreateCustomerRequest } from 'xendit-node/customer/apis';
 import {
   PaymentMethodAuthParameters,
   PaymentMethodExpireParameters,
   PaymentMethodUpdateParameters,
 } from 'xendit-node/payment_method/models';
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
+import { PaymentMethodService } from './payment-method.service';
 
 @Controller('payment-method')
 export class PaymentMethodController {
@@ -161,6 +161,19 @@ export class PaymentMethodController {
       const result = await this.paymentMethodService.authorizePaymentMethod(
         authorizePaymentMethodPayload,
       );
+
+      return result;
+    } catch (error) {
+      console.error(error);
+
+      throw error;
+    }
+  }
+
+  @Post(':id/simulate-payment')
+  async simulatePaymentRequest(@Param('id') id: string) {
+    try {
+      const result = await this.paymentMethodService.simulatePaymentMethod(id);
 
       return result;
     } catch (error) {
