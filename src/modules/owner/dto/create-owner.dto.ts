@@ -28,7 +28,7 @@ export class CreateOwnerDto {
   readonly type!: OwnerType;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   readonly companyName!: string;
 
   @IsEmail()

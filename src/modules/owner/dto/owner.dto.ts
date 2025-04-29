@@ -18,7 +18,7 @@ export class OwnerDto implements IOwnerDto {
   readonly id!: string;
   readonly name!: string;
   readonly type!: OwnerType;
-  readonly companyName!: string | null;
+  readonly companyName!: string;
   readonly email!: string;
   readonly phoneCountryCode!: string;
   readonly phoneNumber!: string;

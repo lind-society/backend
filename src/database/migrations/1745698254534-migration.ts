@@ -21,6 +21,7 @@ export class Migration1745698254534 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "reviews" ADD CONSTRAINT "UQ_ca4b9f0b13ad8dc66f07e9d8ce2" UNIQUE ("villa_booking_id")`);
         await queryRunner.query(`ALTER TABLE "booking_payments" ADD "activity_booking_id" uuid`);
         await queryRunner.query(`ALTER TABLE "booking_payments" ADD "villa_booking_id" uuid`);
+        await queryRunner.query(`ALTER TABLE "owners" ALTER COLUMN "company_name" SET NOT NULL`);
         await queryRunner.query(`ALTER TABLE "reviews" ADD CONSTRAINT "FK_7ee309d160b63c855c9cab7d883" FOREIGN KEY ("activity_booking_id") REFERENCES "activity_bookings"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "reviews" ADD CONSTRAINT "FK_ca4b9f0b13ad8dc66f07e9d8ce2" FOREIGN KEY ("villa_booking_id") REFERENCES "villa_bookings"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "booking_payments" ADD CONSTRAINT "FK_3226d265af657df26bd0879f4de" FOREIGN KEY ("activity_booking_id") REFERENCES "activity_bookings"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
@@ -59,6 +60,7 @@ export class Migration1745698254534 implements MigrationInterface {
         await queryRunner.query(`DROP TYPE "public"."villa_bookings_status_enum"`);
         await queryRunner.query(`DROP TABLE "activity_bookings"`);
         await queryRunner.query(`DROP TYPE "public"."activity_bookings_status_enum"`);
+        await queryRunner.query(`ALTER TABLE "owners" ALTER COLUMN "company_name" DROP NOT NULL`);
         await queryRunner.query(`ALTER TABLE "booking_payments" ADD CONSTRAINT "FK_afaa5733b05d8844072d5107eae" FOREIGN KEY ("booking_id") REFERENCES "bookings"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "reviews" ADD CONSTRAINT "FK_bbd6ac6e3e6a8f8c6e0e8692d63" FOREIGN KEY ("booking_id") REFERENCES "bookings"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
     }
