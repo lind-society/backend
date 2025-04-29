@@ -11,7 +11,6 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  Max,
   Min,
   ValidateIf,
   ValidateNested,
@@ -61,36 +60,51 @@ export class CreateVillaDto {
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
-  @Min(0, { message: 'minimum daily base price is 0' })
+  @Min(0, { message: 'minimum daily price is 0' })
   @IsOptional()
-  readonly dailyBasePrice?: number;
+  readonly dailyPrice?: number;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
-  @Min(0, { message: 'minimum low season price rate is 0' })
-  @Max(100, { message: 'minimum low season price rate is 100' })
+  @Min(0, { message: 'minimum low season daily price is 0' })
   @IsOptional()
-  readonly lowSeasonPriceRate?: number;
+  readonly lowSeasonDailyPrice?: number;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
-  @Min(0, { message: 'minimum high season price rate is 0' })
-  @Max(100, { message: 'minimum high season price rate is 100' })
+  @Min(0, { message: 'minimum high season daily price is 0' })
   @IsOptional()
-  readonly highSeasonPriceRate?: number;
+  readonly highSeasonDailyPrice?: number;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
-  @Min(0, { message: 'minimum peak season price rate is 0' })
-  @Max(100, { message: 'minimum peak season price rate is 100' })
+  @Min(0, { message: 'minimum peak season daily price is 0' })
   @IsOptional()
-  readonly peakSeasonPriceRate?: number;
+  readonly peakSeasonDailyPrice?: number;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
-  @Min(0, { message: 'minimum daily base price after season rate is 0' })
+  @Min(0, { message: 'minimum daily price after discount is 0' })
   @IsOptional()
-  dailyBasePriceAfterSeasonRate?: number;
+  dailyPriceAfterDiscount?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum low season daily price after discount is 0' })
+  @IsOptional()
+  lowSeasonDailyPriceAfterDiscount?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum high season daily price after discount is 0' })
+  @IsOptional()
+  highSeasonDailyPriceAfterDiscount?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum peak season daily price after discount is 0' })
+  @IsOptional()
+  peakSeasonDailyPriceAfterDiscount?: number;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
@@ -104,11 +118,15 @@ export class CreateVillaDto {
   @IsOptional()
   readonly priceYearly?: number;
 
-  @IsEnum(DiscountType)
+  @IsEnum(DiscountType, {
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
   @IsOptional()
   discountMonthlyType?: DiscountType;
 
-  @IsEnum(DiscountType)
+  @IsEnum(DiscountType, {
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
   @IsOptional()
   discountYearlyType?: DiscountType;
 

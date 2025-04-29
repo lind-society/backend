@@ -37,22 +37,11 @@ export class Activity {
   highlight!: string;
 
   @Column({
-    name: 'price_per_person',
     type: 'decimal',
     precision: 15,
     scale: 2,
-    nullable: true,
   })
-  pricePerPerson!: number | null;
-
-  @Column({
-    name: 'price_per_session',
-    type: 'decimal',
-    precision: 15,
-    scale: 2,
-    nullable: true,
-  })
-  pricePerSession!: number | null;
+  price!: number;
 
   @Column({
     name: 'discount_type',
@@ -67,7 +56,7 @@ export class Activity {
   discount!: number | null;
 
   @Column({
-    name: 'price_per_person_after_discount',
+    name: 'price_after_discount',
     type: 'decimal',
     precision: 15,
     scale: 2,
@@ -75,32 +64,14 @@ export class Activity {
     asExpression: `
       CASE 
         WHEN discount_type = 'fixed' THEN 
-          GREATEST(price_per_person - COALESCE(discount, 0), 0)
+          GREATEST(price - COALESCE(discount, 0), 0)
         ELSE 
-          GREATEST(price_per_person - (price_per_person * COALESCE(discount, 0) / 100), 0)
+          GREATEST(price - (price * COALESCE(discount, 0) / 100), 0)
       END
     `,
     nullable: true,
   })
-  pricePerPersonAfterDiscount!: number | null;
-
-  @Column({
-    name: 'price_per_session_after_discount',
-    type: 'decimal',
-    precision: 15,
-    scale: 2,
-    generatedType: 'STORED',
-    asExpression: `
-      CASE 
-        WHEN discount_type = 'fixed' THEN 
-          GREATEST(price_per_session - COALESCE(discount, 0), 0)
-        ELSE 
-          GREATEST(price_per_session - (price_per_session * COALESCE(discount, 0) / 100), 0)
-      END
-    `,
-    nullable: true,
-  })
-  pricePerSessionAfterDiscount!: number | null;
+  priceAfterDiscount!: number | null;
 
   @Column({ type: 'enum', enum: ActivityDuration })
   duration!: ActivityDuration;
@@ -141,6 +112,9 @@ export class Activity {
 
   @Column({ name: 'end_date', type: 'timestamptz', nullable: true })
   endDate!: Date | null;
+
+  @Column({ name: 'daily_limit', type: 'integer' })
+  dailyLimit!: number;
 
   @Column({ type: 'text', array: true })
   photos!: string[];

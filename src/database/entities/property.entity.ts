@@ -31,10 +31,10 @@ export class Property {
   name!: string;
 
   @Column({ name: 'secondary_name' })
-  secondaryName!: string | null;
+  secondaryName!: string;
 
-  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
-  price!: number | null;
+  @Column({ type: 'decimal', precision: 15, scale: 2 })
+  price!: number;
 
   @Column({
     name: 'discount_type',

@@ -75,10 +75,7 @@ export class CurrencyService {
     await this.currencyRepository.delete(id);
   }
 
-  async convertToBaseCurrency(
-    initialCurrencyId: string,
-    price?: number,
-  ) {
+  async convertToBaseCurrency(initialCurrencyId: string, price?: number) {
     const baseCurrencyId = await this.findBaseCurrencyId();
 
     const basePrice = price

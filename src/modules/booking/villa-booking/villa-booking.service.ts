@@ -48,7 +48,7 @@ export class VillaBookingService {
         message: this._formatVillaBookingMessage(bookingDetail),
       });
 
-      return createdVillaBooking;
+      return bookingDetail;
     });
   }
 

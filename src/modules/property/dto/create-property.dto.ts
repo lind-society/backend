@@ -43,11 +43,11 @@ export class CreatePropertyDto {
     { message: 'price must be a valid number' },
   )
   @Min(0, { message: 'minimum price is 0' })
-  @IsOptional()
-  readonly price?: number;
+  @IsNotEmpty()
+  readonly price!: number;
 
   @IsEnum(DiscountType, {
-    message: `discount type be one of: ${Object.values(DiscountType).join(', ')}`,
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
   })
   @IsOptional()
   discountType?: DiscountType;

@@ -29,12 +29,10 @@ export class ActivityDto implements IActivityDto {
   readonly id!: string;
   readonly name!: string;
   readonly secondaryName!: string;
-  readonly pricePerPerson!: number | null;
-  readonly pricePerSession!: number | null;
+  readonly price!: number;
   readonly discountType!: DiscountType | null;
   readonly discount!: number | null;
-  readonly pricePerPersonAfterDiscount!: number | null;
-  readonly pricePerSessionAfterDiscount!: number | null;
+  readonly priceAfterDiscount!: number;
   readonly duration!: ActivityDuration;
   readonly highlight!: string;
   readonly address!: string;
@@ -53,6 +51,7 @@ export class ActivityDto implements IActivityDto {
 
   readonly startDate!: Date | null;
   readonly endDate!: Date | null;
+  readonly dailyLimit!: number;
   readonly photos!: string[];
   readonly videos!: string[] | null;
   readonly video360s!: string[] | null;

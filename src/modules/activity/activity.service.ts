@@ -56,12 +56,10 @@ export class ActivityService {
         'createdAt',
         'name',
         'secondaryName',
-        'pricePerPerson',
-        'pricePerSession',
+        'price',
         'discountType',
         'discount',
-        'pricePerPersonAfterDiscount',
-        'pricePerSessionAfterDiscount',
+        'priceAfterDiscount',
         'duration',
         'country',
         'state',
@@ -211,13 +209,9 @@ export class ActivityService {
     return {
       ...activityData,
       currencyId: await this.currencyService.findBaseCurrencyId(),
-      pricePerPerson: await this.currencyService.convertToBaseCurrency(
+      price: await this.currencyService.convertToBaseCurrency(
         activityData.currencyId,
-        activityData.pricePerPerson,
-      ),
-      pricePerSession: await this.currencyService.convertToBaseCurrency(
-        activityData.currencyId,
-        activityData.pricePerSession,
+        activityData.price,
       ),
     };
   }

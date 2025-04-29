@@ -15,10 +15,7 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import {
-  RegexValidator,
-  ValidateDiscountValueFromMultiplePrice,
-} from 'src/common/decorators';
+import { RegexValidator, ValidateDiscountValue } from 'src/common/decorators';
 import { DefaultHttpStatus } from 'src/common/enums';
 import { ActivityDuration, DiscountType } from 'src/database/entities';
 import {
@@ -40,22 +37,15 @@ export class CreateActivityDto {
   @Type(() => Number)
   @IsNumber(
     { allowNaN: false, allowInfinity: false },
-    { message: 'price per person must be a valid number' },
+    { message: 'price must be a valid number' },
   )
-  @Min(0, { message: 'minimum price per person is 0' })
-  @IsOptional()
-  readonly pricePerPerson?: number;
+  @Min(0, { message: 'minimum price is 0' })
+  @IsNotEmpty()
+  readonly price!: number;
 
-  @Type(() => Number)
-  @IsNumber(
-    { allowNaN: false, allowInfinity: false },
-    { message: 'price per session must be a valid number' },
-  )
-  @Min(0, { message: 'minimum price per session is 0' })
-  @IsOptional()
-  readonly pricePerSession?: number;
-
-  @IsEnum(DiscountType)
+  @IsEnum(DiscountType, {
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
   @IsOptional()
   discountType?: DiscountType;
 
@@ -68,11 +58,7 @@ export class CreateActivityDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @ValidateDiscountValueFromMultiplePrice(
-    'discountType',
-    ['pricePerPerson', 'pricePerSession'],
-    DiscountType,
-  )
+  @ValidateDiscountValue('discountType', 'price', DiscountType)
   @IsOptional()
   readonly discount?: number;
 
@@ -128,13 +114,22 @@ export class CreateActivityDto {
 
   @Type(() => Date)
   @IsDate({ message: 'start date must be a valid date' })
-  @IsOptional()
+  @IsNotEmpty()
   readonly startDate?: Date;
 
   @Type(() => Date)
   @IsDate({ message: 'end date must be a valid date' })
-  @IsOptional()
+  @IsNotEmpty()
   readonly endDate?: Date;
+
+  @Type(() => Number)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'daily limit must be a valid number' },
+  )
+  @Min(0, { message: 'minimum daily limit is 0' })
+  @IsNotEmpty()
+  readonly dailyLimit!: number;
 
   @IsArray()
   @ArrayMinSize(1, { message: 'at least 1 photo is required' })

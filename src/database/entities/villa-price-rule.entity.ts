@@ -27,26 +27,25 @@ export class VillaPriceRule {
   @Column({ type: 'text', nullable: true })
   description!: string | null;
 
-  @Column({ name: 'start_date', type: 'timestamptz', nullable: true })
-  startDate!: Date | null;
+  @Column({ name: 'start_date', type: 'timestamptz' })
+  startDate!: Date;
 
-  @Column({ name: 'end_date', type: 'timestamptz', nullable: true })
-  endDate!: Date | null;
+  @Column({ name: 'end_date', type: 'timestamptz' })
+  endDate!: Date;
 
   @Column({
     name: 'price_rule_season',
     type: 'enum',
     enum: PriceRuleSeason,
     enumName: 'price_rule_season_enum',
-    nullable: true,
   })
-  season!: PriceRuleSeason | null;
+  season!: PriceRuleSeason;
 
   @Column({ type: 'boolean', default: false })
   isDiscount!: boolean;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  discount!: number;
+  discount!: number | null;
 
   @Column({ type: 'boolean', default: true })
   isActive!: boolean;

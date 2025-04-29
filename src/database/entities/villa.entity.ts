@@ -9,13 +9,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { VillaBooking } from './villa-booking.entity';
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
 import { DiscountType } from './shared-enum.entity';
 import { PlaceNearby } from './shared-interface.entity';
 import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
+import { VillaBooking } from './villa-booking.entity';
 import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 import { VillaPolicyPivot } from './villa-policy-pivot.entity';
@@ -44,49 +44,76 @@ export class Villa {
   availability!: VillaAvailability;
 
   @Column({
-    name: 'daily_base_price',
+    name: 'daily_price',
     type: 'decimal',
     precision: 15,
     scale: 2,
     nullable: true,
   })
-  dailyBasePrice!: number | null;
+  dailyPrice!: number | null;
 
   @Column({
-    name: 'low_season_price_rate',
-    type: 'decimal',
-    precision: 5,
-    scale: 2,
-    nullable: true,
-  })
-  lowSeasonPriceRate!: number | null;
-
-  @Column({
-    name: 'high_season_price_rate',
-    type: 'decimal',
-    precision: 5,
-    scale: 2,
-    nullable: true,
-  })
-  highSeasonPriceRate!: number | null;
-
-  @Column({
-    name: 'peak_season_price_rate',
-    type: 'decimal',
-    precision: 5,
-    scale: 2,
-    nullable: true,
-  })
-  peakSeasonPriceRate!: number | null;
-
-  @Column({
-    name: 'daily_base_price_after_season_rate',
+    name: 'low_season_daily_price',
     type: 'decimal',
     precision: 15,
     scale: 2,
     nullable: true,
   })
-  dailyBasePriceAfterSeasonRate!: number | null;
+  lowSeasonDailyPrice!: number | null;
+
+  @Column({
+    name: 'high_season_daily_price',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
+  highSeasonDailyPrice!: number | null;
+
+  @Column({
+    name: 'peak_season_daily_price',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
+  peakSeasonDailyPrice!: number | null;
+
+  @Column({
+    name: 'daily_price_after_discount',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
+  dailyPriceAfterDiscount!: number | null;
+
+  @Column({
+    name: 'low_season_daily_price_after_discount',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
+  lowSeasonDailyPriceAfterDiscount!: number | null;
+
+  @Column({
+    name: 'high_season_daily_price_after_discount',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
+  highSeasonDailyPriceAfterDiscount!: number | null;
+
+  @Column({
+    name: 'peak_season_daily_price_after_discount',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
+  peakSeasonDailyPriceAfterDiscount!: number | null;
 
   @Column({
     name: 'price_monthly',

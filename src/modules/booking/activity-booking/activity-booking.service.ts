@@ -51,7 +51,7 @@ export class ActivityBookingService {
         message: this._formatActivityBookingMessage(bookingDetail),
       });
 
-      return createdActivityBooking;
+      return bookingDetail;
     });
   }
 
