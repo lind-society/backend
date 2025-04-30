@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsEnum,
@@ -8,6 +9,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   Min,
 } from 'class-validator';
@@ -61,6 +63,11 @@ export class CreateVillaPriceRuleDto {
   @IsBoolean()
   @IsNotEmpty()
   readonly isActive!: boolean;
+
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  readonly villaIds?: string[];
 }
 
 export class CreateVillaPriceRuleSuccessResponse

@@ -37,7 +37,6 @@ export class VillaPolicyTypeController {
     return new CreateVillaPolicyTypeSuccessResponse(result);
   }
 
-  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.villaPolicyTypeService.findAll(query);
@@ -45,7 +44,6 @@ export class VillaPolicyTypeController {
     return new GetVillaPolicyTypesSuccessResponse(result);
   }
 
-  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.villaPolicyTypeService.findOne(id);

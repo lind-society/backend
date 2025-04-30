@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { JwtAuthGuard } from 'src/modules/auth/guards';
 import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
 import { BlogCategoryService } from './blog-category.service';
 import {
@@ -20,8 +21,6 @@ import {
   UpdateBlogCategoryDto,
   UpdateBlogCategorySuccessResponse,
 } from './dto';
-import { JwtAuthGuard } from 'src/modules/auth/guards';
-import { Public } from 'src/common/decorators';
 
 @UseGuards(JwtAuthGuard)
 @Controller('blog-categories')
@@ -35,7 +34,6 @@ export class BlogCategoryController {
     return new CreateBlogCategorySuccessResponse(blogCategory);
   }
 
-  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const categories = await this.blogCategoryService.findAll(query);
@@ -43,7 +41,6 @@ export class BlogCategoryController {
     return new GetBlogCategoriesSuccessResponse(categories);
   }
 
-  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const blogCategory = await this.blogCategoryService.findOne(id);

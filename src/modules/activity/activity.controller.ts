@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
@@ -22,7 +23,9 @@ import {
   UpdateActivityDto,
   UpdateActivitySuccessResponse,
 } from './dto';
+import { JwtAuthGuard } from '../auth/guards';
 
+@UseGuards(JwtAuthGuard)
 @Controller('activities')
 @UseInterceptors(PriceConverterInterceptor)
 export class ActivityController {

@@ -7,10 +7,13 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { Public } from 'src/common/decorators';
 import { PriceConverterInterceptor } from 'src/common/interceptors';
+import { JwtAuthGuard } from 'src/modules/auth/guards';
 import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
 import { BookingPaymentService } from './booking-payment.service';
 import {
@@ -22,6 +25,7 @@ import {
   UpdateBookingPaymentSuccessResponse,
 } from './dto';
 
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(PriceConverterInterceptor)
 @Controller('booking-payments')
 export class BookingPaymentController {
@@ -34,6 +38,7 @@ export class BookingPaymentController {
     return new CreateBookingPaymentSuccessResponse(bookingPayment);
   }
 
+  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const bookingPayments = await this.bookingPaymentService.findAll(query);
@@ -41,6 +46,7 @@ export class BookingPaymentController {
     return new GetBookingPaymentsSuccessResponse(bookingPayments);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const bookingPayment = await this.bookingPaymentService.findOne(id);

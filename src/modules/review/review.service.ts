@@ -43,15 +43,15 @@ export class ReviewService {
         payload.villaBookingId,
       );
 
-      const review = this.reviewRepository.create(payload);
-
-      const createdReview = await manager.save(Review, review);
-
       await this._validateRelatedEntities(
         manager,
         payload.activityId,
         payload.villaId,
       );
+
+      const review = this.reviewRepository.create(payload);
+
+      const createdReview = await manager.save(Review, review);
 
       return createdReview;
     });

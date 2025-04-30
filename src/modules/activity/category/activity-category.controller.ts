@@ -10,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
-import { Public } from 'src/common/decorators';
 import { JwtAuthGuard } from 'src/modules/auth/guards';
 import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
 import { ActivityCategoryService } from './activity-category.service';
@@ -37,7 +36,6 @@ export class ActivityCategoryController {
     return new CreateActivityCategorySuccessResponse(activityCategory);
   }
 
-  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const categories = await this.activityCategoryService.findAll(query);
@@ -45,7 +43,6 @@ export class ActivityCategoryController {
     return new GetActivityCategoriesSuccessResponse(categories);
   }
 
-  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const activityCategory = await this.activityCategoryService.findOne(id);

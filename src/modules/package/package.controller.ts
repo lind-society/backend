@@ -7,9 +7,10 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
-import { Public } from 'src/common/decorators';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreatePackageDto,
@@ -21,6 +22,7 @@ import {
 } from './dto';
 import { PackageService } from './package.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('packages')
 export class PackageController {
   constructor(private readonly packageService: PackageService) {}
@@ -32,7 +34,6 @@ export class PackageController {
     return new CreatePackageSuccessResponse(result);
   }
 
-  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.packageService.findAll(query);
@@ -40,7 +41,6 @@ export class PackageController {
     return new GetPackagesSuccessResponse(result);
   }
 
-  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.packageService.findOne(id);

@@ -7,10 +7,13 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { Public } from 'src/common/decorators';
 import { PriceConverterInterceptor } from 'src/common/interceptors';
+import { JwtAuthGuard } from 'src/modules/auth/guards';
 import { DeleteResponse } from '../../shared/dto/custom-responses';
 import {
   CreateVillaBookingDto,
@@ -22,6 +25,7 @@ import {
 } from './dto';
 import { VillaBookingService } from './villa-booking.service';
 
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(PriceConverterInterceptor)
 @Controller('bookings/villas')
 export class VillaBookingController {
@@ -34,6 +38,7 @@ export class VillaBookingController {
     return new CreateVillaBookinguccessResponse(booking);
   }
 
+  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const bookings = await this.villaBookingService.findAll(query);
@@ -41,6 +46,7 @@ export class VillaBookingController {
     return new GetVillaBookingsSuccessResponse(bookings);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const booking = await this.villaBookingService.findOne(id);

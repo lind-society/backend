@@ -1,11 +1,14 @@
-import { VillaPriceRule, VillaPriceRuleSeason } from 'src/database/entities';
-import { VillaDto } from '../../dto';
+import {
+  VillaPriceRule,
+  VillaPriceRulePivot,
+  VillaPriceRuleSeason,
+} from 'src/database/entities';
 
 export interface IVillaPriceRuleDto
   extends Omit<VillaPriceRule, 'villaPriceRules'> {}
 
 export interface IVillaPriceRuleWithRelationsDto extends IVillaPriceRuleDto {
-  villas?: VillaDto[];
+  villas?: VillaPriceRulePivot[];
 }
 
 export class VillaPriceRuleDto implements IVillaPriceRuleDto {
@@ -27,5 +30,5 @@ export class VillaPriceRuleWithRelationsDto
   extends VillaPriceRuleDto
   implements IVillaPriceRuleWithRelationsDto
 {
-  readonly villas?: VillaDto[];
+  readonly villas?: VillaPriceRulePivot[];
 }
