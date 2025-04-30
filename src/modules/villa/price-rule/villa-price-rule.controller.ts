@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { Public } from 'src/common/decorators';
 import { JwtAuthGuard } from 'src/modules/auth/guards';
 import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
 import {
@@ -36,6 +37,7 @@ export class VillaPriceRuleController {
     return new CreateVillaPriceRuleSuccessResponse(result);
   }
 
+  @Public()
   @Get('available-villas')
   async findAvailableVillasWithinDate(
     @Body() payload: GetVillaWithPriceRuleDto,
@@ -46,6 +48,7 @@ export class VillaPriceRuleController {
     return new GetAvailableVillaSuccessResponse(result);
   }
 
+  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.villaPriceRuleService.findAll(query);
@@ -53,6 +56,7 @@ export class VillaPriceRuleController {
     return new GetVillaPriceRulesSuccessResponse(result);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.villaPriceRuleService.findOne(id);
