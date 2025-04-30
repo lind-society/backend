@@ -66,7 +66,7 @@ export class CreateActivityDto {
     message: `activity duration must be one of: ${Object.values(ActivityDuration).join(', ')}`,
   })
   @IsNotEmpty()
-  readonly duration?: ActivityDuration;
+  readonly duration!: ActivityDuration;
 
   @IsString()
   @IsNotEmpty()
@@ -115,12 +115,12 @@ export class CreateActivityDto {
   @Type(() => Date)
   @IsDate({ message: 'start date must be a valid date' })
   @IsNotEmpty()
-  readonly startDate?: Date;
+  readonly startDate!: Date;
 
   @Type(() => Date)
   @IsDate({ message: 'end date must be a valid date' })
   @IsNotEmpty()
-  readonly endDate?: Date;
+  readonly endDate!: Date;
 
   @Type(() => Number)
   @IsNumber(
@@ -139,7 +139,7 @@ export class CreateActivityDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly videos!: string[];
+  readonly videos?: string[];
 
   @IsArray()
   @IsString({ each: true })

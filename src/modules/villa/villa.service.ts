@@ -8,12 +8,12 @@ import {
   Additional,
   DiscountType,
   Feature,
-  PriceRuleSeason,
   Villa,
   VillaAdditionalPivot,
   VillaFacilityPivot,
   VillaFeaturePivot,
   VillaPolicy,
+  VillaPriceRuleSeason,
 } from 'src/database/entities';
 import { VillaPolicyPivot } from 'src/database/entities/villa-policy-pivot.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -597,21 +597,21 @@ export class VillaService {
     }
 
     switch (currentActiveDiscount.season) {
-      case PriceRuleSeason.Regular_Season:
+      case VillaPriceRuleSeason.Regular_Season:
         updatedData.dailyPriceAfterDiscount =
           updatedData.dailyPrice * (1 - currentActiveDiscount.discount / 100);
         break;
-      case PriceRuleSeason.Low_Season:
+      case VillaPriceRuleSeason.Low_Season:
         updatedData.lowSeasonDailyPriceAfterDiscount =
           updatedData.lowSeasonDailyPrice *
           (1 - currentActiveDiscount.discount / 100);
         break;
-      case PriceRuleSeason.High_Season:
+      case VillaPriceRuleSeason.High_Season:
         updatedData.highSeasonDailyPriceAfterDiscount =
           updatedData.highSeasonDailyPrice *
           (1 + currentActiveDiscount.discount / 100);
         break;
-      case PriceRuleSeason.Peak_Season:
+      case VillaPriceRuleSeason.Peak_Season:
         updatedData.peakSeasonDailyPriceAfterDiscount =
           updatedData.peakSeasonDailyPrice *
           (1 + currentActiveDiscount.discount / 100);

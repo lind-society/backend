@@ -9,9 +9,9 @@ import {
 } from 'typeorm';
 import { VillaPriceRulePivot } from './villa-price-rule-pivot.entity';
 
-export enum PriceRuleSeason {
-  Low_Season = 'Low Season',
+export enum VillaPriceRuleSeason {
   Regular_Season = 'Regular Season',
+  Low_Season = 'Low Season',
   High_Season = 'High Season',
   Peak_Season = 'Peak Season',
 }
@@ -34,12 +34,11 @@ export class VillaPriceRule {
   endDate!: Date;
 
   @Column({
-    name: 'price_rule_season',
     type: 'enum',
-    enum: PriceRuleSeason,
-    enumName: 'price_rule_season_enum',
+    enum: VillaPriceRuleSeason,
+    enumName: 'villa_price_rule_season_enum',
   })
-  season!: PriceRuleSeason;
+  season!: VillaPriceRuleSeason;
 
   @Column({ type: 'boolean', default: false })
   isDiscount!: boolean;
