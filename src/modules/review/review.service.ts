@@ -170,8 +170,6 @@ export class ReviewService {
     villaBookingId?: string,
   ): Promise<void> {
     if (activityBookingId) {
-      await this.activityService.findOne(activityBookingId, manager);
-
       const activityBooking = await manager.findOne(ActivityBooking, {
         where: { id: activityBookingId },
         select: ['status'],
@@ -185,8 +183,6 @@ export class ReviewService {
     }
 
     if (villaBookingId) {
-      await this.villaService.findOne(villaBookingId, manager);
-
       const villaBooking = await manager.findOne(VillaBooking, {
         where: { id: villaBookingId },
         select: ['status'],
