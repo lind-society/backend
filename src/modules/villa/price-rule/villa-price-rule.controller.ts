@@ -1,0 +1,79 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { JwtAuthGuard } from 'src/modules/auth/guards';
+import { DeleteResponse } from 'src/modules/shared/dto/custom-responses';
+import {
+  CreateVillaPriceRuleDto,
+  CreateVillaPriceRuleSuccessResponse,
+  GetAvailableVillaSuccessResponse,
+  GetVillaPriceRulesSuccessResponse,
+  GetVillaPriceRuleSuccessResponse,
+  GetVillaWithPriceRuleDto,
+  UpdateVillaPriceRuleDto,
+  UpdateVillaPriceRuleSuccessResponse,
+} from './dto';
+import { VillaPriceRuleService } from './villa-price-rule.service';
+
+@UseGuards(JwtAuthGuard)
+@Controller('villa-price-rules')
+export class VillaPriceRuleController {
+  constructor(private readonly villaPriceRuleService: VillaPriceRuleService) {}
+
+  @Post()
+  async create(@Body() payload: CreateVillaPriceRuleDto) {
+    const result = await this.villaPriceRuleService.create(payload);
+
+    return new CreateVillaPriceRuleSuccessResponse(result);
+  }
+
+  @Get('available-villas')
+  async findAvailableVillasWithinDate(
+    @Body() payload: GetVillaWithPriceRuleDto,
+  ) {
+    const result =
+      await this.villaPriceRuleService.findAvailableVillasWithinDate(payload);
+
+    return new GetAvailableVillaSuccessResponse(result);
+  }
+
+  @Get()
+  async findAll(@Paginate() query: PaginateQuery) {
+    const result = await this.villaPriceRuleService.findAll(query);
+
+    return new GetVillaPriceRulesSuccessResponse(result);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const result = await this.villaPriceRuleService.findOne(id);
+
+    return new GetVillaPriceRuleSuccessResponse(result);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: UpdateVillaPriceRuleDto,
+  ) {
+    const result = await this.villaPriceRuleService.update(id, payload);
+
+    return new UpdateVillaPriceRuleSuccessResponse(result);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.villaPriceRuleService.remove(id);
+
+    return new DeleteResponse('delete villa price rule success');
+  }
+}
