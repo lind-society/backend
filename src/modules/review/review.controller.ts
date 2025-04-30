@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { Public } from 'src/common/decorators';
 import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
@@ -33,6 +34,7 @@ export class ReviewController {
     return new CreateReviewSuccessResponse(result);
   }
 
+  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.reviewService.findAll(query);
@@ -40,6 +42,7 @@ export class ReviewController {
     return new GetReviewsSuccessResponse(result);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const result = await this.reviewService.findOne(id);
