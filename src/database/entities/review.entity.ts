@@ -37,11 +37,21 @@ export class Review {
   @Column({ name: 'villa_id', type: 'uuid', nullable: true })
   villaId!: string | null;
 
-  @OneToOne(() => ActivityBooking, (activityBooking) => activityBooking.review)
+  @OneToOne(
+    () => ActivityBooking,
+    (activityBooking) => activityBooking.review,
+    {
+      onDelete: 'SET NULL',
+      nullable: true,
+    },
+  )
   @JoinColumn({ name: 'activity_booking_id' })
   activityBooking: ActivityBooking;
 
-  @OneToOne(() => VillaBooking, (villaBooking) => villaBooking.review)
+  @OneToOne(() => VillaBooking, (villaBooking) => villaBooking.review, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn({ name: 'villa_booking_id' })
   villaBooking: VillaBooking;
 
