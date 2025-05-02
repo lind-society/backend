@@ -101,8 +101,9 @@ export class ActivityBookingService {
           customer: true,
           currency: true,
           activity: {
-            owner: true,
+            category: true,
             currency: true,
+            owner: true,
           },
           review: true,
           payments: { currency: true },
@@ -129,8 +130,9 @@ export class ActivityBookingService {
         customer: true,
         currency: true,
         activity: {
-          owner: true,
+          category: true,
           currency: true,
+          owner: true,
         },
         review: true,
         payments: { currency: true },

@@ -1,5 +1,3 @@
-import { Expose } from 'class-transformer';
-import { constructPhoneNumber } from 'src/common/helpers';
 import { Owner, OwnerStatus, OwnerType } from 'src/database/entities';
 import { ActivityDto } from 'src/modules/activity/dto';
 import { PropertyDto } from 'src/modules/property/dto';
@@ -28,11 +26,6 @@ export class OwnerDto implements IOwnerDto {
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
   readonly deletedAt!: Date | null;
-
-  @Expose()
-  get formattedPhoneNumber(): string {
-    return constructPhoneNumber(this.phoneCountryCode, this.phoneNumber);
-  }
 }
 
 export class OwnerWithRelationDto

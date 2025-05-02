@@ -71,7 +71,6 @@ export class ActivityWithRelationsDto
 {
   readonly category?: ActivityCategoryDto;
   readonly currency?: CurrencyDto;
-  @Type(() => OwnerDto)
   readonly owner?: OwnerDto;
   readonly bookings?: ActivityBookingDto[];
   readonly reviews?: ReviewDto[];
