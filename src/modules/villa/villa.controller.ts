@@ -18,6 +18,7 @@ import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreateVillaDto,
   CreateVillaSuccessResponse,
+  GetVillaBestSellerSuccessResponse,
   GetVillasSuccessResponse,
   GetVillaSuccessResponse,
   UpdateVillaDto,
@@ -36,6 +37,14 @@ export class VillaController {
     const result = await this.villaService.create(payload);
 
     return new CreateVillaSuccessResponse(result);
+  }
+
+  @Public()
+  @Get('/best-seller')
+  async findBestSeller() {
+    const result = await this.villaService.findBestSeller();
+
+    return new GetVillaBestSellerSuccessResponse(result);
   }
 
   @Public()

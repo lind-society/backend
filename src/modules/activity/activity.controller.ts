@@ -13,17 +13,18 @@ import {
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { Public } from 'src/common/decorators';
 import { PriceConverterInterceptor } from 'src/common/interceptors';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import { ActivityService } from './activity.service';
 import {
   CreateActivityDto,
   CreateActivitySuccessResponse,
   GetActivitiesSuccessResponse,
+  GetActivityBestSellerSuccessResponse,
   GetActivitySuccessResponse,
   UpdateActivityDto,
   UpdateActivitySuccessResponse,
 } from './dto';
-import { JwtAuthGuard } from '../auth/guards';
 
 @UseGuards(JwtAuthGuard)
 @Controller('activities')
@@ -36,6 +37,14 @@ export class ActivityController {
     const result = await this.activityService.create(payload);
 
     return new CreateActivitySuccessResponse(result);
+  }
+
+  @Public()
+  @Get('/best-seller')
+  async findBestSeller() {
+    const result = await this.activityService.findBestSeller();
+
+    return new GetActivityBestSellerSuccessResponse(result);
   }
 
   @Public()

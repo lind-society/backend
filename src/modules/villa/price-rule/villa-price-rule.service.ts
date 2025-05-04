@@ -186,9 +186,6 @@ export class VillaPriceRuleService {
 
   // Helper Functions
   async findAvailableVillasWithinDate(payload: GetVillaWithPriceRuleDto) {
-    console.log('startDate :', payload.startDate);
-    console.log('endDate :', payload.endDate);
-
     const availableVillas: VillaWithPriceRuleDto[] = await this.villaRepository
       .createQueryBuilder('villa')
       .distinct(true)

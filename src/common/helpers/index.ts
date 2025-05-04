@@ -3,6 +3,7 @@ export * from './construct-phone-number.helper';
 export * from './convert-datetime-to-date.helper';
 export * from './extract-coordinate-from-google-map';
 export * from './format-price.helper';
+export * from './generate-today-date-range.helper';
 export * from './group-and-sort.helper';
 export * from './hash.helper';
 export * from './load-country-code-json.helper';

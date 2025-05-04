@@ -44,3 +44,20 @@ export class GetActivitySuccessResponse
     this.data = data;
   }
 }
+
+export class GetActivityBestSellerSuccessResponse
+  extends HttpResponseDefaultProps
+  implements HttpResponseOptions<ActivityWithRelationsDto[]>
+{
+  readonly data: ActivityWithRelationsDto[];
+
+  constructor(data: ActivityWithRelationsDto[]) {
+    super({
+      code: HttpStatus.OK,
+      message: 'get activity best seller success',
+      status: DefaultHttpStatus.Success,
+    });
+
+    this.data = data;
+  }
+}

@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   Activity,
   ActivityDuration,
@@ -52,6 +52,7 @@ export class ActivityDto implements IActivityDto {
   readonly startDate!: Date | null;
   readonly endDate!: Date | null;
   readonly dailyLimit!: number;
+  todayBooking?: number | null;
   readonly photos!: string[];
   readonly videos!: string[] | null;
   readonly video360s!: string[] | null;

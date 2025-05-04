@@ -1,12 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import {
   constructPhoneNumber,
+  generateTodayDateRange,
   paginateResponseMapper,
 } from 'src/common/helpers';
-import { ActivityBooking } from 'src/database/entities';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import {
+  Activity,
+  ActivityBooking,
+  ActivityBookingStatus,
+} from 'src/database/entities';
+import { Between, DataSource, EntityManager, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../../shared/dto';
 import { WhatsappService } from '../../shared/whatsapp/whatsapp.service';
 import { BookingCustomerService } from '../customer/booking-customer.service';
@@ -20,6 +29,8 @@ import {
 export class ActivityBookingService {
   constructor(
     private datasource: DataSource,
+    @InjectRepository(Activity)
+    private activityRepository: Repository<Activity>,
     @InjectRepository(ActivityBooking)
     private activityBookingRepository: Repository<ActivityBooking>,
     private bookingCustomerService: BookingCustomerService,
@@ -30,6 +41,8 @@ export class ActivityBookingService {
     payload: CreateActivityBookingDto,
   ): Promise<ActivityBookingWithRelationsDto> {
     return await this.datasource.transaction(async (manager: EntityManager) => {
+      await this._checkActivityAvailability(payload.activityId, manager);
+
       const createdActivityBookingCustomer =
         await this.bookingCustomerService.create(payload.customer, manager);
 
@@ -122,7 +135,7 @@ export class ActivityBookingService {
       ? entityManager.getRepository(ActivityBooking)
       : this.activityBookingRepository;
 
-    const bookingPayment = await repository.findOne({
+    const activityBooking = await repository.findOne({
       where: {
         id,
       },
@@ -139,11 +152,11 @@ export class ActivityBookingService {
       },
     });
 
-    if (!bookingPayment) {
+    if (!activityBooking) {
       throw new NotFoundException(`activity booking not found`);
     }
 
-    return bookingPayment;
+    return activityBooking;
   }
 
   async update(
@@ -155,6 +168,13 @@ export class ActivityBookingService {
     const { customer: customerData, ...bookingData } = payload;
 
     await this.datasource.transaction(async (manager: EntityManager) => {
+      if (bookingData.status === ActivityBookingStatus.Completed) {
+        await this._checkActivityAvailability(
+          initialActivityBooking.activityId,
+          manager,
+        );
+      }
+
       if (payload.customer) {
         await this.bookingCustomerService.update(
           initialActivityBooking.customerId,
@@ -173,6 +193,103 @@ export class ActivityBookingService {
     await this.findOne(id);
 
     await this.activityBookingRepository.delete(id);
+  }
+
+  async findTotalTodayBooking(
+    activityId: string,
+    entityManager?: EntityManager,
+  ): Promise<number> {
+    const [todayDayStart, todayDayEnd] = generateTodayDateRange();
+
+    const repository = entityManager
+      ? entityManager.getRepository(ActivityBooking)
+      : this.activityBookingRepository;
+
+    const todayBookingCount = await repository.count({
+      where: {
+        activityId,
+        bookingDate: Between(todayDayStart, todayDayEnd),
+        status: ActivityBookingStatus.Completed,
+      },
+    });
+
+    return todayBookingCount;
+  }
+
+  async findTotalTodayMultipleBooking(
+    activityIds: string[],
+    entityManager?: EntityManager,
+  ): Promise<Record<string, number>> {
+    const [todayDayStart, todayDayEnd] = generateTodayDateRange();
+
+    const repository = entityManager
+      ? entityManager.getRepository(ActivityBooking)
+      : this.activityBookingRepository;
+
+    const todayBookings = await repository
+      .createQueryBuilder('activityBookings')
+      .select('activityBookings.activityId', 'activityId')
+      .addSelect('COUNT(*)', 'count')
+      .where('activityBookings.activityId IN (:...ids)', { ids: activityIds })
+      .andWhere('activityBookings.bookingDate BETWEEN :start AND :end', {
+        start: todayDayStart,
+        end: todayDayEnd,
+      })
+      .andWhere('activityBookings.status = :status', {
+        status: ActivityBookingStatus.Completed,
+      })
+      .groupBy('activityBookings.activityId')
+      .getRawMany();
+
+    const mappedTodayBookings: Record<string, number> = {};
+
+    for (const row of todayBookings) {
+      mappedTodayBookings[row.activityId] = Number(row.count);
+    }
+
+    return mappedTodayBookings;
+  }
+
+  private async _findActivityDailyLimit(
+    actvityId: string,
+    entityManager?: EntityManager,
+  ): Promise<number> {
+    const repository = entityManager
+      ? entityManager.getRepository(Activity)
+      : this.activityRepository;
+
+    const activity = await repository.findOne({
+      where: {
+        id: actvityId,
+      },
+      select: {
+        dailyLimit: true,
+      },
+    });
+
+    if (activity) {
+      return activity.dailyLimit;
+    }
+  }
+
+  private async _checkActivityAvailability(
+    activityId: string,
+    entityManager?: EntityManager,
+  ) {
+    const activityDailyLimit = await this._findActivityDailyLimit(
+      activityId,
+      entityManager,
+    );
+    const todayBooking = await this.findTotalTodayBooking(
+      activityId,
+      entityManager,
+    );
+
+    if (todayBooking >= activityDailyLimit) {
+      throw new BadRequestException(
+        'booking failed, activity is fully booked today',
+      );
+    }
   }
 
   private _formatActivityBookingMessage(

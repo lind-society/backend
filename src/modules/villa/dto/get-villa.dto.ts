@@ -44,3 +44,20 @@ export class GetVillaSuccessResponse
     this.data = data;
   }
 }
+
+export class GetVillaBestSellerSuccessResponse
+  extends HttpResponseDefaultProps
+  implements HttpResponseOptions<VillaWithRelationsDto[]>
+{
+  readonly data: VillaWithRelationsDto[];
+
+  constructor(data: VillaWithRelationsDto[]) {
+    super({
+      code: HttpStatus.OK,
+      message: 'get villa best seller success',
+      status: DefaultHttpStatus.Success,
+    });
+
+    this.data = data;
+  }
+}

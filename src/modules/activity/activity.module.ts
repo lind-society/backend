@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Activity } from 'src/database/entities';
+import { ActivityBookingModule } from '../booking/activity-booking/activity-booking.module';
 import { CurrencyModule } from '../currency/currency.module';
 import { OwnerModule } from '../owner/owner.module';
 import { ActivityController } from './activity.controller';
@@ -13,6 +14,7 @@ import { ActivityCategoryModule } from './category/activity-category.module';
   imports: [
     TypeOrmModule.forFeature([Activity]),
     ActivityCategoryModule,
+    ActivityBookingModule,
     CurrencyModule,
     OwnerModule,
   ],

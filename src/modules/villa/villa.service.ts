@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
+import { bestSellerLimit } from 'src/common/constants';
 import { paginateResponseMapper } from 'src/common/helpers';
 import {
   Additional,
@@ -419,6 +420,21 @@ export class VillaService {
     await this.findOne(id);
 
     await this.villaRepository.delete(id);
+  }
+
+  async findBestSeller(): Promise<VillaWithRelationsDto[]> {
+    return this.villaRepository
+      .createQueryBuilder('villa')
+      .leftJoin('villa.bookings', 'booking')
+      .select('villa.id', 'id')
+      .addSelect('villa.name', 'name')
+      .addSelect('villa.averageRating', 'averageRating')
+      .addSelect('COUNT(booking.id)', 'bookingCount')
+      .groupBy('villa.id')
+      .orderBy('villa.averageRating', 'DESC')
+      .addOrderBy('COUNT(booking.id)', 'DESC')
+      .limit(bestSellerLimit)
+      .getRawMany();
   }
 
   private _mapVillaData(villa: Villa): VillaWithRelationsDto {
