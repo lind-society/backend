@@ -1,11 +1,24 @@
 import { HttpStatus } from '@nestjs/common';
-import { DefaultHttpStatus } from 'src/common/enums';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { BestSeller, DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
 import { ActivityWithRelationsDto } from './activity.dto';
+
+export class GetActivityBestSellerQueryDto {
+  @IsEnum(BestSeller, {
+    message: `get activity best seller option must be one of: ${Object.values(BestSeller).join(', ')}`,
+  })
+  @IsNotEmpty()
+  option: BestSeller = BestSeller.Rating;
+}
+
+export class GetActivityBestSellerDto {
+  readonly data!: ActivityWithRelationsDto[];
+}
 
 export class GetActivityPaginateDto extends PaginateResponseDefaultDataProps {
   readonly data!: ActivityWithRelationsDto[];
@@ -47,14 +60,14 @@ export class GetActivitySuccessResponse
 
 export class GetActivityBestSellerSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<ActivityWithRelationsDto[]>
+  implements HttpResponseOptions<GetActivityBestSellerDto>
 {
-  readonly data: ActivityWithRelationsDto[];
+  readonly data: GetActivityBestSellerDto;
 
-  constructor(data: ActivityWithRelationsDto[]) {
+  constructor(data: GetActivityBestSellerDto, option: BestSeller) {
     super({
       code: HttpStatus.OK,
-      message: 'get activity best seller success',
+      message: `get activity best seller based on ${option} success`,
       status: DefaultHttpStatus.Success,
     });
 

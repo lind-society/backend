@@ -1,11 +1,24 @@
 import { HttpStatus } from '@nestjs/common';
-import { DefaultHttpStatus } from 'src/common/enums';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { BestSeller, DefaultHttpStatus } from 'src/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
   PaginateResponseDefaultDataProps,
 } from 'src/modules/shared/dto';
 import { VillaWithRelationsDto } from './villa.dto';
+
+export class GetVillaBestSellerQueryDto {
+  @IsEnum(BestSeller, {
+    message: `get villa best seller option must be one of: ${Object.values(BestSeller).join(', ')}`,
+  })
+  @IsNotEmpty()
+  option: BestSeller = BestSeller.Rating;
+}
+
+export class GetVillaBestSellerDto {
+  readonly data!: VillaWithRelationsDto[];
+}
 
 export class GetVillaPaginateDto extends PaginateResponseDefaultDataProps {
   readonly data!: VillaWithRelationsDto[];
@@ -47,14 +60,14 @@ export class GetVillaSuccessResponse
 
 export class GetVillaBestSellerSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<VillaWithRelationsDto[]>
+  implements HttpResponseOptions<GetVillaBestSellerDto>
 {
-  readonly data: VillaWithRelationsDto[];
+  readonly data: GetVillaBestSellerDto;
 
-  constructor(data: VillaWithRelationsDto[]) {
+  constructor(data: GetVillaBestSellerDto, option: BestSeller) {
     super({
       code: HttpStatus.OK,
-      message: 'get villa best seller success',
+      message: `get villa best seller based on ${option} success`,
       status: DefaultHttpStatus.Success,
     });
 

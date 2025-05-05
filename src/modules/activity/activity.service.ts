@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { bestSellerLimit } from 'src/common/constants';
+import { BestSeller } from 'src/common/enums';
 import { paginateResponseMapper } from 'src/common/helpers';
 import { Activity, DiscountType } from 'src/database/entities';
 import { EntityManager, Repository } from 'typeorm';
@@ -14,6 +15,7 @@ import { ActivityCategoryService } from './category/activity-category.service';
 import {
   ActivityWithRelationsDto,
   CreateActivityDto,
+  GetActivityBestSellerDto,
   UpdateActivityDto,
 } from './dto';
 
@@ -215,19 +217,27 @@ export class ActivityService {
     await this.activityRepository.delete(id);
   }
 
-  async findBestSeller(): Promise<ActivityWithRelationsDto[]> {
-    return this.activityRepository
+  async findBestSeller(option: BestSeller): Promise<GetActivityBestSellerDto> {
+    const query = this.activityRepository
       .createQueryBuilder('activity')
       .leftJoin('activity.bookings', 'booking')
       .select('activity.id', 'id')
       .addSelect('activity.name', 'name')
       .addSelect('activity.averageRating', 'averageRating')
       .addSelect('COUNT(booking.id)', 'bookingCount')
-      .groupBy('activity.id')
-      .orderBy('activity.averageRating', 'DESC')
-      .addOrderBy('COUNT(booking.id)', 'DESC')
-      .limit(bestSellerLimit)
-      .getRawMany();
+      .groupBy('activity.id');
+
+    if (option === BestSeller.Booking) {
+      query
+        .orderBy('activity.averageRating', 'DESC', 'NULLS LAST')
+        .addOrderBy('COUNT(booking.id)', 'DESC');
+    } else {
+      query
+        .orderBy('COUNT(booking.id)', 'DESC')
+        .addOrderBy('activity.averageRating', 'DESC', 'NULLS LAST');
+    }
+
+    return { data: await query.limit(bestSellerLimit).getRawMany() };
   }
 
   private async _validateRelatedEntities(
