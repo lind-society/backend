@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreateVillaDto,
   CreateVillaSuccessResponse,
+  GetVillaBestSellerQueryDto,
   GetVillaBestSellerSuccessResponse,
   GetVillasSuccessResponse,
   GetVillaSuccessResponse,
@@ -41,10 +43,10 @@ export class VillaController {
 
   @Public()
   @Get('/best-seller')
-  async findBestSeller() {
-    const result = await this.villaService.findBestSeller();
+  async findBestSeller(@Query() query: GetVillaBestSellerQueryDto) {
+    const result = await this.villaService.findBestSeller(query.option);
 
-    return new GetVillaBestSellerSuccessResponse(result);
+    return new GetVillaBestSellerSuccessResponse(result, query.option);
   }
 
   @Public()

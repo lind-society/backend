@@ -4,6 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { bestSellerLimit } from 'src/common/constants';
+import { BestSeller } from 'src/common/enums';
 import { paginateResponseMapper } from 'src/common/helpers';
 import {
   Additional,
@@ -26,6 +27,7 @@ import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
   CreateVillaFacililtyPivotDto,
+  GetVillaBestSellerDto,
   UpdateVillaFacililtyPivotDto,
   VillaWithRelationsDto,
 } from './dto';
@@ -422,19 +424,27 @@ export class VillaService {
     await this.villaRepository.delete(id);
   }
 
-  async findBestSeller(): Promise<VillaWithRelationsDto[]> {
-    return this.villaRepository
+  async findBestSeller(option: BestSeller): Promise<GetVillaBestSellerDto> {
+    const query = this.villaRepository
       .createQueryBuilder('villa')
       .leftJoin('villa.bookings', 'booking')
       .select('villa.id', 'id')
       .addSelect('villa.name', 'name')
       .addSelect('villa.averageRating', 'averageRating')
       .addSelect('COUNT(booking.id)', 'bookingCount')
-      .groupBy('villa.id')
-      .orderBy('villa.averageRating', 'DESC')
-      .addOrderBy('COUNT(booking.id)', 'DESC')
-      .limit(bestSellerLimit)
-      .getRawMany();
+      .groupBy('villa.id');
+
+    if (option === BestSeller.Rating) {
+      query
+        .orderBy('villa.averageRating', 'DESC', 'NULLS LAST')
+        .addOrderBy('COUNT(booking.id)', 'DESC');
+    } else {
+      query
+        .orderBy('COUNT(booking.id)', 'DESC')
+        .addOrderBy('villa.averageRating', 'DESC', 'NULLS LAST');
+    }
+
+    return { data: await query.limit(bestSellerLimit).getRawMany() };
   }
 
   private _mapVillaData(villa: Villa): VillaWithRelationsDto {

@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -20,6 +21,7 @@ import {
   CreateActivityDto,
   CreateActivitySuccessResponse,
   GetActivitiesSuccessResponse,
+  GetActivityBestSellerQueryDto,
   GetActivityBestSellerSuccessResponse,
   GetActivitySuccessResponse,
   UpdateActivityDto,
@@ -41,10 +43,10 @@ export class ActivityController {
 
   @Public()
   @Get('/best-seller')
-  async findBestSeller() {
-    const result = await this.activityService.findBestSeller();
+  async findBestSeller(@Query() query: GetActivityBestSellerQueryDto) {
+    const result = await this.activityService.findBestSeller(query.option);
 
-    return new GetActivityBestSellerSuccessResponse(result);
+    return new GetActivityBestSellerSuccessResponse(result, query.option);
   }
 
   @Public()

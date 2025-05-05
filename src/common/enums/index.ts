@@ -1,3 +1,4 @@
+export * from './best-seller-param.enum';
 export * from './default-http-status.enum';
 export * from './environment.enum';
 export * from './file-type.enum';
