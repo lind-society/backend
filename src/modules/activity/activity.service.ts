@@ -227,7 +227,7 @@ export class ActivityService {
       .addSelect('COUNT(booking.id)', 'bookingCount')
       .groupBy('activity.id');
 
-    if (option === BestSeller.Booking) {
+    if (option === BestSeller.Rating) {
       query
         .orderBy('activity.averageRating', 'DESC', 'NULLS LAST')
         .addOrderBy('COUNT(booking.id)', 'DESC');

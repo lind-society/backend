@@ -434,7 +434,7 @@ export class VillaService {
       .addSelect('COUNT(booking.id)', 'bookingCount')
       .groupBy('villa.id');
 
-    if (option === BestSeller.Booking) {
+    if (option === BestSeller.Rating) {
       query
         .orderBy('villa.averageRating', 'DESC', 'NULLS LAST')
         .addOrderBy('COUNT(booking.id)', 'DESC');
