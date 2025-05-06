@@ -1,16 +1,16 @@
 import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { WhatsappModule } from './whatsapp.module';
+import { MailModule } from './mail.module';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    WhatsappModule,
+    MailModule,
     {
       transport: Transport.RMQ,
       options: {
         urls: ['amqp://guest:guest@localhost:5672'],
-        queue: 'whatsapp_queue',
+        queue: 'mail_queue',
         queueOptions: {
           durable: true,
         },
@@ -35,6 +35,6 @@ async function bootstrap() {
   );
 
   await app.listen();
-  console.log('WhatsApp microservice is running...');
+  console.log('Mail microservice is running...');
 }
 bootstrap();

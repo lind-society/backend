@@ -10,6 +10,9 @@
       "path": "./apps/whatsapp/tsconfig.app.json"
     },
     {
+      "path": "./apps/mail/tsconfig.app.json"
+    },
+    {
       "path": "./libs/common/tsconfig.lib.json"
     },
     {
@@ -23,6 +26,9 @@
     },
     {
       "path": "./libs/whatsapp-client/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/mail-client/tsconfig.lib.json"
     }
   ]
 }

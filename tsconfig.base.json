@@ -28,8 +28,11 @@
       "@libs/rabbitmq/*": ["libs/rabbitmq/src/*"],
       "@libs/whatsapp-client": ["libs/whatsapp-client/src"],
       "@libs/whatsapp-client/*": ["libs/whatsapp-client/src/*"],
+      "@libs/mail-client": ["libs/mail-client/src"],
+      "@libs/mail-client/*": ["libs/mail-client/src/*"],
       "@apps/main/*": ["apps/main/src/*"],
-      "@apps/whatsapp/*": ["apps/whatsapp/src/*"]
+      "@apps/whatsapp/*": ["apps/whatsapp/src/*"],
+      "@apps/mail/*": ["apps/mail/src/*"]
     }
   }
 }

@@ -1,8 +1,7 @@
-import { envPaths } from '@apps/main/common/constants';
+import { envPaths } from '@libs/common/constants';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { validateEnv } from './config/env.config';
-import { whatsappConfig } from './config/whatsapp.config';
+import { validateEnv, whatsappConfig } from './config';
 import { MainWhatsappClientProvider } from './providers/clients';
 import { WhatsappServiceController } from './whatsapp.controller';
 import { WhatsAppClientFactory } from './whatsapp.factory';

@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^7.15.2",
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.0.10",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.10",
@@ -46,11 +47,13 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "multer": "^1.4.5-lts.1",
     "nest-winston": "^1.10.2",
     "nestjs-paginate": "^11.0.1",
+    "nodemailer": "^7.0.2",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pg": "^8.13.3",
@@ -121,6 +124,7 @@
       "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
       "^@app/config(|/.*)$": "<rootDir>/libs/config/src/$1",
       "^@app/logger(|/.*)$": "<rootDir>/libs/logger/src/$1",
+      "^@app/mail-client(|/.*)$": "<rootDir>/libs/mail-client/src/$1",
       "^@app/rabbitmq(|/.*)$": "<rootDir>/libs/rabbitmq/src/$1",
       "^@app/whatsapp-client(|/.*)$": "<rootDir>/libs/whatsapp-client/src/$1"
     }
@@ -129,6 +133,7 @@
     "onlyBuiltDependencies": [
       "@nestjs/core",
       "@scarf/scarf",
+      "@swc/core",
       "bcrypt",
       "puppeteer"
     ]

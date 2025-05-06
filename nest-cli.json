@@ -28,15 +28,6 @@
         "tsConfigPath": "libs/config/tsconfig.lib.json"
       }
     },
-    "main": {
-      "type": "application",
-      "root": "apps/main",
-      "entryFile": "main",
-      "sourceRoot": "apps/main/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/main/tsconfig.app.json"
-      }
-    },
     "logger": {
       "type": "library",
       "root": "libs/logger",
@@ -44,6 +35,41 @@
       "sourceRoot": "libs/logger/src",
       "compilerOptions": {
         "tsConfigPath": "libs/logger/tsconfig.lib.json"
+      }
+    },
+    "mail": {
+      "type": "application",
+      "root": "apps/mail",
+      "entryFile": "main",
+      "sourceRoot": "apps/mail/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/mail/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../views",
+            "outDir": "dist/apps/mail/apps/mail/views",
+            "watchAssets": true
+          }
+        ],
+        "watchAssets": true
+      }
+    },
+    "mail-client": {
+      "type": "library",
+      "root": "libs/mail-client",
+      "entryFile": "index",
+      "sourceRoot": "libs/mail-client/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/mail-client/tsconfig.lib.json"
+      }
+    },
+    "main": {
+      "type": "application",
+      "root": "apps/main",
+      "entryFile": "main",
+      "sourceRoot": "apps/main/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/main/tsconfig.app.json"
       }
     },
     "rabbitmq": {
@@ -55,15 +81,6 @@
         "tsConfigPath": "libs/rabbitmq/tsconfig.lib.json"
       }
     },
-    "whatsapp-client": {
-      "type": "library",
-      "root": "libs/whatsapp-client",
-      "entryFile": "index",
-      "sourceRoot": "libs/whatsapp-client/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/whatsapp-client/tsconfig.lib.json"
-      }
-    },
     "whatsapp": {
       "type": "application",
       "root": "apps/whatsapp",
@@ -71,6 +88,15 @@
       "sourceRoot": "apps/whatsapp/src",
       "compilerOptions": {
         "tsConfigPath": "apps/whatsapp/tsconfig.app.json"
+      }
+    },
+    "whatsapp-client": {
+      "type": "library",
+      "root": "libs/whatsapp-client",
+      "entryFile": "index",
+      "sourceRoot": "libs/whatsapp-client/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/whatsapp-client/tsconfig.lib.json"
       }
     }
   }
