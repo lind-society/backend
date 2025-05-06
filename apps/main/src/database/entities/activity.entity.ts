@@ -9,8 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ActivityBooking } from './activity-booking.entity';
 import { ActivityCategory } from './activity-category.entity';
-import { Booking } from './booking.entity';
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
@@ -18,8 +18,8 @@ import { DiscountType } from './shared-enum.entity';
 import { PlaceNearby } from './shared-interface.entity';
 
 export enum ActivityDuration {
-  Temporary = 'temporary',
-  Permanent = 'permanent',
+  Temporary = 'Temporary',
+  Permanent = 'Permanent',
 }
 
 @Entity({ name: 'activities' })
@@ -30,29 +30,18 @@ export class Activity {
   @Column()
   name!: string;
 
-  @Column({ name: 'secondary_name', nullable: true })
-  secondaryName!: string | null;
+  @Column({ name: 'secondary_name' })
+  secondaryName!: string;
 
-  @Column({ type: 'text', nullable: true })
-  highlight!: string | null;
+  @Column({ type: 'text' })
+  highlight!: string;
 
   @Column({
-    name: 'price_per_person',
     type: 'decimal',
     precision: 15,
     scale: 2,
-    nullable: true,
   })
-  pricePerPerson!: number | null;
-
-  @Column({
-    name: 'price_per_session',
-    type: 'decimal',
-    precision: 15,
-    scale: 2,
-    nullable: true,
-  })
-  pricePerSession!: number | null;
+  price!: number;
 
   @Column({
     name: 'discount_type',
@@ -67,7 +56,7 @@ export class Activity {
   discount!: number | null;
 
   @Column({
-    name: 'price_per_person_after_discount',
+    name: 'price_after_discount',
     type: 'decimal',
     precision: 15,
     scale: 2,
@@ -75,53 +64,35 @@ export class Activity {
     asExpression: `
       CASE 
         WHEN discount_type = 'fixed' THEN 
-          GREATEST(price_per_person - COALESCE(discount, 0), 0)
+          GREATEST(price - COALESCE(discount, 0), 0)
         ELSE 
-          GREATEST(price_per_person - (price_per_person * COALESCE(discount, 0) / 100), 0)
+          GREATEST(price - (price * COALESCE(discount, 0) / 100), 0)
       END
     `,
     nullable: true,
   })
-  pricePerPersonAfterDiscount!: number | null;
-
-  @Column({
-    name: 'price_per_session_after_discount',
-    type: 'decimal',
-    precision: 15,
-    scale: 2,
-    generatedType: 'STORED',
-    asExpression: `
-      CASE 
-        WHEN discount_type = 'fixed' THEN 
-          GREATEST(price_per_session - COALESCE(discount, 0), 0)
-        ELSE 
-          GREATEST(price_per_session - (price_per_session * COALESCE(discount, 0) / 100), 0)
-      END
-    `,
-    nullable: true,
-  })
-  pricePerSessionAfterDiscount!: number | null;
+  priceAfterDiscount!: number | null;
 
   @Column({ type: 'enum', enum: ActivityDuration })
   duration!: ActivityDuration;
 
-  @Column({ nullable: true })
-  address!: string | null;
+  @Column()
+  address!: string;
 
-  @Column({ nullable: true })
-  country!: string | null;
+  @Column()
+  country!: string;
 
-  @Column({ nullable: true })
-  state!: string | null;
+  @Column()
+  state!: string;
 
-  @Column({ nullable: true })
-  city!: string | null;
+  @Column()
+  city!: string;
 
-  @Column({ name: 'postal_code', nullable: true })
-  postalCode!: string | null;
+  @Column({ name: 'postal_code' })
+  postalCode!: string;
 
-  @Column({ name: 'map_link', nullable: true })
-  mapLink!: string | null;
+  @Column({ name: 'map_link' })
+  mapLink!: string;
 
   @Column({
     name: 'place_nearby',
@@ -142,14 +113,20 @@ export class Activity {
   @Column({ name: 'end_date', type: 'timestamptz', nullable: true })
   endDate!: Date | null;
 
-  @Column({ type: 'varchar', array: true, nullable: true })
-  photos!: string[] | null;
+  @Column({ name: 'daily_limit', type: 'integer' })
+  dailyLimit!: number;
 
-  @Column({ type: 'varchar', array: true, nullable: true })
+  @Column({ type: 'text', array: true })
+  photos!: string[];
+
+  @Column({ type: 'text', array: true, nullable: true })
   videos!: string[] | null;
 
-  @Column({ name: 'video_360', type: 'varchar', array: true, nullable: true })
+  @Column({ name: 'video_360', type: 'text', array: true, nullable: true })
   video360s!: string[] | null;
+
+  @Column({ name: 'floor_plans', type: 'text', array: true, nullable: true })
+  floorPlans!: string[] | null;
 
   @Column({
     name: 'average_rating',
@@ -160,32 +137,34 @@ export class Activity {
   })
   averageRating!: number | null;
 
-  @Column({ name: 'category_id', type: 'uuid' })
-  categoryId: string;
+  @Column({ name: 'category_id', type: 'uuid', nullable: true })
+  categoryId: string | null;
 
-  @Column({ name: 'currency_id', type: 'uuid' })
-  currencyId: string;
+  @Column({ name: 'currency_id', type: 'uuid', nullable: true })
+  currencyId: string | null;
 
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
 
-  @OneToMany(() => Booking, (booking) => booking.activity)
-  bookings: Booking[];
+  @OneToMany(() => ActivityBooking, (booking) => booking.activity)
+  bookings: ActivityBooking[];
 
   @OneToMany(() => Review, (review) => review.activity)
   reviews: Review[];
 
   @ManyToOne(() => ActivityCategory, {
     onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn({ name: 'category_id' })
-  category!: ActivityCategory;
+  category!: ActivityCategory | null;
 
   @ManyToOne(() => Currency, {
     onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn({ name: 'currency_id' })
-  currency!: Currency;
+  currency!: Currency | null;
 
   @ManyToOne(() => Owner, (owner) => owner.activities, {
     onDelete: 'SET NULL',

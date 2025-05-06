@@ -59,14 +59,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
       exception instanceof PayloadTooLargeException ||
       exception instanceof MulterError ||
       (exception instanceof BadRequestException &&
-        exception.message.includes('Unexpected field') &&
+        (exception.message.includes('Unexpected field') ||
+          exception.message.includes('Too many files')) &&
         exception.message.includes('file'))
     ) {
       exception instanceof MulterError
         ? console.error('Multer error')
-        : exception instanceof MulterError
-          ? console.error('Nest payload max limit error')
-          : console.error('Nest payload max size error');
+        : exception instanceof PayloadTooLargeException
+          ? console.error('Nest payload max size error')
+          : console.error('Nest payload max limit error');
 
       console.error('================\n');
 

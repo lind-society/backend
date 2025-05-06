@@ -13,6 +13,7 @@ import {
 import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsBoolean,
   IsEnum,
@@ -27,7 +28,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CreateFeatureDto } from '../../feature/dto';
-import { CreatePropertyFacililtyDto } from './create-property-facility.dto';
+import { CreatePropertyFacililtyPivotDto } from './create-property-facility-pivot.dto';
 import { PropertyWithRelationsDto } from './property.dto';
 
 export class CreatePropertyDto {
@@ -36,8 +37,8 @@ export class CreatePropertyDto {
   readonly name!: string;
 
   @IsString()
-  @IsOptional()
-  readonly secondaryName?: string;
+  @IsNotEmpty()
+  readonly secondaryName!: string;
 
   @Type(() => Number)
   @IsNumber(
@@ -45,11 +46,11 @@ export class CreatePropertyDto {
     { message: 'price must be a valid number' },
   )
   @Min(0, { message: 'minimum price is 0' })
-  @IsOptional()
-  readonly price?: number;
+  @IsNotEmpty()
+  readonly price!: number;
 
   @IsEnum(DiscountType, {
-    message: `discount type be one of: ${Object.values(DiscountType).join(', ')}`,
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
   })
   @IsOptional()
   discountType?: DiscountType;
@@ -72,40 +73,41 @@ export class CreatePropertyDto {
   readonly ownershipType!: PropertyOwnershipType;
 
   @IsString()
-  @IsOptional()
-  readonly highlight?: string;
+  @IsNotEmpty()
+  readonly highlight!: string;
 
   @IsString()
-  @IsOptional()
-  readonly address?: string;
+  @IsNotEmpty()
+  readonly address!: string;
 
   @IsString()
-  @IsOptional()
-  readonly country?: string;
+  @IsNotEmpty()
+  readonly country!: string;
 
   @IsString()
-  @IsOptional()
-  readonly state?: string;
+  @IsNotEmpty()
+  readonly state!: string;
 
   @IsString()
-  @IsOptional()
-  readonly city?: string;
+  @IsNotEmpty()
+  readonly city!: string;
 
   @IsNumberString()
-  @IsOptional()
-  readonly postalCode?: string;
+  @IsNotEmpty()
+  readonly postalCode!: string;
 
   @IsString()
-  @IsOptional()
-  readonly mapLink?: string;
+  @IsNotEmpty()
+  readonly mapLink!: string;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: PlaceNearbyDto[];
+  readonly placeNearby!: PlaceNearbyDto[];
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'at least 1 photo is required' })
   @IsString({ each: true })
   @IsOptional()
   readonly photos?: string[];
@@ -113,12 +115,17 @@ export class CreatePropertyDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly videos?: string[];
+  readonly videos?: string[] | null;
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   readonly video360s?: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  readonly floorPlans?: string[];
 
   @IsBoolean()
   @IsNotEmpty()
@@ -129,26 +136,29 @@ export class CreatePropertyDto {
   readonly currencyId!: string;
 
   @IsUUID()
-  @IsOptional()
-  readonly ownerId?: string;
+  @IsNotEmpty()
+  readonly ownerId!: string;
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'at least 1 facility is required' })
   @ValidateNested({ each: true })
-  @Type(() => CreatePropertyFacililtyDto)
+  @Type(() => CreatePropertyFacililtyPivotDto)
   @IsOptional()
-  readonly facilities?: CreatePropertyFacililtyDto[];
+  readonly facilities!: CreatePropertyFacililtyPivotDto[];
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'at least 1 additional is required' })
   @ValidateNested({ each: true })
   @Type(() => CreateAdditionalDto)
   @IsOptional()
-  readonly additionals?: CreateAdditionalDto[];
+  readonly additionals!: CreateAdditionalDto[];
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'at least 1 feature is required' })
   @ValidateNested({ each: true })
   @Type(() => CreateFeatureDto)
   @IsOptional()
-  readonly features?: CreateFeatureDto[];
+  readonly features!: CreateFeatureDto[];
 }
 
 export class CreatePropertySuccessResponse

@@ -3,17 +3,15 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Icon } from './shared-interface.entity';
 import { VillaPolicyPivot } from './villa-policy-pivot.entity';
-
-export enum VillaPolicyType {
-  HouseRules = 'house rules',
-  PaymentTerms = 'payment terms',
-}
+import { VillaPolicyType } from './villa-policy-type.entity';
 
 @Entity({ name: 'villa_policies' })
 export class VillaPolicy {
@@ -23,8 +21,8 @@ export class VillaPolicy {
   @Column()
   name!: string;
 
-  @Column({ type: 'enum', enum: VillaPolicyType })
-  type!: VillaPolicyType;
+  @Column({ name: 'type_id', type: 'uuid' })
+  typeId!: string;
 
   @Column({ type: 'text', nullable: true })
   description!: string | null;
@@ -40,6 +38,12 @@ export class VillaPolicy {
     (villaPolicyPivot) => villaPolicyPivot.policy,
   )
   villaPolicies!: VillaPolicyPivot[];
+
+  @ManyToOne(() => VillaPolicyType, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'type_id' })
+  type!: VillaPolicyType;
 
   @CreateDateColumn({
     name: 'created_at',

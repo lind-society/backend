@@ -1,4 +1,4 @@
-import { Public } from '@apps/main/common/decorators';
+import { JwtAuthGuard } from '@apps/main/modules/auth/guards';
 import { DeleteResponse } from '@apps/main/modules/shared/dto/custom-responses';
 import {
   Body,
@@ -11,6 +11,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { CurrencyConverterService } from './currency-converter.service';
@@ -25,6 +26,7 @@ import {
   UpdateCurrencyConverterSuccessResponse,
 } from './dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('currency-converters')
 export class CurrencyConverterController {
   constructor(
@@ -47,7 +49,6 @@ export class CurrencyConverterController {
     return new CreateCurrencyConverterSuccessResponse(result);
   }
 
-  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.currencyConverterService.findAll(query);
@@ -55,7 +56,6 @@ export class CurrencyConverterController {
     return new GetCurrencyConvertersSuccessResponse(result);
   }
 
-  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.currencyConverterService.findOne(id);

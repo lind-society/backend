@@ -108,22 +108,47 @@ export class PriceConverterInterceptor implements NestInterceptor {
         'pricePerSessionAfterDiscount',
       ];
 
-      const villaPriceFields = ['priceDaily', 'priceMonthly', 'priceYearly'];
-      const villaDiscountFields = [
-        'discountDaily',
-        'discountMonthly',
-        'discountYearly',
-      ];
+      const villaPriceFields = ['priceMonthly', 'priceYearly'];
+      const villaDiscountFields = ['discountMonthly', 'discountYearly'];
       const villaPriceAfterDiscountFields = [
-        'priceDailyAfterDiscount',
         'priceMonthlyAfterDiscount',
         'priceYearlyAfterDiscount',
+      ];
+      const villaPriceRateFields = [
+        'lowSeasonPriceRate',
+        'highSeasonPriceRate',
+        'peakSeasonPriceRate',
+      ];
+      const villaDailyBasePriceFields = [
+        'dailyBasePrice',
+        'dailyBasePriceAfterSeasonRate',
       ];
 
       // Format all villa discount fields as strings
       for (const discountField of villaDiscountFields) {
         if (obj[discountField] !== undefined && obj[discountField] !== null) {
           converted[discountField] = this._formatDiscount(obj[discountField]);
+        }
+      }
+
+      // Format all villa price rate fields as strings
+      for (const priceRateField of villaPriceRateFields) {
+        if (obj[priceRateField] !== undefined && obj[priceRateField] !== null) {
+          converted[priceRateField] = this._formatDiscount(obj[priceRateField]);
+        }
+      }
+
+      // Format all villa daily base price fields
+      for (const dailyBasePriceField of villaDailyBasePriceFields) {
+        if (
+          obj[dailyBasePriceField] !== undefined &&
+          obj[dailyBasePriceField] !== null
+        ) {
+          converted[dailyBasePriceField] = formatPrice(
+            obj[dailyBasePriceField],
+            allowDecimal,
+            allowRound,
+          );
         }
       }
 
@@ -328,22 +353,47 @@ export class PriceConverterInterceptor implements NestInterceptor {
         'pricePerSessionAfterDiscount',
       ];
 
-      const villaPriceFields = ['priceDaily', 'priceMonthly', 'priceYearly'];
-      const villaDiscountFields = [
-        'discountDaily',
-        'discountMonthly',
-        'discountYearly',
-      ];
+      const villaPriceFields = ['priceMonthly', 'priceYearly'];
+      const villaDiscountFields = ['discountMonthly', 'discountYearly'];
       const villaPriceAfterDiscountFields = [
-        'priceDailyAfterDiscount',
         'priceMonthlyAfterDiscount',
         'priceYearlyAfterDiscount',
+      ];
+      const villaPriceRateFields = [
+        'lowSeasonPriceRate',
+        'highSeasonPriceRate',
+        'peakSeasonPriceRate',
+      ];
+      const villaDailyBasePriceFields = [
+        'dailyBasePrice',
+        'dailyBasePriceAfterSeasonRate',
       ];
 
       // Format all villa discount fields as strings
       for (const discountField of villaDiscountFields) {
         if (obj[discountField] !== undefined && obj[discountField] !== null) {
           converted[discountField] = this._formatDiscount(obj[discountField]);
+        }
+      }
+
+      // Format all villa price rate fields as strings
+      for (const priceRateField of villaPriceRateFields) {
+        if (obj[priceRateField] !== undefined && obj[priceRateField] !== null) {
+          converted[priceRateField] = this._formatDiscount(obj[priceRateField]);
+        }
+      }
+
+      // Format all villa daily base price fields
+      for (const dailyBasePriceField of villaDailyBasePriceFields) {
+        if (
+          obj[dailyBasePriceField] !== undefined &&
+          obj[dailyBasePriceField] !== null
+        ) {
+          converted[dailyBasePriceField] = formatPrice(
+            obj[dailyBasePriceField],
+            allowDecimal,
+            allowRound,
+          );
         }
       }
 

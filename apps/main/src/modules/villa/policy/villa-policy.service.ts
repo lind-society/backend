@@ -18,6 +18,7 @@ export class VillaPolicyService {
     @InjectRepository(VillaPolicy)
     private villaPolicyRepository: Repository<VillaPolicy>,
   ) {}
+
   async create(payload: CreateVillaPolicyDto): Promise<VillaPolicyDto> {
     const villaPolicy = this.villaPolicyRepository.create(payload);
 
@@ -67,7 +68,7 @@ export class VillaPolicyService {
   ): Promise<VillaPolicyWithRelationsDto> {
     await this.findOne(id);
 
-    await this.update(id, payload);
+    await this.villaPolicyRepository.update(id, payload);
 
     return await this.findOne(id);
   }
@@ -75,6 +76,6 @@ export class VillaPolicyService {
   async remove(id: string): Promise<void> {
     await this.findOne(id);
 
-    await this.remove(id);
+    await this.villaPolicyRepository.delete(id);
   }
 }

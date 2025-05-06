@@ -1,3 +1,5 @@
+import { Public } from '@apps/main/common/decorators';
+import { JwtAuthGuard } from '@apps/main/modules/auth/guards';
 import { DeleteResponse } from '@apps/main/modules/shared/dto/custom-responses';
 import {
   Body,
@@ -8,6 +10,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { BookingCustomerService } from './booking-customer.service';
@@ -20,6 +23,7 @@ import {
   UpdateBookingCustomerSuccessResponse,
 } from './dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('booking-customers')
 export class BookingCustomerController {
   constructor(
@@ -33,6 +37,7 @@ export class BookingCustomerController {
     return new CreateBookingCustomerSuccessResponse(bookingCustomer);
   }
 
+  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const bookingCustomers = await this.bookingCustomerService.findAll(query);
@@ -40,6 +45,7 @@ export class BookingCustomerController {
     return new GetBookingCustomersSuccessResponse(bookingCustomers);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const bookingCustomer = await this.bookingCustomerService.findOne(id);

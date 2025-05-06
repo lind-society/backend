@@ -28,6 +28,16 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
       message = sanitizePostgresqlErrorResponse(
         driverError?.detail ?? 'duplicated entry',
       );
+    } else if (errorCode === PostgreSqlErrorCode.NotFound) {
+      responseCode = HttpStatus.NOT_FOUND;
+      message = sanitizePostgresqlErrorResponse(
+        driverError?.detail ?? 'not found',
+      );
+    } else if (errorCode === PostgreSqlErrorCode.RelationNotFound) {
+      responseCode = HttpStatus.BAD_REQUEST;
+      message = sanitizePostgresqlErrorResponse(
+        driverError?.detail ?? 'bad request',
+      );
     }
 
     console.error(exception);

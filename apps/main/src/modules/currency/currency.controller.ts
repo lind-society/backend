@@ -35,7 +35,6 @@ export class CurrencyController {
     return new CreateCurrencySuccessResponse(result);
   }
 
-  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.currencyService.findAll(query);
@@ -43,7 +42,6 @@ export class CurrencyController {
     return new GetCurrenciesSuccessResponse(result);
   }
 
-  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.currencyService.findOne(id);

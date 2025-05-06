@@ -18,24 +18,24 @@ export class RegionController {
 
   @Get('provinces')
   async getProvince(
-    @Query('countryId') countryId: string,
     @Query('country') country: string,
+    @Query('countryId') countryId: string,
   ) {
     return await this.regionService.getProvince(countryId, country);
   }
 
   @Get('cities')
   async getCity(
-    @Query('province') provinceId: string,
     @Query('country') country: string,
+    @Query('provinceId') provinceId: string,
   ) {
     return await this.regionService.getCity(provinceId, country);
   }
 
   @Get('districts')
   async getDistrict(
-    @Query('city') cityId: string,
     @Query('country') country: string,
+    @Query('cityId') cityId: string,
   ) {
     return await this.regionService.getDistrict(cityId, country);
   }
@@ -43,7 +43,7 @@ export class RegionController {
   @Get('sub-districts')
   async getSubDistrict(
     @Query('country') country: string,
-    @Query('district') districtId: string,
+    @Query('districtId') districtId: string,
   ) {
     return await this.regionService.getSubDistrict(districtId, country);
   }

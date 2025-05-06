@@ -9,20 +9,26 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import { ActivityService } from './activity.service';
 import {
   CreateActivityDto,
   CreateActivitySuccessResponse,
   GetActivitiesSuccessResponse,
+  GetActivityBestSellerQueryDto,
+  GetActivityBestSellerSuccessResponse,
   GetActivitySuccessResponse,
   UpdateActivityDto,
   UpdateActivitySuccessResponse,
 } from './dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('activities')
 @UseInterceptors(PriceConverterInterceptor)
 export class ActivityController {
@@ -33,6 +39,14 @@ export class ActivityController {
     const result = await this.activityService.create(payload);
 
     return new CreateActivitySuccessResponse(result);
+  }
+
+  @Public()
+  @Get('/best-seller')
+  async findBestSeller(@Query() query: GetActivityBestSellerQueryDto) {
+    const result = await this.activityService.findBestSeller(query.option);
+
+    return new GetActivityBestSellerSuccessResponse(result, query.option);
   }
 
   @Public()

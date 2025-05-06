@@ -6,8 +6,8 @@ const {
   PHOTOS_LIMIT_SIZE,
   VIDEOS_LIMIT_QUANTITY,
   VIDEOS_LIMIT_SIZE,
-  VIDEO360S_LIMIT_QUANTITY,
-  VIDEO360S_LIMIT_SIZE,
+  VIDEO_360S_LIMIT_QUANTITY,
+  VIDEO_360S_LIMIT_SIZE,
 } = envValues;
 
 export const fileConfig = registerAs('file', () => ({
@@ -20,7 +20,7 @@ export const fileConfig = registerAs('file', () => ({
     limitSize: VIDEOS_LIMIT_SIZE,
   },
   video360s: {
-    limitQuantity: VIDEO360S_LIMIT_QUANTITY,
-    limitSize: VIDEO360S_LIMIT_SIZE,
+    limitQuantity: VIDEO_360S_LIMIT_QUANTITY,
+    limitSize: VIDEO_360S_LIMIT_SIZE,
   },
 }));

@@ -49,7 +49,8 @@ export class BookingCustomerService {
         },
         searchableColumns: ['name', 'email', 'phoneNumber'],
         relations: {
-          bookings: true,
+          activityBookings: true,
+          villaBookings: true,
         },
       },
     );
@@ -66,7 +67,8 @@ export class BookingCustomerService {
         id,
       },
       relations: {
-        bookings: true,
+        activityBookings: true,
+        villaBookings: true,
       },
     };
 

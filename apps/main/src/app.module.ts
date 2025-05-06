@@ -6,11 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envPaths } from './common/constants';
+import { ConfigHelper } from './common/helpers/config-helper';
 import {
   appConfig,
   currencyConfig,
   databaseConfig,
   fileConfig,
+  frontEndConfig,
   gcpConfig,
   jwtConfig,
   postalCodeConfig,
@@ -27,6 +29,7 @@ import { BookingModule } from './modules/booking/booking.module';
 import { CurrencyModule } from './modules/currency/currency.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { OwnerModule } from './modules/owner/owner.module';
+import { PackageModule } from './modules/package/package.module';
 import { PropertyModule } from './modules/property/property.module';
 import { ReviewModule } from './modules/review/review.module';
 import { AxiosModule } from './modules/shared/axios/axios.module';
@@ -49,6 +52,7 @@ import { VillaModule } from './modules/villa/villa.module';
         currencyConfig,
         databaseConfig,
         fileConfig,
+        frontEndConfig,
         gcpConfig,
         jwtConfig,
         postalCodeConfig,
@@ -86,8 +90,10 @@ import { VillaModule } from './modules/villa/villa.module';
     RegionModule,
     VillaModule,
     ReviewModule,
+    PackageModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ConfigHelper],
+  exports: [ConfigHelper],
 })
 export class AppModule {}

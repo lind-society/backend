@@ -35,33 +35,41 @@ export class CreateReviewDto {
   readonly message!: string;
 
   @IsUUID()
-  @IsNotEmpty()
-  readonly bookingId!: string;
+  @IsOptional()
+  readonly activityBookingId?: string;
 
   @IsUUID()
   @IsOptional()
-  readonly activityId?: string;
-
-  @IsUUID()
-  @IsOptional()
-  readonly propertyId?: string;
+  readonly villaBookingId?: string;
 
   @IsUUID()
   @IsOptional()
   readonly villaId?: string;
 
-  @ValidateIf((o) => !o.activityId && !o.propertyId && !o.villaId)
+  @IsUUID()
+  @IsOptional()
+  readonly activityId?: string;
+
+  @ValidateIf((o) => !o.activityBookingId && !o.villaBookingId)
   @IsNotEmpty({
     message:
-      'At least one of activityId, propertyId, or villaId must be provided',
+      'At least one of activityBookingId or villaBookingId must be provided',
+  })
+  readonly _atLeastOneBookingIdRequired?: string;
+
+  @Validate(OnlyOneFieldAllowedConstraint, [
+    'activityBookingId',
+    'villaBookingId',
+  ])
+  readonly _onlyOneBookingIdAllowed?: string;
+
+  @ValidateIf((o) => !o.activityId && !o.villaId)
+  @IsNotEmpty({
+    message: 'At least one of activityId or villaId must be provided',
   })
   readonly _atLeastOneIdRequired?: string;
 
-  @Validate(OnlyOneFieldAllowedConstraint, [
-    'activityId',
-    'propertyId',
-    'villaId',
-  ])
+  @Validate(OnlyOneFieldAllowedConstraint, ['activityId', 'villaId'])
   readonly _onlyOneIdAllowed?: string;
 }
 

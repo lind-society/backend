@@ -4,11 +4,11 @@ import {
   DiscountType,
   PlaceNearby,
 } from '@apps/main/database/entities';
-import { BookingDto } from '@apps/main/modules/booking/dto';
+import { ActivityBookingDto } from '@apps/main/modules/booking/activity-booking/dto';
 import { CurrencyDto } from '@apps/main/modules/currency/dto';
 import { OwnerDto } from '@apps/main/modules/owner/dto';
 import { ReviewDto } from '@apps/main/modules/review/dto';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { ActivityCategoryDto } from '../category/dto';
 
 export interface IActivityDto
@@ -21,28 +21,26 @@ export interface IActivityWithRelationsDto extends IActivityDto {
   category?: ActivityCategoryDto;
   currency?: CurrencyDto;
   owner?: OwnerDto;
-  bookings?: BookingDto[];
+  bookings?: ActivityBookingDto[];
   reviews?: ReviewDto[];
 }
 
 export class ActivityDto implements IActivityDto {
   readonly id!: string;
   readonly name!: string;
-  readonly secondaryName!: string | null;
-  readonly highlight!: string | null;
-  readonly pricePerPerson!: number | null;
-  readonly pricePerSession!: number | null;
+  readonly secondaryName!: string;
+  readonly price!: number;
   readonly discountType!: DiscountType | null;
   readonly discount!: number | null;
-  readonly pricePerPersonAfterDiscount!: number | null;
-  readonly pricePerSessionAfterDiscount!: number | null;
+  readonly priceAfterDiscount!: number;
   readonly duration!: ActivityDuration;
-  readonly address!: string | null;
-  readonly country!: string | null;
-  readonly state!: string | null;
-  readonly city!: string | null;
-  readonly postalCode!: string | null;
-  readonly mapLink!: string | null;
+  readonly highlight!: string;
+  readonly address!: string;
+  readonly country!: string;
+  readonly state!: string;
+  readonly city!: string;
+  readonly postalCode!: string;
+  readonly mapLink!: string;
   readonly placeNearby!: PlaceNearby[] | null;
 
   @Transform(({ value }) => (value ? value.slice(0, 5) : null))
@@ -53,12 +51,15 @@ export class ActivityDto implements IActivityDto {
 
   readonly startDate!: Date | null;
   readonly endDate!: Date | null;
+  readonly dailyLimit!: number;
+  todayBooking?: number | null;
   readonly photos!: string[];
-  readonly videos!: string[];
-  readonly video360s!: string[];
+  readonly videos!: string[] | null;
+  readonly video360s!: string[] | null;
+  readonly floorPlans!: string[] | null;
   readonly averageRating!: number | null;
-  readonly categoryId!: string;
-  readonly currencyId!: string;
+  readonly categoryId!: string | null;
+  readonly currencyId!: string | null;
   readonly ownerId!: string | null;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
@@ -71,8 +72,7 @@ export class ActivityWithRelationsDto
 {
   readonly category?: ActivityCategoryDto;
   readonly currency?: CurrencyDto;
-  @Type(() => OwnerDto)
   readonly owner?: OwnerDto;
-  readonly bookings?: BookingDto[];
+  readonly bookings?: ActivityBookingDto[];
   readonly reviews?: ReviewDto[];
 }

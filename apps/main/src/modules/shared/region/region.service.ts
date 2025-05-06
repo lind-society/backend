@@ -66,7 +66,7 @@ export class RegionService {
         payload.subDistrict,
       );
     } else {
-      if (!payload.subDistrict || !payload.district || !payload.city) {
+      if (!payload.subDistrict && !payload.district && !payload.city) {
         throw new BadRequestException(
           'please input region detail (subDistrict, district, or city',
         );

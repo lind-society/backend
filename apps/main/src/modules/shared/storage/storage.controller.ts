@@ -1,4 +1,13 @@
-import { megabyteToByte } from '@apps/main/common/helpers';
+import {
+  floorPlansConfig,
+  photosConfig,
+  video360sConfig,
+  videosConfig,
+} from '@apps/main/common/constants';
+import {
+  imageFileFilter,
+  videoFileFilter,
+} from '@apps/main/common/validations/file-allowed.validation';
 import {
   Body,
   Controller,
@@ -24,17 +33,13 @@ export class StorageController {
 
   @Post('photos')
   @UseInterceptors(
-    FilesInterceptor(
-      'files',
-      parseInt(process.env.PHOTOS_LIMIT_QUANTITY, 10) | 10,
-      {
-        limits: {
-          fileSize:
-            megabyteToByte(parseInt(process.env.PHOTOS_LIMIT_SIZE, 10)) |
-            megabyteToByte(2),
-        },
+    FilesInterceptor('files', photosConfig.quantity, {
+      limits: {
+        files: photosConfig.quantity,
+        fileSize: photosConfig.size,
       },
-    ),
+      fileFilter: imageFileFilter,
+    }),
   )
   async uploadPhotos(
     @UploadedFiles() files: Express.Multer.File[],
@@ -49,17 +54,13 @@ export class StorageController {
 
   @Post('videos')
   @UseInterceptors(
-    FilesInterceptor(
-      'files',
-      parseInt(process.env.VIDEOS_LIMIT_QUANTITY, 10) | 5,
-      {
-        limits: {
-          fileSize:
-            megabyteToByte(parseInt(process.env.VIDEOS_LIMIT_SIZE, 10)) |
-            megabyteToByte(20),
-        },
+    FilesInterceptor('files', videosConfig.quantity, {
+      limits: {
+        files: videosConfig.quantity,
+        fileSize: videosConfig.size,
       },
-    ),
+      fileFilter: videoFileFilter,
+    }),
   )
   async uploadVideos(
     @UploadedFiles() files: Express.Multer.File[],
@@ -74,19 +75,36 @@ export class StorageController {
 
   @Post('video360s')
   @UseInterceptors(
-    FilesInterceptor(
-      'files',
-      parseInt(process.env.VIDEO360S_LIMIT_QUANTITY, 10) | 5,
-      {
-        limits: {
-          fileSize:
-            megabyteToByte(parseInt(process.env.VIDEO360S_LIMIT_SIZE, 10)) |
-            megabyteToByte(30),
-        },
+    FilesInterceptor('files', video360sConfig.quantity, {
+      limits: {
+        files: video360sConfig.quantity,
+        fileSize: video360sConfig.size,
       },
-    ),
+      fileFilter: videoFileFilter,
+    }),
   )
   async uploadVideo360s(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() payload: UploadFileRequestDto,
+  ) {
+    const receivedFiles = this.storageService.mapFiles(files, payload.key);
+
+    const result = await this.storageService.uploadFiles(receivedFiles);
+
+    return new UploadFileSuccessResponse(result);
+  }
+
+  @Post('floor-plans')
+  @UseInterceptors(
+    FilesInterceptor('files', floorPlansConfig.quantity, {
+      limits: {
+        files: floorPlansConfig.quantity,
+        fileSize: floorPlansConfig.size,
+      },
+      fileFilter: imageFileFilter,
+    }),
+  )
+  async uploadFloorPlans(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() payload: UploadFileRequestDto,
   ) {

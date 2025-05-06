@@ -1,4 +1,3 @@
-import { Public } from '@apps/main/common/decorators';
 import { JwtAuthGuard } from '@apps/main/modules/auth/guards';
 import { DeleteResponse } from '@apps/main/modules/shared/dto/custom-responses';
 import {
@@ -37,7 +36,6 @@ export class ActivityCategoryController {
     return new CreateActivityCategorySuccessResponse(activityCategory);
   }
 
-  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const categories = await this.activityCategoryService.findAll(query);
@@ -45,7 +43,6 @@ export class ActivityCategoryController {
     return new GetActivityCategoriesSuccessResponse(categories);
   }
 
-  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const activityCategory = await this.activityCategoryService.findOne(id);

@@ -1,4 +1,8 @@
 import { WinstonLoggerService } from '@libs/logger';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 import {
   ClassSerializerInterceptor,
   UnprocessableEntityException,
@@ -8,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
+import { Environment } from './common/enums';
 import { validationExceptionFactory } from './common/factories';
 import { HttpExceptionFilter } from './common/filters';
 import { winstonConfig } from './config/winston-logger.config';
@@ -21,15 +26,19 @@ async function bootstrap() {
   const configService: ConfigService = app.get<ConfigService>(ConfigService);
   const httpAdapterHost = app.get(HttpAdapterHost);
 
-  const port = configService.get('app.port');
-  const apiVersion = configService.get('app.apiVersion');
-  const host = configService.get('app.host');
-  const env = configService.get('app.env');
+  const port = configService.get<string>('app.port');
+  const apiVersion = configService.get<string>('app.apiVersion');
+  const host = configService.get<string>('app.host');
+  const env = configService.get<string>('app.env');
 
   app.setGlobalPrefix(`api/${apiVersion}`);
 
   app.enableCors({
-    origin: '*',
+    origin: [
+      configService.get<string>('frontend.development'),
+      configService.get<string>('frontend.staging'),
+      configService.get<string>('frontend.production'),
+    ],
     credentials: true,
   });
 
@@ -56,7 +65,7 @@ async function bootstrap() {
   await app.listen(port, () => {
     logger.log(`env : ${env}`);
 
-    env === 'development'
+    env === Environment.Development
       ? logger.log(`app running on : http://${host}:${port}`)
       : logger.log(`app running on : ${host}:${port}`);
   });

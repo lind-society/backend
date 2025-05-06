@@ -1,5 +1,4 @@
 import { DefaultHttpStatus } from '@apps/main/common/enums';
-import { VillaPolicyType } from '@apps/main/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -8,10 +7,10 @@ import {
 import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   ValidateNested,
 } from 'class-validator';
 import { VillaPolicyWithRelationsDto } from './villa-policy.dto';
@@ -21,9 +20,9 @@ export class CreateVillaPolicyDto {
   @IsNotEmpty()
   readonly name!: string;
 
-  @IsEnum(VillaPolicyType)
+  @IsUUID()
   @IsNotEmpty()
-  readonly type!: VillaPolicyType;
+  readonly typeId!: string;
 
   @IsString()
   @IsOptional()

@@ -1,11 +1,21 @@
 import { DefaultHttpStatus } from '@apps/main/common/enums';
+import { OnlyOneFieldAllowedConstraint } from '@apps/main/common/validations';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+  Validate,
+  ValidateIf,
+} from 'class-validator';
 import { BookingPaymentWithRelationsDto } from './booking-payment.dto';
 
 export class CreateBookingPaymentDto {
@@ -28,8 +38,25 @@ export class CreateBookingPaymentDto {
   readonly currencyId!: string;
 
   @IsUUID()
-  @IsNotEmpty()
-  readonly bookingId!: string;
+  @IsOptional()
+  readonly activityBookingId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  readonly villaBookingId?: string;
+
+  @ValidateIf((o) => !o.activityBookingId && !o.villaBookingId)
+  @IsNotEmpty({
+    message:
+      'At least one of activityBookingId or villaBookingId must be provided',
+  })
+  readonly _atLeastOneIdRequired?: string;
+
+  @Validate(OnlyOneFieldAllowedConstraint, [
+    'activityBookingId',
+    'villaBookingId',
+  ])
+  readonly _onlyOneIdAllowed?: never;
 }
 
 export class CreateBookingPaymentSuccessResponse

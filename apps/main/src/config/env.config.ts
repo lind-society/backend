@@ -65,6 +65,18 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
+  FE_DEVELOPMENT!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FE_STAGING!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FE_PRODUCTION!: string;
+
+  @IsString()
+  @IsNotEmpty()
   STORAGE_PROVIDER!: string;
 
   @IsString()
@@ -123,13 +135,13 @@ export class EnvironmentVariables {
   @Min(0)
   @Max(20)
   @IsNotEmpty()
-  VIDEO360S_LIMIT_QUANTITY!: number;
+  VIDEO_360S_LIMIT_QUANTITY!: number;
 
   @IsNumber()
   @Min(0)
   @Max(megabyteToByte(100))
   @IsNotEmpty()
-  VIDEO360S_LIMIT_SIZE!: number;
+  VIDEO_360S_LIMIT_SIZE!: number;
 
   @IsString()
   @IsNotEmpty()

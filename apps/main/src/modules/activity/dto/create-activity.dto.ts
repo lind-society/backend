@@ -1,6 +1,6 @@
 import {
   RegexValidator,
-  ValidateDiscountValueFromMultiplePrice,
+  ValidateDiscountValue,
 } from '@apps/main/common/decorators';
 import { DefaultHttpStatus } from '@apps/main/common/enums';
 import { ActivityDuration, DiscountType } from '@apps/main/database/entities';
@@ -12,6 +12,7 @@ import {
 import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsDate,
   IsEnum,
@@ -33,32 +34,21 @@ export class CreateActivityDto {
   readonly name!: string;
 
   @IsString()
-  @IsOptional()
-  readonly secondaryName?: string;
-
-  @IsString()
-  @IsOptional()
-  readonly highlight?: string;
+  @IsNotEmpty()
+  readonly secondaryName!: string;
 
   @Type(() => Number)
   @IsNumber(
     { allowNaN: false, allowInfinity: false },
-    { message: 'price per person must be a valid number' },
+    { message: 'price must be a valid number' },
   )
-  @Min(0, { message: 'minimum price per person is 0' })
-  @IsOptional()
-  readonly pricePerPerson?: number;
+  @Min(0, { message: 'minimum price is 0' })
+  @IsNotEmpty()
+  readonly price!: number;
 
-  @Type(() => Number)
-  @IsNumber(
-    { allowNaN: false, allowInfinity: false },
-    { message: 'price per session must be a valid number' },
-  )
-  @Min(0, { message: 'minimum price per session is 0' })
-  @IsOptional()
-  readonly pricePerSession?: number;
-
-  @IsEnum(DiscountType)
+  @IsEnum(DiscountType, {
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
   @IsOptional()
   discountType?: DiscountType;
 
@@ -71,11 +61,7 @@ export class CreateActivityDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @ValidateDiscountValueFromMultiplePrice(
-    'discountType',
-    ['pricePerPerson', 'pricePerSession'],
-    DiscountType,
-  )
+  @ValidateDiscountValue('discountType', 'price', DiscountType)
   @IsOptional()
   readonly discount?: number;
 
@@ -83,62 +69,75 @@ export class CreateActivityDto {
     message: `activity duration must be one of: ${Object.values(ActivityDuration).join(', ')}`,
   })
   @IsNotEmpty()
-  readonly duration?: ActivityDuration;
+  readonly duration!: ActivityDuration;
 
   @IsString()
-  @IsOptional()
-  readonly address?: string;
+  @IsNotEmpty()
+  readonly highlight!: string;
 
   @IsString()
-  @IsOptional()
-  readonly country?: string;
+  @IsNotEmpty()
+  readonly address!: string;
 
   @IsString()
-  @IsOptional()
-  readonly state?: string;
+  @IsNotEmpty()
+  readonly country!: string;
 
   @IsString()
-  @IsOptional()
-  readonly city?: string;
+  @IsNotEmpty()
+  readonly state!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly city!: string;
 
   @IsNumberString()
-  @IsOptional()
-  readonly postalCode?: string;
+  @IsNotEmpty()
+  readonly postalCode!: string;
 
   @IsString()
-  @IsOptional()
-  readonly mapLink?: string;
+  @IsNotEmpty()
+  readonly mapLink!: string;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: PlaceNearbyDto[];
+  readonly placeNearby!: PlaceNearbyDto[];
 
   @IsString()
   @RegexValidator('openingHour')
   @IsNotEmpty()
-  readonly openingHour?: string;
+  readonly openingHour!: string;
 
   @IsString()
   @RegexValidator('closingHour')
   @IsNotEmpty()
-  readonly closingHour?: string;
+  readonly closingHour!: string;
 
   @Type(() => Date)
   @IsDate({ message: 'start date must be a valid date' })
-  @IsOptional()
-  readonly startDate?: Date;
+  @IsNotEmpty()
+  readonly startDate!: Date;
 
   @Type(() => Date)
   @IsDate({ message: 'end date must be a valid date' })
-  @IsOptional()
-  readonly endDate?: Date;
+  @IsNotEmpty()
+  readonly endDate!: Date;
+
+  @Type(() => Number)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'daily limit must be a valid number' },
+  )
+  @Min(0, { message: 'minimum daily limit is 0' })
+  @IsNotEmpty()
+  readonly dailyLimit!: number;
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'at least 1 photo is required' })
   @IsString({ each: true })
-  @IsOptional()
-  readonly photos?: string[];
+  readonly photos!: string[];
 
   @IsArray()
   @IsString({ each: true })
@@ -150,17 +149,22 @@ export class CreateActivityDto {
   @IsOptional()
   readonly video360s?: string[];
 
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  readonly floorPlans?: string[];
+
   @IsUUID()
   @IsNotEmpty()
-  readonly categoryId?: string;
+  readonly categoryId!: string;
 
   @IsUUID()
   @IsNotEmpty()
   readonly currencyId!: string;
 
   @IsUUID()
-  @IsOptional()
-  readonly ownerId?: string;
+  @IsNotEmpty()
+  readonly ownerId!: string;
 }
 
 export class CreateActivitySuccessResponse

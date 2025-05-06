@@ -2,12 +2,9 @@ import {
   RegexValidator,
   ValidateDiscountValue,
 } from '@apps/main/common/decorators';
+import { ValidateRequiredVillaPolicies } from '@apps/main/common/decorators/validate-required-villa-policies.decorator';
 import { DefaultHttpStatus } from '@apps/main/common/enums';
-import {
-  DiscountType,
-  VillaAvailability,
-  VillaAvailabilityPerPrice,
-} from '@apps/main/database/entities';
+import { DiscountType, VillaAvailability } from '@apps/main/database/entities';
 import { CreateAdditionalDto } from '@apps/main/modules/additional/dto';
 import { CreateFeatureDto } from '@apps/main/modules/feature/dto';
 import {
@@ -18,9 +15,10 @@ import {
 import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsEnum,
-  IsInt,
   IsNotEmpty,
   IsNumber,
   IsNumberString,
@@ -32,18 +30,21 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CreateVillaPolicyDto } from '../policy/dto';
-import { CreateVillaFacililtyDto } from './create-villa-facility.dto';
+import { CreateVillaFacililtyPivotDto } from './create-villa-facility-pivot.dto';
 import { VillaWithRelationsDto } from './villa.dto';
 
-export class VillaAvailabilityPerPriceDto extends VillaAvailabilityPerPrice {
-  @IsEnum(VillaAvailability)
+export class VillaAvailabilityDto extends VillaAvailability {
+  @IsBoolean()
   @IsNotEmpty()
-  availability!: VillaAvailability;
+  daily!: boolean;
 
-  @IsInt()
-  @Min(0, { message: 'minimum quota in villa availability per price is 0' })
+  @IsBoolean()
   @IsNotEmpty()
-  quota!: number;
+  monthly!: boolean;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  yearly!: boolean;
 }
 
 export class CreateVillaDto {
@@ -52,20 +53,61 @@ export class CreateVillaDto {
   readonly name!: string;
 
   @IsString()
-  @IsOptional()
-  readonly secondaryName?: string;
+  @IsNotEmpty()
+  readonly secondaryName!: string;
 
-  @IsArray()
-  @IsEnum(VillaAvailability, { each: true })
-  @IsNotEmpty({ each: true })
-  @IsOptional()
-  readonly availability?: VillaAvailability[];
+  @ValidateNested()
+  @Type(() => VillaAvailabilityDto)
+  @IsNotEmpty()
+  readonly availability!: VillaAvailabilityDto;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0, { message: 'minimum daily price is 0' })
   @IsOptional()
-  readonly priceDaily?: number;
+  readonly dailyPrice?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum low season daily price is 0' })
+  @IsOptional()
+  readonly lowSeasonDailyPrice?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum high season daily price is 0' })
+  @IsOptional()
+  readonly highSeasonDailyPrice?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum peak season daily price is 0' })
+  @IsOptional()
+  readonly peakSeasonDailyPrice?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum daily price after discount is 0' })
+  @IsOptional()
+  dailyPriceAfterDiscount?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum low season daily price after discount is 0' })
+  @IsOptional()
+  lowSeasonDailyPriceAfterDiscount?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum high season daily price after discount is 0' })
+  @IsOptional()
+  highSeasonDailyPriceAfterDiscount?: number;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum peak season daily price after discount is 0' })
+  @IsOptional()
+  peakSeasonDailyPriceAfterDiscount?: number;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
@@ -79,33 +121,17 @@ export class CreateVillaDto {
   @IsOptional()
   readonly priceYearly?: number;
 
-  @IsEnum(DiscountType)
-  @IsOptional()
-  discountDailyType?: DiscountType;
-
-  @IsEnum(DiscountType)
+  @IsEnum(DiscountType, {
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
   @IsOptional()
   discountMonthlyType?: DiscountType;
 
-  @IsEnum(DiscountType)
+  @IsEnum(DiscountType, {
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
   @IsOptional()
   discountYearlyType?: DiscountType;
-
-  @ValidateIf(
-    (o) => o.discountDailyType !== null && o.discountDailyType !== undefined,
-  )
-  @IsNotEmpty({
-    message:
-      'discountDaily should be provided when discountDailyType is filled',
-  })
-  @Type(() => Number)
-  @IsNumber(
-    { allowNaN: false, allowInfinity: false },
-    { message: 'discountDaily must be a valid number' },
-  )
-  @ValidateDiscountValue('discountDailyType', 'priceDaily', DiscountType)
-  @IsOptional()
-  readonly discountDaily?: number;
 
   @ValidateIf(
     (o) =>
@@ -139,45 +165,57 @@ export class CreateVillaDto {
   @ValidateDiscountValue('discountYearlyType', 'priceyearly', DiscountType)
   readonly discountYearly?: number;
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => VillaAvailabilityPerPriceDto)
+  @Type(() => Number)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'availabilityQuotaPerMonth must be a valid number' },
+  )
+  @Min(0, { message: 'minimum availabilityQuotaPerMonth is 0' })
   @IsOptional()
-  readonly availabilityPerPrice?: VillaAvailabilityPerPriceDto[];
+  readonly availabilityQuotaPerMonth?: number;
+
+  @Type(() => Number)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'availabilityQuotaPerYear must be a valid number' },
+  )
+  @Min(0, { message: 'minimum availabilityQuotaPerYear is 0' })
+  @IsOptional()
+  readonly availabilityQuotaPerYear?: number;
 
   @IsString()
-  @IsOptional()
-  readonly highlight?: string;
+  @IsNotEmpty()
+  readonly highlight!: string;
 
   @IsString()
-  @IsOptional()
-  readonly address?: string;
+  @IsNotEmpty()
+  readonly address!: string;
 
   @IsString()
-  @IsOptional()
-  readonly country?: string;
+  @IsNotEmpty()
+  readonly country!: string;
 
   @IsString()
-  @IsOptional()
-  readonly state?: string;
+  @IsNotEmpty()
+  readonly state!: string;
 
   @IsString()
-  @IsOptional()
-  readonly city?: string;
+  @IsNotEmpty()
+  readonly city!: string;
 
   @IsNumberString()
-  @IsOptional()
-  readonly postalCode?: string;
+  @IsNotEmpty()
+  readonly postalCode!: string;
 
   @IsString()
-  @IsOptional()
-  readonly mapLink?: string;
+  @IsNotEmpty()
+  readonly mapLink!: string;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PlaceNearbyDto)
   @IsOptional()
-  readonly placeNearby?: PlaceNearbyDto[];
+  readonly placeNearby!: PlaceNearbyDto[];
 
   @IsString()
   @RegexValidator('checkInHour')
@@ -190,9 +228,9 @@ export class CreateVillaDto {
   readonly checkOutHour!: string;
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'at least 1 photo is required' })
   @IsString({ each: true })
-  @IsOptional()
-  readonly photos?: string[];
+  readonly photos!: string[];
 
   @IsArray()
   @IsString({ each: true })
@@ -204,37 +242,45 @@ export class CreateVillaDto {
   @IsOptional()
   readonly video360s?: string[];
 
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  readonly floorPlans?: string[];
+
   @IsUUID()
   @IsNotEmpty()
   readonly currencyId!: string;
 
   @IsUUID()
-  @IsOptional()
-  readonly ownerId?: string;
+  @IsNotEmpty()
+  readonly ownerId!: string;
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'at least 1 facility is required' })
   @ValidateNested({ each: true })
-  @Type(() => CreateVillaFacililtyDto)
-  @IsOptional()
-  readonly facilities?: CreateVillaFacililtyDto[];
+  @Type(() => CreateVillaFacililtyPivotDto)
+  readonly facilities!: CreateVillaFacililtyPivotDto[];
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'at least 1 additional is required' })
   @ValidateNested({ each: true })
   @Type(() => CreateAdditionalDto)
   @IsOptional()
-  readonly additionals?: CreateAdditionalDto[];
+  readonly additionals!: CreateAdditionalDto[];
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'at least 1 feature is required' })
   @ValidateNested({ each: true })
   @Type(() => CreateFeatureDto)
   @IsOptional()
-  readonly features?: CreateFeatureDto[];
+  readonly features!: CreateFeatureDto[];
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateVillaPolicyDto)
-  @IsOptional()
-  readonly policies?: CreateVillaPolicyDto[];
+  @ValidateRequiredVillaPolicies()
+  @IsNotEmpty()
+  readonly policies!: CreateVillaPolicyDto[];
 }
 
 export class CreateVillaSuccessResponse

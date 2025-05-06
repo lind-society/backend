@@ -1,8 +1,9 @@
-import { VillaPolicy, VillaPolicyType } from '@apps/main/database/entities';
+import { VillaPolicy } from '@apps/main/database/entities';
 import { IconDto } from '@apps/main/modules/shared/dto';
 import { VillaDto } from '../../dto';
 
-export interface IVillaPolicyDto extends Omit<VillaPolicy, 'villaPolicies'> {}
+export interface IVillaPolicyDto
+  extends Omit<VillaPolicy, 'villaPolicies' | 'type'> {}
 
 export interface IVillaPolicyWithRelationsDto extends IVillaPolicyDto {
   villas?: VillaDto[];
@@ -11,7 +12,7 @@ export interface IVillaPolicyWithRelationsDto extends IVillaPolicyDto {
 export class VillaPolicyDto implements IVillaPolicyDto {
   readonly id!: string;
   readonly name!: string;
-  readonly type!: VillaPolicyType;
+  readonly typeId!: string;
   readonly description!: string | null;
   readonly icon!: IconDto | null;
   readonly createdAt!: Date;

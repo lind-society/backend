@@ -1,3 +1,4 @@
+import { Public } from '@apps/main/common/decorators';
 import {
   Body,
   Controller,
@@ -6,8 +7,10 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreateReviewDto,
@@ -19,6 +22,7 @@ import {
 } from './dto';
 import { ReviewService } from './review.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
@@ -30,6 +34,7 @@ export class ReviewController {
     return new CreateReviewSuccessResponse(result);
   }
 
+  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const result = await this.reviewService.findAll(query);
@@ -37,6 +42,7 @@ export class ReviewController {
     return new GetReviewsSuccessResponse(result);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const result = await this.reviewService.findOne(id);

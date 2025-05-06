@@ -32,8 +32,8 @@ export class Owner {
   @Column({ type: 'enum', enum: OwnerType })
   type!: OwnerType;
 
-  @Column({ name: 'company_name', nullable: true })
-  companyName!: string | null;
+  @Column({ name: 'company_name' })
+  companyName!: string;
 
   @Column()
   email!: string;

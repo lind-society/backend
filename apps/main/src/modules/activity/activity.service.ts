@@ -1,17 +1,21 @@
+import { bestSellerLimit } from '@apps/main/common/constants';
+import { BestSeller } from '@apps/main/common/enums';
 import { paginateResponseMapper } from '@apps/main/common/helpers';
 import { Activity, DiscountType } from '@apps/main/database/entities';
+import { ActivityBookingService } from '@apps/main/modules/booking/activity-booking/activity-booking.service';
+import { CurrencyService } from '@apps/main/modules/currency/currency.service';
+import { OwnerService } from '@apps/main/modules/owner/owner.service';
+import { PaginateResponseDataProps } from '@apps/main/modules/shared/dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { EntityManager, Repository } from 'typeorm';
-import { CurrencyService } from '../currency/currency.service';
-import { OwnerService } from '../owner/owner.service';
-import { PaginateResponseDataProps } from '../shared/dto';
 import { ActivityCategoryService } from './category/activity-category.service';
 import {
   ActivityWithRelationsDto,
   CreateActivityDto,
+  GetActivityBestSellerDto,
   UpdateActivityDto,
 } from './dto';
 
@@ -21,6 +25,7 @@ export class ActivityService {
     @InjectRepository(Activity)
     private activityRepository: Repository<Activity>,
     private activityCategoryService: ActivityCategoryService,
+    private activityBookingService: ActivityBookingService,
     private currencyService: CurrencyService,
     private ownerService: OwnerService,
   ) {}
@@ -56,12 +61,10 @@ export class ActivityService {
         'createdAt',
         'name',
         'secondaryName',
-        'pricePerPerson',
-        'pricePerSession',
+        'price',
         'discountType',
         'discount',
-        'pricePerPersonAfterDiscount',
-        'pricePerSessionAfterDiscount',
+        'priceAfterDiscount',
         'duration',
         'country',
         'state',
@@ -127,11 +130,29 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
-        reviews: { booking: { customer: true } },
+        reviews: { activityBooking: { customer: true } },
       },
     });
 
-    return paginateResponseMapper(paginatedActivity);
+    const activityIds = paginatedActivity.data.map((a) => a.id);
+
+    const todayBookings =
+      await this.activityBookingService.findTotalTodayMultipleBooking(
+        activityIds,
+      );
+
+    const activitiesWithTodayBooking = paginatedActivity.data.map(
+      (activity) => {
+        const dto = plainToInstance(ActivityWithRelationsDto, activity);
+        dto.todayBooking = todayBookings[activity.id] ?? 0;
+        return dto;
+      },
+    );
+
+    return paginateResponseMapper(
+      paginatedActivity,
+      activitiesWithTodayBooking,
+    );
   }
 
   async findOne(
@@ -150,7 +171,7 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
-        reviews: { booking: { customer: true } },
+        reviews: { activityBooking: { customer: true } },
       },
     });
 
@@ -158,7 +179,14 @@ export class ActivityService {
       throw new NotFoundException('activity not found');
     }
 
-    return plainToInstance(ActivityWithRelationsDto, activity);
+    const todayBooking =
+      await this.activityBookingService.findTotalTodayBooking(id);
+
+    const activityDto = plainToInstance(ActivityWithRelationsDto, activity);
+
+    activityDto.todayBooking = todayBooking;
+
+    return activityDto;
   }
 
   async update(
@@ -189,6 +217,29 @@ export class ActivityService {
     await this.activityRepository.delete(id);
   }
 
+  async findBestSeller(option: BestSeller): Promise<GetActivityBestSellerDto> {
+    const query = this.activityRepository
+      .createQueryBuilder('activity')
+      .leftJoin('activity.bookings', 'booking')
+      .select('activity.id', 'id')
+      .addSelect('activity.name', 'name')
+      .addSelect('activity.averageRating', 'averageRating')
+      .addSelect('COUNT(booking.id)', 'bookingCount')
+      .groupBy('activity.id');
+
+    if (option === BestSeller.Rating) {
+      query
+        .orderBy('activity.averageRating', 'DESC', 'NULLS LAST')
+        .addOrderBy('COUNT(booking.id)', 'DESC');
+    } else {
+      query
+        .orderBy('COUNT(booking.id)', 'DESC')
+        .addOrderBy('activity.averageRating', 'DESC', 'NULLS LAST');
+    }
+
+    return { data: await query.limit(bestSellerLimit).getRawMany() };
+  }
+
   private async _validateRelatedEntities(
     categoryId: string,
     currencyId?: string,
@@ -211,13 +262,9 @@ export class ActivityService {
     return {
       ...activityData,
       currencyId: await this.currencyService.findBaseCurrencyId(),
-      pricePerPerson: await this.currencyService.convertToBaseCurrency(
+      price: await this.currencyService.convertToBaseCurrency(
         activityData.currencyId,
-        activityData.pricePerPerson,
-      ),
-      pricePerSession: await this.currencyService.convertToBaseCurrency(
-        activityData.currencyId,
-        activityData.pricePerSession,
+        activityData.price,
       ),
     };
   }

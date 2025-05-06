@@ -53,7 +53,9 @@ export class CreateFeatureDto {
   @IsOptional()
   readonly price?: number;
 
-  @IsEnum(DiscountType)
+  @IsEnum(DiscountType, {
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
   @IsOptional()
   discountType?: DiscountType;
 
