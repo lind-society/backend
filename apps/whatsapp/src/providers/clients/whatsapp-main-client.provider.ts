@@ -1,6 +1,5 @@
 import { Environment, WhatsappClientProvider } from '@libs/common/enums';
 import { ConfigService } from '@nestjs/config';
-import * as qrcode from 'qrcode-terminal';
 import { Client, LocalAuth } from 'whatsapp-web.js';
 
 export const MainWhatsappClientProvider = {
@@ -21,17 +20,6 @@ export const MainWhatsappClientProvider = {
         }),
       },
     });
-
-    client.on('qr', (qr: string) => {
-      console.log('QR RECEIVED :', qr);
-
-      qrcode.generate(qr, { small: true }); // Render QR in terminal
-    });
-
-    client.on('ready', () => {
-      console.log('WhatsApp Client is ready!');
-    });
-
     return client;
   },
   inject: [ConfigService],

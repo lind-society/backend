@@ -9,6 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start main",
+    "start:message-queue": "nest start message-queue",
     "start:mail": "nest start mail",
     "start:whatsapp": "nest start whatsapp",
     "start:dev": "nest start main --watch",
@@ -40,6 +41,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.11",
     "@nestjs/schedule": "^6.0.0",
+    "@nestjs/terminus": "^11.0.0",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
     "@types/bcrypt": "^5.0.2",
@@ -128,6 +130,7 @@
       "^@app/config(|/.*)$": "<rootDir>/libs/config/src/$1",
       "^@app/logger(|/.*)$": "<rootDir>/libs/logger/src/$1",
       "^@app/mail-client(|/.*)$": "<rootDir>/libs/mail-client/src/$1",
+      "^@app/message-queue-client(|/.*)$": "<rootDir>/libs/message-queue-client/src/$1",
       "^@app/rabbitmq(|/.*)$": "<rootDir>/libs/rabbitmq/src/$1",
       "^@app/whatsapp-client(|/.*)$": "<rootDir>/libs/whatsapp-client/src/$1"
     }

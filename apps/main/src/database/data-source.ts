@@ -1,5 +1,6 @@
 import { envValues } from '@apps/main/config';
 import { Environment } from '@libs/common/enums';
+import { join } from 'path';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
@@ -13,7 +14,10 @@ export default new DataSource({
   username: DB_USER,
   password: DB_PASSWORD,
   database: DB_NAME,
-  entities: [__dirname + '/**/*.entity.js'],
+  entities: [
+    join(__dirname, '../../../../apps/main/src/database/entities/*.entity.js'),
+    join(__dirname, '../../../../libs/common/entities/*.entity.js'),
+  ],
   synchronize: false,
   logging: NODE_ENV === Environment.Development,
   migrations: [__dirname + '/migrations/*-migration.js'],

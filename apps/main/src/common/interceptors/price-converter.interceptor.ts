@@ -6,6 +6,7 @@ import {
   CallHandler,
   ExecutionContext,
   Injectable,
+  Logger,
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
@@ -14,6 +15,8 @@ import { formatPrice } from '../helpers';
 
 @Injectable()
 export class PriceConverterInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(PriceConverterInterceptor.name);
+
   constructor(
     private readonly currencyService: CurrencyService,
     private readonly currencyConverterService: CurrencyConverterService,
@@ -320,7 +323,7 @@ export class PriceConverterInterceptor implements NestInterceptor {
         );
       }
     } catch (error) {
-      console.error('Price conversion failed:', error);
+      this.logger.error('Price conversion failed:', error);
     }
 
     return converted;
@@ -521,7 +524,7 @@ export class PriceConverterInterceptor implements NestInterceptor {
         );
       }
     } catch (error) {
-      console.error('Price conversion failed:', error);
+      this.logger.error('Price conversion failed:', error);
     }
 
     return converted;

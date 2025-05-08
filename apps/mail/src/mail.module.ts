@@ -1,4 +1,4 @@
-import { envPaths } from '@apps/main/common/constants';
+import { envPaths } from '@libs/common/constants';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { Module } from '@nestjs/common';

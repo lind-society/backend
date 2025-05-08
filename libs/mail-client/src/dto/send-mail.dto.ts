@@ -4,11 +4,11 @@ import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 export class SendMailDto implements ISendMailOptions {
   @IsString()
   @IsNotEmpty()
-  to: string;
+  to!: string;
 
   @IsString()
   @IsNotEmpty()
-  subject: string;
+  subject!: string;
 
   @IsString()
   @IsOptional()

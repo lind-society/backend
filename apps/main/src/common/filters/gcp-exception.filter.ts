@@ -1,10 +1,12 @@
 import { HttpResponse } from '@apps/main/modules/shared/dto';
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import { DefaultHttpStatus } from '../enums';
 
 @Catch()
 export class GCPExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GCPExceptionFilter.name);
+
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -17,7 +19,7 @@ export class GCPExceptionFilter implements ExceptionFilter {
       message = exception.errors[0].message || message;
     }
 
-    console.error(exception);
+    this.logger.error(exception);
 
     return response.status(status).json(
       new HttpResponse({

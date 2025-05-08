@@ -5,12 +5,15 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { DefaultHttpStatus } from '../enums';
 
 @Catch()
 export class XenditExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(XenditExceptionFilter.name);
+
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -32,7 +35,7 @@ export class XenditExceptionFilter implements ExceptionFilter {
       );
     }
 
-    console.error(exception);
+    this.logger.error(exception);
 
     // Default Handling for other errors
     return response.status(status).json(

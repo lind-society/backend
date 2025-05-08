@@ -1,4 +1,4 @@
-import { envPaths } from '@apps/main/common/constants';
+import { envPaths } from '@libs/common/constants';
 import { plainToInstance } from 'class-transformer';
 import { IsNotEmpty, IsString, validateSync } from 'class-validator';
 import { config, DotenvConfigOptions } from 'dotenv';

@@ -4,6 +4,7 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { QueryFailedError } from 'typeorm';
@@ -13,6 +14,8 @@ import { sanitizePostgresqlErrorResponse } from '../helpers/sanitize-postgresql-
 
 @Catch(QueryFailedError)
 export class TypeOrmExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(TypeOrmExceptionFilter.name);
+
   catch(exception: QueryFailedError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -40,7 +43,7 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
       );
     }
 
-    console.error(exception);
+    this.logger.error(exception);
 
     return response.status(responseCode).json(
       new HttpResponse({

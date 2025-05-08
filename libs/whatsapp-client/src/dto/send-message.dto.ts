@@ -3,9 +3,9 @@ import { IsNotEmpty, IsString } from 'class-validator';
 export class SendMessageDto {
   @IsString()
   @IsNotEmpty()
-  phoneNumber: string;
+  phoneNumber!: string;
 
   @IsString()
   @IsNotEmpty()
-  message: string;
+  message!: string;
 }

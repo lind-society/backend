@@ -80,6 +80,24 @@
         "watchAssets": true
       }
     },
+    "message-queue": {
+      "type": "application",
+      "root": "apps/message-queue",
+      "entryFile": "main",
+      "sourceRoot": "apps/message-queue/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/message-queue/tsconfig.app.json"
+      }
+    },
+    "message-queue-client": {
+      "type": "library",
+      "root": "libs/message-queue-client",
+      "entryFile": "index",
+      "sourceRoot": "libs/message-queue-client/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/message-queue-client/tsconfig.lib.json"
+      }
+    },
     "rabbitmq": {
       "type": "library",
       "root": "libs/rabbitmq",

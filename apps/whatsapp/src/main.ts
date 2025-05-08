@@ -1,4 +1,8 @@
-import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
+import {
+  Logger,
+  UnprocessableEntityException,
+  ValidationPipe,
+} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { WhatsappModule } from './whatsapp.module';
@@ -18,6 +22,8 @@ async function bootstrap() {
     },
   );
 
+  const logger = new Logger('Whatsapp - Bootstrap');
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -27,7 +33,7 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
       exceptionFactory(errors) {
-        console.error(errors);
+        logger.error(errors);
 
         return new UnprocessableEntityException(errors);
       },
@@ -35,6 +41,6 @@ async function bootstrap() {
   );
 
   await app.listen();
-  console.log('WhatsApp microservice is running...');
+  logger.log('WhatsApp microservice is running...');
 }
 bootstrap();

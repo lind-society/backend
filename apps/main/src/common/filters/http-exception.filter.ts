@@ -9,6 +9,7 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
   PayloadTooLargeException,
   ValidationError,
 } from '@nestjs/common';
@@ -26,6 +27,8 @@ import { XenditExceptionFilter } from './xendit-exception.filter';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
   private gcpExceptionFilter = new GCPExceptionFilter();
   private multerExceptionFilter = new MulterExceptionFilter();
   private typeOrmExceptionFilter = new TypeOrmExceptionFilter();
@@ -39,8 +42,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     if (exception instanceof QueryFailedError) {
-      console.error('Typeorm / Database error');
-      console.error('========================\n');
+      this.logger.error('Typeorm / Database error');
+      this.logger.error('========================\n');
 
       return this.typeOrmExceptionFilter.catch(exception, host);
     }
@@ -49,8 +52,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       exception instanceof XenditSdkError ||
       (exception?.response?.error_code && exception?.response?.message)
     ) {
-      console.error('Xendit API error');
-      console.error('================\n');
+      this.logger.error('Xendit API error');
+      this.logger.error('================\n');
 
       return this.xenditExceptionFilter.catch(exception, host);
     }
@@ -64,12 +67,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
         exception.message.includes('file'))
     ) {
       exception instanceof MulterError
-        ? console.error('Multer error')
+        ? this.logger.error('Multer error')
         : exception instanceof PayloadTooLargeException
-          ? console.error('Nest payload max size error')
-          : console.error('Nest payload max limit error');
+          ? this.logger.error('Nest payload max size error')
+          : this.logger.error('Nest payload max limit error');
 
-      console.error('================\n');
+      this.logger.error('================\n');
 
       const normalizedException =
         exception instanceof PayloadTooLargeException
@@ -88,15 +91,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
       exception.response &&
       exception.response.statusCode
     ) {
-      console.error('GCP error');
-      console.error('========================\n');
+      this.logger.error('GCP error');
+      this.logger.error('========================\n');
 
       return this.gcpExceptionFilter.catch(exception, host);
     }
 
-    console.error('HTTP Exception');
-    console.error('================\n');
-    console.error(exception);
+    this.logger.error('HTTP Exception');
+    this.logger.error('================\n');
+    this.logger.error(exception);
 
     const status =
       exception instanceof HttpException

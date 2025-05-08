@@ -8,10 +8,16 @@ import {
   ActivityBooking,
   ActivityBookingStatus,
 } from '@apps/main/database/entities';
+import {
+  MessageQueue,
+  MessageQueueStatus,
+  MessageQueueType,
+} from '@libs/common/entities';
 import { WhatsappClientService } from '@libs/whatsapp-client';
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,6 +33,8 @@ import {
 
 @Injectable()
 export class ActivityBookingService {
+  private readonly logger = new Logger(ActivityBookingService.name);
+
   constructor(
     private datasource: DataSource,
     @InjectRepository(Activity)
@@ -56,13 +64,12 @@ export class ActivityBookingService {
         manager,
       );
 
-      await this.whatsappClientService.sendMessage({
-        phoneNumber: constructPhoneNumber(
-          payload.customer.phoneCountryCode,
-          payload.customer.phoneNumber,
-        ),
-        message: this._formatActivityBookingMessage(bookingDetail),
-      });
+      await this._sendWhatsappActivityBookingHelper(
+        payload.customer.phoneCountryCode,
+        payload.customer.phoneNumber,
+        bookingDetail,
+        manager,
+      );
 
       return bookingDetail;
     });
@@ -314,5 +321,75 @@ export class ActivityBookingService {
   🗺️ *Map*: ${booking.activity?.mapLink || '-'}
     
   We look forward to welcoming you!`;
+  }
+
+  async _sendWhatsappActivityBookingHelper(
+    phoneCountryCode: string,
+    phoneNumber: string,
+    bookingDetail: ActivityBookingWithRelationsDto,
+    manager: EntityManager,
+  ) {
+    const constructedPhoneNumber = constructPhoneNumber(
+      phoneCountryCode,
+      phoneNumber,
+    );
+
+    try {
+      // First check if WhatsApp service is connected
+      const isConnected = await this.whatsappClientService.checkConnection();
+
+      if (!isConnected) {
+        // Log warning but continue with the booking process
+        this.logger.warn(
+          'WhatsApp service is not available. Message will not be sent.',
+        );
+
+        // Save to database for later retry
+        await manager.save(MessageQueue, {
+          type: MessageQueueType.Whatsapp,
+          recipient: constructedPhoneNumber,
+          content: this._formatActivityBookingMessage(bookingDetail),
+          status: MessageQueueStatus.Pending,
+          createdAt: new Date(),
+          retryCount: 0,
+        });
+      } else {
+        // WhatsApp service is connected, try to send
+        await Promise.race([
+          this.whatsappClientService.sendMessage({
+            phoneNumber: constructedPhoneNumber,
+            message: this._formatActivityBookingMessage(bookingDetail),
+          }),
+          // Timeout after 3 seconds to avoid hanging
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error('WhatsApp message send timeout')),
+              3000,
+            ),
+          ),
+        ]);
+      }
+    } catch (error) {
+      // Log the error but don't fail the transaction
+      this.logger.error('Failed to send WhatsApp message:', error.message);
+
+      // Save failed message to a queue for retry
+      try {
+        await manager.save(MessageQueue, {
+          type: MessageQueueType.Whatsapp,
+          recipient: constructedPhoneNumber,
+          content: this._formatActivityBookingMessage(bookingDetail),
+          status: MessageQueueStatus.Pending,
+          createdAt: new Date(),
+          errorMessage: error.message,
+          retryCount: 0,
+        });
+      } catch (queueError) {
+        this.logger.error(
+          'Failed to save message to queue:',
+          queueError.message,
+        );
+      }
+    }
   }
 }

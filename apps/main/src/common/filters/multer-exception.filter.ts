@@ -4,6 +4,7 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { MulterError } from 'multer';
@@ -11,6 +12,8 @@ import { DefaultHttpStatus } from '../enums';
 
 @Catch(MulterError)
 export class MulterExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(MulterExceptionFilter.name);
+
   catch(exception: MulterError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -52,7 +55,7 @@ export class MulterExceptionFilter implements ExceptionFilter {
         message = exception.message;
     }
 
-    console.error(exception);
+    this.logger.error(exception);
 
     return response.status(statusCode).json(
       new HttpResponse({

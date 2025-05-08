@@ -1,4 +1,4 @@
-import { envPaths } from '@apps/main/common/constants';
+import { envPaths } from '@libs/common/constants';
 import { megabyteToByte } from '@apps/main/common/helpers';
 import { Environment } from '@libs/common/enums';
 import { plainToInstance } from 'class-transformer';
