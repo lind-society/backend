@@ -1,16 +1,25 @@
+import { Environment, WhatsappClientProvider } from '@libs/common/enums';
 import { ConfigService } from '@nestjs/config';
 import * as qrcode from 'qrcode-terminal';
 import { Client, LocalAuth } from 'whatsapp-web.js';
 
 export const MainWhatsappClientProvider = {
-  provide: 'MAIN_WHATSAPP_CLIENT',
+  provide: WhatsappClientProvider.Main,
   useFactory: (configService: ConfigService) => {
     const client = new Client({
       authStrategy: new LocalAuth({
         clientId: configService.get<string>('whatsapp.client.main.id'),
-        dataPath: './whatsapp-session',
+        dataPath: configService.get<string>('whatsapp.config.sessionPath'),
       }),
-      puppeteer: { headless: true },
+      puppeteer: {
+        headless: true,
+        ...(configService.get<string>('app.env') !==
+          Environment.Development && {
+          executablePath: configService.get<string>(
+            'whatsapp.config.browserPath',
+          ),
+        }),
+      },
     });
 
     client.on('qr', (qr: string) => {

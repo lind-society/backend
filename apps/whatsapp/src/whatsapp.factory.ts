@@ -1,11 +1,12 @@
 import { WhatsappAuthStrategy } from '@apps/main/common/enums';
+import { MainProvider } from '@libs/common/enums';
 import { InternalServerErrorException, Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from 'whatsapp-web.js';
 import { WhatsappClientProvider } from './providers/whatsapp-client.provider';
 
 export const WhatsAppClientFactory: Provider = {
-  provide: 'WHATSAPP_PROVIDER',
+  provide: MainProvider.Whatsapp,
   useFactory: (configService: ConfigService, client: Client) => {
     const authProvider = configService.get<string>('whatsapp.auth.strategy');
 

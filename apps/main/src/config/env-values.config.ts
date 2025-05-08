@@ -1,4 +1,5 @@
-import { Environment, StorageProvider } from '@apps/main/common/enums';
+import { StorageProvider } from '@apps/main/common/enums';
+import { Environment } from '@libs/common/enums';
 import { envConfig, EnvironmentVariables } from './env.config';
 
 envConfig();

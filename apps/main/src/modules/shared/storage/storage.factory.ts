@@ -1,11 +1,12 @@
 import { StorageProvider } from '@apps/main/common/enums';
 import { Storage } from '@google-cloud/storage';
+import { MainProvider } from '@libs/common/enums';
 import { InternalServerErrorException, Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GCPStorageProvider } from './providers';
 
 export const StorageFactory: Provider = {
-  provide: 'STORAGE_PROVIDER',
+  provide: MainProvider.Storage,
   useFactory: (configService: ConfigService, gcpStorage: Storage) => {
     const provider = configService.get<string>('storage.provider');
 

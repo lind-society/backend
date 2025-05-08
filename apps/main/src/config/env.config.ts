@@ -1,6 +1,6 @@
 import { envPaths } from '@apps/main/common/constants';
-import { Environment } from '@apps/main/common/enums';
 import { megabyteToByte } from '@apps/main/common/helpers';
+import { Environment } from '@libs/common/enums';
 import { plainToInstance } from 'class-transformer';
 import {
   IsEnum,

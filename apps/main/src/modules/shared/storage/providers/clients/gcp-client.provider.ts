@@ -1,9 +1,10 @@
 import { Storage } from '@google-cloud/storage';
+import { StorageClientProvider } from '@libs/common/enums';
 import { ConfigService } from '@nestjs/config';
 import { existsSync } from 'fs';
 
 export const GCPProvider = {
-  provide: 'GCP_CLIENT',
+  provide: StorageClientProvider.GCP,
   useFactory: (configService: ConfigService) => {
     const keyFilePath = configService.get<string>('gcp.keyFilePath');
 

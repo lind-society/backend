@@ -2,6 +2,7 @@ import { envPaths } from '@libs/common/constants';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { validateEnv, whatsappConfig } from './config';
+import { appConfig } from './config/app.config';
 import { MainWhatsappClientProvider } from './providers/clients';
 import { WhatsappServiceController } from './whatsapp.controller';
 import { WhatsAppClientFactory } from './whatsapp.factory';
@@ -17,7 +18,7 @@ import { WhatsappService } from './whatsapp.service';
         allowUnknown: false,
         abortEarly: true,
       },
-      load: [whatsappConfig],
+      load: [appConfig, whatsappConfig],
     }),
   ],
   controllers: [WhatsappServiceController],

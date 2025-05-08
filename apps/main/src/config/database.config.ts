@@ -1,4 +1,4 @@
-import { Environment } from '@apps/main/common/enums';
+import { Environment } from '@libs/common/enums';
 import { registerAs } from '@nestjs/config';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { envValues } from './env-values.config';

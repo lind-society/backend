@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+import { Environment } from '@libs/common/enums';
 import {
   ClassSerializerInterceptor,
   UnprocessableEntityException,
@@ -12,7 +13,6 @@ import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
-import { Environment } from './common/enums';
 import { validationExceptionFactory } from './common/factories';
 import { HttpExceptionFilter } from './common/filters';
 import { SetHttpCodeInterceptor } from './common/interceptors';

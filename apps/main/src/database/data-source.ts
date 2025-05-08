@@ -1,5 +1,5 @@
-import { Environment } from '@apps/main/common/enums';
 import { envValues } from '@apps/main/config';
+import { Environment } from '@libs/common/enums';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
