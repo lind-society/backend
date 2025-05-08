@@ -32,8 +32,6 @@ export class XenditExceptionFilter implements ExceptionFilter {
       );
     }
 
-    console.error(exception);
-
     // Default Handling for other errors
     return response.status(status).json(
       new HttpResponse({

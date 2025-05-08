@@ -15,6 +15,7 @@ import { AppModule } from './app.module';
 import { Environment } from './common/enums';
 import { validationExceptionFactory } from './common/factories';
 import { HttpExceptionFilter } from './common/filters';
+import { SetHttpCodeInterceptor } from './common/interceptors';
 import { winstonConfig } from './config/winston-logger.config';
 
 async function bootstrap() {
@@ -61,6 +62,7 @@ async function bootstrap() {
   );
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(new SetHttpCodeInterceptor());
 
   await app.listen(port, () => {
     logger.log(`env : ${env}`);

@@ -29,10 +29,14 @@ export class UploadFileSuccessResponse
   readonly data: UploadFilesResponseDto;
 
   constructor(data: UploadFilesResponseDto) {
+    const hasFailedFiles = data.failedFiles.length > 0;
+
     super({
-      code: HttpStatus.CREATED,
-      message: 'upload file success',
-      status: DefaultHttpStatus.Success,
+      code: hasFailedFiles ? HttpStatus.BAD_REQUEST : HttpStatus.CREATED,
+      message: hasFailedFiles ? 'upload file failed' : 'upload file success',
+      status: hasFailedFiles
+        ? DefaultHttpStatus.Fail
+        : DefaultHttpStatus.Success,
     });
 
     this.data = data;
