@@ -38,7 +38,7 @@ export class VillaPriceRuleController {
   }
 
   @Public()
-  @Get('available-villas')
+  @Post('available-villas')
   async findAvailableVillasWithinDate(
     @Body() payload: GetVillaWithPriceRuleDto,
   ) {

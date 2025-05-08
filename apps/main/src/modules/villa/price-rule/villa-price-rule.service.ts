@@ -46,7 +46,7 @@ export class VillaPriceRuleService {
           payload,
         );
 
-        // add validation where inputted villa id is not included in other villa price rule for the inputted start - end date
+        // validation for checking villa is not included in other villa price rule for the inputted start - end date
         if (Array.isArray(payload.villaIds) && payload.villaIds.length > 0) {
           const availableVillaValidationPayload: GetUnavailableVillaDto = {
             startDate: payload.startDate,
@@ -73,9 +73,6 @@ export class VillaPriceRuleService {
 
     return createdVillaPriceRule;
   }
-
-  // add service to get all villa price rule pivot, then select only villa based on the filter :
-  // not in the range of start - end date
 
   async findAll(
     query: PaginateQuery,
