@@ -52,6 +52,8 @@ export class MulterExceptionFilter implements ExceptionFilter {
         message = exception.message;
     }
 
+    console.error(exception);
+
     return response.status(statusCode).json(
       new HttpResponse({
         code: statusCode,

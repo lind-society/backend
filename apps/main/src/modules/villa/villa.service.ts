@@ -7,6 +7,7 @@ import {
   Feature,
   Villa,
   VillaAdditionalPivot,
+  VillaBookingStatus,
   VillaFacilityPivot,
   VillaFeaturePivot,
   VillaPolicy,
@@ -15,7 +16,7 @@ import {
 } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -427,12 +428,41 @@ export class VillaService {
   async findBestSeller(option: BestSeller): Promise<GetVillaBestSellerDto> {
     const query = this.villaRepository
       .createQueryBuilder('villa')
-      .leftJoin('villa.bookings', 'booking')
-      .select('villa.id', 'id')
-      .addSelect('villa.name', 'name')
-      .addSelect('villa.averageRating', 'averageRating')
-      .addSelect('COUNT(booking.id)', 'bookingCount')
-      .groupBy('villa.id');
+      .leftJoinAndSelect('villa.currency', 'currency')
+      .leftJoinAndSelect('villa.owner', 'owner')
+      .leftJoinAndSelect('villa.reviews', 'reviews')
+      .leftJoinAndSelect('reviews.villaBooking', 'villaBooking')
+      .leftJoinAndSelect('villaBooking.customer', 'customer')
+      .leftJoinAndSelect('villa.villaFacilities', 'additionals')
+      .leftJoinAndSelect('villa.villaFeatures', 'facilities')
+      .leftJoinAndSelect('villa.villaAdditionals', 'features')
+      .leftJoinAndSelect('villa.villaPolicies', 'policies')
+      .leftJoinAndSelect('villa.villaPriceRules', 'priceRules')
+      .leftJoin('villa.bookings', 'booking', 'booking.status = :done', {
+        done: VillaBookingStatus.Done,
+      })
+      .loadRelationCountAndMap(
+        'villa.totalBooking',
+        'villa.bookings',
+        'totalBooking',
+        (qb) =>
+          qb.andWhere('totalBooking.status = :status', {
+            status: VillaBookingStatus.Done,
+          }),
+      )
+      .groupBy('villa.id')
+      .addGroupBy('currency.id')
+      .addGroupBy('owner.id')
+      .addGroupBy('reviews.id')
+      .addGroupBy('villaBooking.id')
+      .addGroupBy('customer.id')
+      .addGroupBy('additionals.id')
+      .addGroupBy('facilities.id')
+      .addGroupBy('features.id')
+      .addGroupBy('policies.id')
+      .addGroupBy('priceRules.id');
+
+    query.addSelect('COUNT(booking.id)', 'booking_count');
 
     if (option === BestSeller.Rating) {
       query
@@ -444,7 +474,19 @@ export class VillaService {
         .addOrderBy('villa.averageRating', 'DESC', 'NULLS LAST');
     }
 
-    return { data: await query.limit(bestSellerLimit).getRawMany() };
+    const result = await query.limit(bestSellerLimit).getRawAndEntities();
+
+    const orderedData = result.raw
+      .map((rawItem) => {
+        return result.entities.find((entity) => entity.id === rawItem.villa_id);
+      })
+      .filter(Boolean);
+
+    const dtos = orderedData.map((villa) =>
+      plainToClass(VillaWithRelationsDto, villa),
+    );
+
+    return { data: dtos };
   }
 
   private _mapVillaData(villa: Villa): VillaWithRelationsDto {

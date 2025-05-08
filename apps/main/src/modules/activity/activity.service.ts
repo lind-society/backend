@@ -1,14 +1,18 @@
 import { bestSellerLimit } from '@apps/main/common/constants';
 import { BestSeller } from '@apps/main/common/enums';
 import { paginateResponseMapper } from '@apps/main/common/helpers';
-import { Activity, DiscountType } from '@apps/main/database/entities';
+import {
+  Activity,
+  ActivityBookingStatus,
+  DiscountType,
+} from '@apps/main/database/entities';
 import { ActivityBookingService } from '@apps/main/modules/booking/activity-booking/activity-booking.service';
 import { CurrencyService } from '@apps/main/modules/currency/currency.service';
 import { OwnerService } from '@apps/main/modules/owner/owner.service';
 import { PaginateResponseDataProps } from '@apps/main/modules/shared/dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { EntityManager, Repository } from 'typeorm';
 import { ActivityCategoryService } from './category/activity-category.service';
@@ -220,24 +224,59 @@ export class ActivityService {
   async findBestSeller(option: BestSeller): Promise<GetActivityBestSellerDto> {
     const query = this.activityRepository
       .createQueryBuilder('activity')
-      .leftJoin('activity.bookings', 'booking')
-      .select('activity.id', 'id')
-      .addSelect('activity.name', 'name')
-      .addSelect('activity.averageRating', 'averageRating')
-      .addSelect('COUNT(booking.id)', 'bookingCount')
-      .groupBy('activity.id');
+      .leftJoinAndSelect('activity.category', 'category')
+      .leftJoinAndSelect('activity.currency', 'currency')
+      .leftJoinAndSelect('activity.owner', 'owner')
+      .leftJoinAndSelect('activity.reviews', 'reviews')
+      .leftJoinAndSelect('reviews.activityBooking', 'activityBooking')
+      .leftJoinAndSelect('activityBooking.customer', 'customer')
+      .leftJoin('activity.bookings', 'booking', 'booking.status = :completed', {
+        completed: ActivityBookingStatus.Completed,
+      })
+      .loadRelationCountAndMap(
+        'activity.totalBooking',
+        'activity.bookings',
+        'totalBooking',
+        (qb) =>
+          qb.andWhere('totalBooking.status = :status', {
+            status: ActivityBookingStatus.Completed,
+          }),
+      )
+      .groupBy('activity.id')
+      .addGroupBy('category.id')
+      .addGroupBy('currency.id')
+      .addGroupBy('owner.id')
+      .addGroupBy('reviews.id')
+      .addGroupBy('activityBooking.id')
+      .addGroupBy('customer.id');
+
+    query.addSelect('COUNT(booking.id)', 'booking_count');
 
     if (option === BestSeller.Rating) {
       query
         .orderBy('activity.averageRating', 'DESC', 'NULLS LAST')
-        .addOrderBy('COUNT(booking.id)', 'DESC');
+        .addOrderBy('booking_count', 'DESC');
     } else {
       query
-        .orderBy('COUNT(booking.id)', 'DESC')
+        .orderBy('booking_count', 'DESC')
         .addOrderBy('activity.averageRating', 'DESC', 'NULLS LAST');
     }
 
-    return { data: await query.limit(bestSellerLimit).getRawMany() };
+    const result = await query.limit(bestSellerLimit).getRawAndEntities();
+
+    const orderedData = result.raw
+      .map((rawItem) => {
+        return result.entities.find(
+          (entity) => entity.id === rawItem.activity_id,
+        );
+      })
+      .filter(Boolean);
+
+    const dtos = orderedData.map((activity) =>
+      plainToClass(ActivityWithRelationsDto, activity),
+    );
+
+    return { data: dtos };
   }
 
   private async _validateRelatedEntities(

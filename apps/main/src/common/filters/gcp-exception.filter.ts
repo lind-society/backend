@@ -17,6 +17,8 @@ export class GCPExceptionFilter implements ExceptionFilter {
       message = exception.errors[0].message || message;
     }
 
+    console.error(exception);
+
     return response.status(status).json(
       new HttpResponse({
         code: status,
