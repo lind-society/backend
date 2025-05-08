@@ -21,12 +21,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/main/test/jest-e2e.json",
     "typeorm": "pnpm build && npx typeorm",
-    "migration:run": "pnpm typeorm -- migration:run -d dist/database/data-source.js",
-    "migration:generate": "pnpm typeorm -- migration:generate -d dist/database/data-source.js @apps/main/database/migrations/migration",
-    "migration:create": "pnpm typeorm -- migration:create @apps/main/database/migrations/migration",
-    "migration:revert": "pnpm typeorm -- migration:revert -d dist/database/data-source.js",
-    "migration:show": "pnpm typeorm -- migration:show -d dist/database/data-source.js",
-    "migration:reset": "pnpm typeorm -- schema:drop -d dist/database/data-source.js"
+    "migration:run": "pnpm typeorm migration:run -d dist/apps/main/apps/main/src/database/data-source.js",
+    "migration:generate": "pnpm typeorm migration:generate -d dist/apps/main/apps/main/src/database/data-source.js apps/main/src/database/migrations/migration",
+    "migration:create": "pnpm typeorm migration:create @apps/main/database/migrations/migration",
+    "migration:revert": "pnpm typeorm migration:revert -d dist/apps/main/apps/main/src/database/data-source.js",
+    "migration:show": "pnpm typeorm migration:show -d dist/apps/main/apps/main/src/database/data-source.js",
+    "migration:reset": "pnpm typeorm schema:drop -d dist/apps/main/apps/main/src/database/data-source.js"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.15.2",
@@ -39,6 +39,7 @@
     "@nestjs/microservices": "^11.0.13",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.11",
+    "@nestjs/schedule": "^6.0.0",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
     "@types/bcrypt": "^5.0.2",

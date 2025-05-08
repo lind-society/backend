@@ -13,10 +13,10 @@ export default new DataSource({
   username: DB_USER,
   password: DB_PASSWORD,
   database: DB_NAME,
-  entities: ['dist/**/*.entity.js'],
+  entities: [__dirname + '/**/*.entity.js'],
   synchronize: false,
   logging: NODE_ENV === Environment.Development,
-  migrations: ['dist/database/migrations/*.js'],
+  migrations: [__dirname + '/migrations/*-migration.js'],
   migrationsTableName: 'migrations',
   cache: false,
 });
