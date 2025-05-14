@@ -199,14 +199,9 @@ export class VillaPriceRuleService {
       .where(
         // Keep villas where there's no overlap OR no priceRule at all
         new Brackets((qb) => {
-          qb.where('priceRule.id IS NULL') // no price rule
-            .orWhere(
-              new Brackets((qb2) => {
-                qb2
-                  .where('priceRule.start_date > :endDate')
-                  .orWhere('priceRule.end_date < :startDate');
-              }),
-            );
+          qb.where(
+            'priceRule.start_date <= :startDate AND priceRule.end_date >= :endDate',
+          );
         }),
       )
       .setParameters({
@@ -227,25 +222,20 @@ export class VillaPriceRuleService {
         await manager
           .createQueryBuilder(Villa, 'villa')
           .distinct(true)
-          .leftJoin('villa.villaPriceRules', 'pivot')
-          .leftJoin('pivot.priceRule', 'priceRule')
+          .innerJoin('villa.villaPriceRules', 'pivot')
+          .innerJoin('pivot.priceRule', 'priceRule')
           .select([
             'villa.id AS id',
             'villa.name AS name',
             'priceRule.start_date AS "priceRuleStartDate"',
             'priceRule.end_date AS "priceRuleEndDate"',
           ])
-          .where(
-            // Keep villas where there's no overlap OR no priceRule at all
+          .where('villa.id IN (:...villaIds)', { villaIds: payload.ids })
+          .andWhere(
             new Brackets((qb) => {
-              qb.where('priceRule.id IS NOT NULL') // no price rule
-                .andWhere(
-                  new Brackets((qb2) => {
-                    qb2
-                      .where('priceRule.start_date <= :endDate') // ends before priceRule
-                      .andWhere('priceRule.end_date >= :startDate'); // starts after priceRule
-                  }),
-                );
+              qb.where(
+                '(priceRule.start_date <= :endDate AND priceRule.end_date >= :startDate)',
+              );
             }),
           )
           .setParameters({

@@ -10,6 +10,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
@@ -38,9 +39,9 @@ export class VillaPriceRuleController {
   }
 
   @Public()
-  @Post('available-villas')
+  @Get('available-villas')
   async findAvailableVillasWithinDate(
-    @Body() payload: GetVillaWithPriceRuleDto,
+    @Query() payload: GetVillaWithPriceRuleDto,
   ) {
     const result =
       await this.villaPriceRuleService.findAvailableVillasWithinDate(payload);
