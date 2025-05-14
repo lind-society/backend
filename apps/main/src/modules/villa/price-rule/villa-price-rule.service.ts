@@ -19,6 +19,7 @@ import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Brackets, DataSource, EntityManager, Repository } from 'typeorm';
 import {
+  AvailableVillaDto,
   CreateVillaPriceRuleDto,
   GetUnavailableVillaDto,
   GetVillaWithPriceRuleDto,
@@ -184,18 +185,15 @@ export class VillaPriceRuleService {
   }
 
   // Helper Functions
-  async findAvailableVillasWithinDate(payload: GetVillaWithPriceRuleDto) {
-    const availableVillas: VillaWithPriceRuleDto[] = await this.villaRepository
+  async findAvailableVillasWithinDate(
+    query: PaginateQuery,
+    payload: GetVillaWithPriceRuleDto,
+  ): Promise<PaginateResponseDataProps<AvailableVillaDto[]>> {
+    const queryBuilder = this.villaRepository
       .createQueryBuilder('villa')
       .distinct(true)
       .leftJoin('villa.villaPriceRules', 'pivot')
       .leftJoin('pivot.priceRule', 'priceRule')
-      .select([
-        'villa.id AS id',
-        'villa.name AS name',
-        'priceRule.start_date AS "priceRuleStartDate"',
-        'priceRule.end_date AS "priceRuleEndDate"',
-      ])
       .where(
         // Keep villas where there's no overlap OR no priceRule at all
         new Brackets((qb) => {
@@ -207,10 +205,31 @@ export class VillaPriceRuleService {
       .setParameters({
         startDate: payload.startDate,
         endDate: payload.endDate,
-      })
-      .getRawMany();
+      });
 
-    return availableVillas;
+    const availableVillas = await paginate(query, queryBuilder, {
+      sortableColumns: ['createdAt', 'name'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      nullSort: 'last',
+      defaultLimit: 10,
+      maxLimit: 100,
+      filterableColumns: {
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+      },
+      searchableColumns: ['name'],
+    });
+
+    const mappedAvailableVillas = availableVillas.data.map(
+      (availableVilla) => ({
+        id: availableVilla.id,
+        name: availableVilla.name,
+        city: availableVilla.city,
+        state: availableVilla.state,
+        country: availableVilla.country,
+      }),
+    );
+
+    return paginateResponseMapper(availableVillas, mappedAvailableVillas);
   }
 
   async validateAvailableVillasWithinDate(

@@ -41,10 +41,14 @@ export class VillaPriceRuleController {
   @Public()
   @Get('available-villas')
   async findAvailableVillasWithinDate(
+    @Paginate() query: PaginateQuery,
     @Query() payload: GetVillaWithPriceRuleDto,
   ) {
     const result =
-      await this.villaPriceRuleService.findAvailableVillasWithinDate(payload);
+      await this.villaPriceRuleService.findAvailableVillasWithinDate(
+        query,
+        payload,
+      );
 
     return new GetAvailableVillaSuccessResponse(result);
   }

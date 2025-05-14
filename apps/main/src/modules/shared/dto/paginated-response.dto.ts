@@ -1,3 +1,53 @@
+import { Type } from 'class-transformer';
+import { IsArray, IsOptional, IsString } from 'class-validator';
+import { PaginateQuery } from 'nestjs-paginate';
+
+export class PaginationQueryDto implements PaginateQuery {
+  @IsOptional()
+  @Type(() => Number)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  limit?: number;
+
+  @IsOptional()
+  sortBy?: [string, string][];
+
+  @IsOptional()
+  @IsArray()
+  searchBy?: string[];
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  filter?: {
+    [column: string]: string | string[];
+  };
+
+  @IsOptional()
+  @IsArray()
+  select?: string[];
+
+  @IsOptional()
+  @IsString()
+  cursor?: string;
+
+  @IsOptional()
+  @IsString()
+  cursorColumn?: string;
+
+  @IsOptional()
+  @IsString()
+  cursorDirection?: 'before' | 'after';
+
+  @IsOptional()
+  @IsString()
+  path: string = ''; // Default value to satisfy the required property
+}
+
 export class PaginateResponseMetaProps {
   readonly itemsPerPage!: number;
   readonly totalItems!: number;

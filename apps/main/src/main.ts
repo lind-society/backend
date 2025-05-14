@@ -15,7 +15,6 @@ import { AppModule } from './app.module';
 import { validationExceptionFactory } from './common/factories';
 import { HttpExceptionFilter } from './common/filters';
 import { SetHttpCodeInterceptor } from './common/interceptors';
-import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -60,8 +59,6 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalInterceptors(new SetHttpCodeInterceptor());
-
-  console.log(join(__dirname, '/**/*.entity.js'),);
 
   await app.listen(port, () => {
     logger.log(`env : ${env}`);

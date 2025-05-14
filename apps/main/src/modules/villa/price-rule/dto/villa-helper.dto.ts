@@ -2,6 +2,8 @@ import { DefaultHttpStatus } from '@apps/main/common/enums';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
+  PaginateResponseDefaultDataProps,
+  PaginationQueryDto,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { Type } from 'class-transformer';
@@ -12,6 +14,19 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+
+export interface IPriceRuleFilterDate {
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface IAvailableVilla {
+  id: string;
+  name: string;
+  city?: string;
+  state?: string;
+  country?: string;
+}
 
 export interface IAvailableVillaWithPriceRule {
   id: string;
@@ -24,7 +39,11 @@ export interface IUnavailableVilla {
   id: string;
 }
 
-export class GetVillaWithPriceRuleDto {
+export interface IUnavailableVillas {
+  ids?: string[];
+}
+
+export class PriceRuleFilterDateDto implements IPriceRuleFilterDate {
   @Type(() => Date)
   @IsDate({ message: 'start date must be a valid date' })
   @IsNotEmpty()
@@ -36,7 +55,25 @@ export class GetVillaWithPriceRuleDto {
   readonly endDate!: Date;
 }
 
-export class GetUnavailableVillaDto extends GetVillaWithPriceRuleDto {
+export class GetVillaWithPriceRuleDto
+  extends PaginationQueryDto
+  implements IPriceRuleFilterDate
+{
+  @Type(() => Date)
+  @IsDate({ message: 'start date must be a valid date' })
+  @IsNotEmpty()
+  readonly startDate!: Date;
+
+  @Type(() => Date)
+  @IsDate({ message: 'end date must be a valid date' })
+  @IsNotEmpty()
+  readonly endDate!: Date;
+}
+
+export class GetUnavailableVillaDto
+  extends PriceRuleFilterDateDto
+  implements IUnavailableVillas
+{
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -54,13 +91,25 @@ export class UnavailableVillaDto implements IUnavailableVilla {
   readonly id!: string;
 }
 
+export class AvailableVillaDto implements IAvailableVilla {
+  readonly id!: string;
+  readonly name!: string;
+  readonly city!: string;
+  readonly state!: string;
+  readonly country!: string;
+}
+
+export class GetAvailableVillaPaginateDto extends PaginateResponseDefaultDataProps {
+  readonly data!: AvailableVillaDto[];
+}
+
 export class GetAvailableVillaSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<VillaWithPriceRuleDto[]>
+  implements HttpResponseOptions<GetAvailableVillaPaginateDto>
 {
-  readonly data: VillaWithPriceRuleDto[];
+  readonly data: GetAvailableVillaPaginateDto;
 
-  constructor(data: VillaWithPriceRuleDto[]) {
+  constructor(data: GetAvailableVillaPaginateDto) {
     super({
       code: HttpStatus.OK,
       message: 'get available villa success',
