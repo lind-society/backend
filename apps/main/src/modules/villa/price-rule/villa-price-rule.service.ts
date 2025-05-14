@@ -56,6 +56,7 @@ export class VillaPriceRuleService {
 
           await this.validateAvailableVillasWithinDate(
             availableVillaValidationPayload,
+            manager,
           );
 
           await manager.save(
@@ -146,6 +147,7 @@ export class VillaPriceRuleService {
 
           await this.validateAvailableVillasWithinDate(
             availableVillaValidationPayload,
+            manager,
           );
 
           await manager.save(
@@ -218,11 +220,12 @@ export class VillaPriceRuleService {
 
   async validateAvailableVillasWithinDate(
     payload: GetUnavailableVillaDto,
+    manager: EntityManager,
   ): Promise<void> {
     if (payload.ids) {
       const unavailableVillasWithinDateRange: VillaWithPriceRuleDto[] =
-        await this.villaRepository
-          .createQueryBuilder('villa')
+        await manager
+          .createQueryBuilder(Villa, 'villa')
           .distinct(true)
           .leftJoin('villa.villaPriceRules', 'pivot')
           .leftJoin('pivot.priceRule', 'priceRule')
