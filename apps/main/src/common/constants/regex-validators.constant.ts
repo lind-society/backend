@@ -3,7 +3,7 @@ export interface IRegexValidator {
   message: string;
 }
 
-export const regexValidator: Record<string, IRegexValidator> = {
+export const REGEX_VALIDATOR: Record<string, IRegexValidator> = {
   identifier: {
     regex:
       /^([\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})|(^[a-zA-Z0-9_.-]+$)|(^[1-9]\d{9,14}$)/,

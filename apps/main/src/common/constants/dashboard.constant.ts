@@ -1,1 +1,1 @@
-export const bestSellerLimit = 5;
+export const BEST_SELLER_LIMIT = 5;

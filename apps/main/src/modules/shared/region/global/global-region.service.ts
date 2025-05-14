@@ -1,4 +1,4 @@
-import { continents } from '@apps/main/common/constants';
+import { CONTINENTS } from '@apps/main/common/constants';
 import { extractLatLngFromGoogleMapsUrl } from '@apps/main/common/helpers';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -34,7 +34,7 @@ export class GlobalRegionService {
   }
 
   async getContinent() {
-    return continents;
+    return CONTINENTS;
   }
 
   async getCountry(continendCode: string) {

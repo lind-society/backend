@@ -3,7 +3,7 @@ export interface IContinentPayload {
   name: string;
 }
 
-export const continents: IContinentPayload[] = [
+export const CONTINENTS: IContinentPayload[] = [
   { code: 'AF', name: 'Africa' },
   { code: 'AN', name: 'Antarctica' },
   { code: 'AS', name: 'Asia' },

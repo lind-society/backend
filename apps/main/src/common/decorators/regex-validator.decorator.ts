@@ -1,15 +1,15 @@
 import { applyDecorators, BadRequestException } from '@nestjs/common';
 import { Matches } from 'class-validator';
-import { regexValidator } from '../constants';
+import { REGEX_VALIDATOR } from '../constants';
 
-// 👇 this will extract the exact keys of your regexValidator
-type RegexValidatorKeys = keyof typeof regexValidator;
+// 👇 this will extract the exact keys of your REGEX_VALIDATOR
+type RegexValidatorKeys = keyof typeof REGEX_VALIDATOR;
 
 export function RegexValidator(field: RegexValidatorKeys) {
-  const validator = regexValidator[field];
+  const validator = REGEX_VALIDATOR[field];
 
   if (!validator) {
-    throw new BadRequestException(`invalid regexValidator field: "${field}"`);
+    throw new BadRequestException(`invalid REGEX_VALIDATOR field: "${field}"`);
   }
 
   return applyDecorators(

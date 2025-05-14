@@ -1,8 +1,8 @@
 import {
-  floorPlansConfig,
-  photosConfig,
-  video360sConfig,
-  videosConfig,
+  FLOOR_PLANS_CONFIG,
+  PHOTOS_CONFIG,
+  VIDEO_360S_CONFIG,
+  VIDEOS_CONFIG,
 } from '@apps/main/common/constants';
 import {
   imageFileFilter,
@@ -33,10 +33,10 @@ export class StorageController {
 
   @Post('photos')
   @UseInterceptors(
-    FilesInterceptor('files', photosConfig.quantity, {
+    FilesInterceptor('files', PHOTOS_CONFIG.quantity, {
       limits: {
-        files: photosConfig.quantity,
-        fileSize: photosConfig.size,
+        files: PHOTOS_CONFIG.quantity,
+        fileSize: PHOTOS_CONFIG.size,
       },
       fileFilter: imageFileFilter,
     }),
@@ -54,10 +54,10 @@ export class StorageController {
 
   @Post('videos')
   @UseInterceptors(
-    FilesInterceptor('files', videosConfig.quantity, {
+    FilesInterceptor('files', VIDEOS_CONFIG.quantity, {
       limits: {
-        files: videosConfig.quantity,
-        fileSize: videosConfig.size,
+        files: VIDEOS_CONFIG.quantity,
+        fileSize: VIDEOS_CONFIG.size,
       },
       fileFilter: videoFileFilter,
     }),
@@ -75,10 +75,10 @@ export class StorageController {
 
   @Post('video360s')
   @UseInterceptors(
-    FilesInterceptor('files', video360sConfig.quantity, {
+    FilesInterceptor('files', VIDEO_360S_CONFIG.quantity, {
       limits: {
-        files: video360sConfig.quantity,
-        fileSize: video360sConfig.size,
+        files: VIDEO_360S_CONFIG.quantity,
+        fileSize: VIDEO_360S_CONFIG.size,
       },
       fileFilter: videoFileFilter,
     }),
@@ -96,10 +96,10 @@ export class StorageController {
 
   @Post('floor-plans')
   @UseInterceptors(
-    FilesInterceptor('files', floorPlansConfig.quantity, {
+    FilesInterceptor('files', FLOOR_PLANS_CONFIG.quantity, {
       limits: {
-        files: floorPlansConfig.quantity,
-        fileSize: floorPlansConfig.size,
+        files: FLOOR_PLANS_CONFIG.quantity,
+        fileSize: FLOOR_PLANS_CONFIG.size,
       },
       fileFilter: imageFileFilter,
     }),

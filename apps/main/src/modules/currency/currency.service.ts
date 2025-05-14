@@ -47,14 +47,14 @@ export class CurrencyService {
     return paginateResponseMapper(paginatedCurrency);
   }
 
-  async findOne(id: string): Promise<CurrencyDto> {
+  async findOne(id: string, usedInPriceConverterInterceptor?: boolean): Promise<CurrencyDto> {
     const currency = await this.currencyRepository.findOne({
       where: {
         id,
       },
     });
 
-    if (!currency) {
+    if (!currency && !usedInPriceConverterInterceptor) {
       throw new NotFoundException('currency not found');
     }
 

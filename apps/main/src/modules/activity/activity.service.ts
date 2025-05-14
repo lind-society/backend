@@ -1,4 +1,4 @@
-import { bestSellerLimit } from '@apps/main/common/constants';
+import { BEST_SELLER_LIMIT } from '@apps/main/common/constants';
 import { BestSeller } from '@apps/main/common/enums';
 import { paginateResponseMapper } from '@apps/main/common/helpers';
 import {
@@ -262,7 +262,7 @@ export class ActivityService {
         .addOrderBy('activity.averageRating', 'DESC', 'NULLS LAST');
     }
 
-    const result = await query.limit(bestSellerLimit).getRawAndEntities();
+    const result = await query.limit(BEST_SELLER_LIMIT).getRawAndEntities();
 
     const orderedData = result.raw
       .map((rawItem) => {

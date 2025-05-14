@@ -93,6 +93,21 @@ export class CurrencyConverterService {
     return paginateResponseMapper(paginatedCurrencyConverter);
   }
 
+  async isExist(
+    baseCurrencyId: string,
+    targetCurrencyId: string,
+  ): Promise<Boolean> {
+    const currency = await this.currencyConverterRepository.exists({
+      where: {
+        baseCurrencyId,
+        targetCurrencyId,
+      },
+      select: ['id'],
+    });
+
+    return !!currency;
+  }
+
   async findOne(id: string): Promise<CurrencyConverterDto> {
     const currency = await this.currencyConverterRepository.findOne({
       where: {
