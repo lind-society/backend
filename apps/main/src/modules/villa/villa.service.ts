@@ -12,6 +12,7 @@ import {
   VillaFeaturePivot,
   VillaPolicy,
   VillaPolicyPivot,
+  VillaPriceRulePivot,
 } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -270,7 +271,7 @@ export class VillaService {
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
         villaPolicies: { policy: { type: true } },
-        villaPriceRules: { priceRule: true },
+        villaPriceRules: { priceRule: { currency: true } },
       },
     });
 
@@ -278,20 +279,19 @@ export class VillaService {
 
     const mappedPaginatedVilla = paginatedVilla.data.map((villa) => {
       if (villa.villaPriceRules) {
-        villa.villaPriceRules = villa.villaPriceRules
-          .filter((rule) => {
-            const startDate = new Date(rule.priceRule.startDate);
-
-            return currentDate >= startDate;
-          })
-          .sort(
-            (a, b) =>
-              new Date(b.priceRule.startDate).getTime() -
-              new Date(a.priceRule.startDate).getTime(),
-          );
+        villa.villaPriceRules = villa.villaPriceRules =
+          this._filterAndSortVillaPriceRule(currentDate, villa.villaPriceRules);
       }
 
-      return this._mapVillaData(villa);
+      const currentPriceRule = villa.villaPriceRules[0]?.priceRule;
+
+      const mappedVilla = this._mapVillaData(villa);
+
+      if (currentPriceRule) {
+        this._setCurrentDailyPrice(mappedVilla, currentPriceRule);
+      }
+
+      return mappedVilla;
     });
 
     return paginateResponseMapper(paginatedVilla, mappedPaginatedVilla);
@@ -328,17 +328,10 @@ export class VillaService {
     const currentDate = new Date();
 
     if (villa.villaPriceRules.length > 0) {
-      villa.villaPriceRules = villa.villaPriceRules
-        .filter((rule) => {
-          const startDate = new Date(rule.priceRule.startDate);
-
-          return currentDate >= startDate;
-        })
-        .sort(
-          (a, b) =>
-            new Date(b.priceRule.startDate).getTime() -
-            new Date(a.priceRule.startDate).getTime(),
-        );
+      villa.villaPriceRules = this._filterAndSortVillaPriceRule(
+        currentDate,
+        villa.villaPriceRules,
+      );
     }
 
     const currentPriceRule = villa.villaPriceRules[0]?.priceRule;
@@ -793,5 +786,24 @@ export class VillaService {
       currencyId: priceRule.currencyId,
       currency: villa.currency,
     };
+  }
+
+  private _filterAndSortVillaPriceRule(
+    currentDate: Date,
+    villaPriceRules: VillaPriceRulePivot[],
+  ): VillaPriceRulePivot[] {
+    villaPriceRules
+      .filter((rule) => {
+        const startDate = new Date(rule.priceRule.startDate);
+
+        return currentDate >= startDate;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.priceRule.startDate).getTime() -
+          new Date(a.priceRule.startDate).getTime(),
+      );
+
+    return villaPriceRules;
   }
 }
