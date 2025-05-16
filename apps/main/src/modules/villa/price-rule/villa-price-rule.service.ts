@@ -1,4 +1,9 @@
 import {
+  CREATED_PRICE_RULE,
+  DELETED_PRICE_RULE,
+  UPDATED_PRICE_RULE,
+} from '@apps/main/common/constants';
+import {
   convertDatetimeToDate,
   paginateResponseMapper,
 } from '@apps/main/common/helpers';
@@ -13,7 +18,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
@@ -21,6 +27,7 @@ import { Brackets, DataSource, EntityManager, Repository } from 'typeorm';
 import {
   AvailableVillaDto,
   CreateVillaPriceRuleDto,
+  GetAffectedVillaDto,
   GetUnavailableVillaDto,
   GetVillaWithPriceRuleDto,
   UpdateVillaPriceRuleDto,
@@ -32,11 +39,13 @@ import {
 @Injectable()
 export class VillaPriceRuleService {
   constructor(
+    @InjectDataSource()
     private datasource: DataSource,
     @InjectRepository(VillaPriceRule)
     private villaPriceRuleRepository: Repository<VillaPriceRule>,
     @InjectRepository(Villa)
     private villaRepository: Repository<Villa>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(payload: CreateVillaPriceRuleDto): Promise<VillaPriceRuleDto> {
@@ -72,6 +81,8 @@ export class VillaPriceRuleService {
         return createdVillaPriceRule;
       },
     );
+
+    this.eventEmitter.emit(CREATED_PRICE_RULE, createdVillaPriceRule.id);
 
     return createdVillaPriceRule;
   }
@@ -162,13 +173,29 @@ export class VillaPriceRuleService {
       }
     });
 
+    this.eventEmitter.emit(UPDATED_PRICE_RULE, id);
+
     return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
     await this.findOne(id);
 
-    await this.villaPriceRuleRepository.delete(id);
+    await this.datasource.transaction(async (manager) => {
+      const affectedVillas: GetAffectedVillaDto[] = await manager
+        .getRepository(VillaPriceRule)
+        .createQueryBuilder('priceRule')
+        .innerJoin('priceRule.villaPriceRules', 'vpr')
+        .innerJoin('vpr.villa', 'villa')
+        .select('villa.id', 'villaID')
+        .getRawMany();
+
+      const affectedVillaIds = affectedVillas.map((villa) => villa.villaId);
+
+      await manager.delete(VillaPriceRule, id);
+
+      this.eventEmitter.emit(DELETED_PRICE_RULE, affectedVillaIds);
+    });
   }
 
   private _mapVillaPriceRuleData(
@@ -199,7 +226,7 @@ export class VillaPriceRuleService {
         new Brackets((qb) => {
           qb.where(
             'priceRule.start_date <= :startDate AND priceRule.end_date >= :endDate',
-          );
+          ).orWhere('pivot.id IS NULL');
         }),
       )
       .setParameters({

@@ -9,7 +9,7 @@ import {
   PropertyFeaturePivot,
 } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
@@ -30,6 +30,7 @@ import { UpdatePropertyDto } from './dto/update-property.dto';
 @Injectable()
 export class PropertyService {
   constructor(
+    @InjectDataSource()
     private datasource: DataSource,
     @InjectRepository(Property)
     private propertyRepository: Repository<Property>,

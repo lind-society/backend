@@ -5,7 +5,7 @@ import {
 import { VillaBooking } from '@apps/main/database/entities';
 import { WhatsappClientService } from '@libs/whatsapp-client';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../../shared/dto';
@@ -19,6 +19,7 @@ import {
 @Injectable()
 export class VillaBookingService {
   constructor(
+    @InjectDataSource() 
     private datasource: DataSource,
     @InjectRepository(VillaBooking)
     private villaBookingRepository: Repository<VillaBooking>,

@@ -16,6 +16,9 @@
       "path": "./apps/message-queue/tsconfig.app.json"
     },
     {
+      "path": "./apps/scheduler/tsconfig.app.json"
+    },
+    {
       "path": "./libs/common/tsconfig.lib.json"
     },
     {

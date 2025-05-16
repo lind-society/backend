@@ -15,7 +15,7 @@ import {
   VillaPriceRuleSeason,
 } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
@@ -40,6 +40,7 @@ import { VillaPolicyTypeService } from './policy/type/villa-policy-type.service'
 @Injectable()
 export class VillaService {
   constructor(
+    @InjectDataSource() 
     private datasource: DataSource,
     @InjectRepository(Villa)
     private villaRepository: Repository<Villa>,
@@ -305,6 +306,21 @@ export class VillaService {
 
     if (!villa) {
       throw new NotFoundException(`villa not found`);
+    }
+
+    const currentDate = new Date();
+
+    if (villa.villaPriceRules) {
+      villa.villaPriceRules = villa.villaPriceRules.filter((rule) => {
+        const startDate = new Date(rule.priceRule.startDate);
+        const endDate = new Date(rule.priceRule.endDate);
+
+        return (
+          currentDate >= startDate &&
+          currentDate <= endDate &&
+          rule.priceRule.isActive
+        );
+      });
     }
 
     return this._mapVillaData(villa);
