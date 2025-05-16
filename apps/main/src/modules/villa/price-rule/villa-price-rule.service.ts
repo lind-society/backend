@@ -224,9 +224,9 @@ export class VillaPriceRuleService {
       .where(
         // Keep villas where there's no overlap OR no priceRule at all
         new Brackets((qb) => {
-          qb.where(
-            'priceRule.start_date <= :startDate AND priceRule.end_date >= :endDate',
-          ).orWhere('pivot.id IS NULL');
+          qb.where('pivot.id IS NULL').orWhere(
+            'priceRule.end_date < :startDate OR priceRule.start_date > :endDate',
+          );
         }),
       )
       .setParameters({

@@ -37,7 +37,7 @@ export class VillaPriceService {
     const villas = await villaRepository
       .createQueryBuilder('villa')
       .innerJoin('villa.villaPriceRules', 'vpr')
-      .innerJoin('vpr.priceRule', 'vpr')
+      .innerJoin('vpr.priceRule', 'pr')
       .where('pr.id = :priceRuleId', { priceRuleId })
       .getMany();
 
