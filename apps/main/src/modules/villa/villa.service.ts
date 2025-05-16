@@ -272,9 +272,25 @@ export class VillaService {
       },
     });
 
-    const mappedPaginatedVilla = paginatedVilla.data.map((villa) =>
-      this._mapVillaData(villa),
-    );
+    const currentDate = new Date();
+
+    const mappedPaginatedVilla = paginatedVilla.data.map((villa) => {
+      if (villa.villaPriceRules) {
+        villa.villaPriceRules = villa.villaPriceRules
+          .filter((rule) => {
+            const startDate = new Date(rule.priceRule.startDate);
+
+            return currentDate >= startDate;
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.priceRule.startDate).getTime() -
+              new Date(a.priceRule.startDate).getTime(),
+          );
+      }
+
+      return this._mapVillaData(villa);
+    });
 
     return paginateResponseMapper(paginatedVilla, mappedPaginatedVilla);
   }
@@ -310,16 +326,17 @@ export class VillaService {
     const currentDate = new Date();
 
     if (villa.villaPriceRules) {
-      villa.villaPriceRules = villa.villaPriceRules.filter((rule) => {
-        const startDate = new Date(rule.priceRule.startDate);
-        const endDate = new Date(rule.priceRule.endDate);
+      villa.villaPriceRules = villa.villaPriceRules
+        .filter((rule) => {
+          const startDate = new Date(rule.priceRule.startDate);
 
-        return (
-          currentDate >= startDate &&
-          currentDate <= endDate &&
-          rule.priceRule.isActive
+          return currentDate >= startDate;
+        })
+        .sort(
+          (a, b) =>
+            new Date(b.priceRule.startDate).getTime() -
+            new Date(a.priceRule.startDate).getTime(),
         );
-      });
     }
 
     return this._mapVillaData(villa);

@@ -4,7 +4,7 @@ import {
   UPDATED_PRICE_RULE,
 } from '@apps/main/common/constants';
 import { Villa } from '@apps/main/database/entities';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -13,6 +13,8 @@ import { VillaPriceService } from './villa-price.service';
 
 @Injectable()
 export class VillaPriceRuleEventHandlerService {
+  private logger = new Logger(VillaPriceRuleEventHandlerService.name);
+
   constructor(
     @InjectDataSource()
     private datasource: DataSource,
@@ -21,7 +23,6 @@ export class VillaPriceRuleEventHandlerService {
 
   @OnEvent(CREATED_PRICE_RULE)
   async handleCreatedPriceRule(id: string) {
-    console.log('price rule created');
     await this.datasource.transaction(async (entityManager) => {
       await this.villaPriceService.updateVillaPrices(id, entityManager);
     });
@@ -48,6 +49,10 @@ export class VillaPriceRuleEventHandlerService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async updatePriceDaily(): Promise<void> {
+    this.logger.log(
+      'Updating Villa Pricing based on Price Rule (Daily at Midnight)',
+    );
+
     await this.datasource.transaction(async (entityManager) => {
       const villas = await entityManager
         .getRepository(Villa)
@@ -65,6 +70,8 @@ export class VillaPriceRuleEventHandlerService {
           );
         }
       }
+
+      this.logger.log(`Updated ${villas.length} Villas`);
     });
   }
 }

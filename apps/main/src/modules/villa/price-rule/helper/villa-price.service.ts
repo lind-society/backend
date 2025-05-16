@@ -1,11 +1,11 @@
 import {
+  DiscountType,
   Villa,
   VillaPriceRule,
-  VillaPriceRuleSeason,
 } from '@apps/main/database/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { VillaDto } from '../../dto';
 
 @Injectable()
@@ -53,7 +53,7 @@ export class VillaPriceService {
       return;
     }
 
-    const { discount, isDiscount, isActive, season, startDate, endDate } =
+    const { discount, discountType, isDiscount, isActive, startDate, endDate } =
       priceRule;
 
     const currentDate = new Date();
@@ -64,7 +64,7 @@ export class VillaPriceService {
 
     for (const villa of villas) {
       if (isRuleActive) {
-        this._setDiscountPrices(villa, season, isDiscount, discount);
+        this._setDiscountPrices(villa, isDiscount, discountType, discount);
       }
 
       await villaRepository.save(villa);
@@ -80,11 +80,15 @@ export class VillaPriceService {
     villaId: string,
     entityManager: EntityManager,
   ): Promise<void> {
-    const repository = entityManager
+    const villaRepository = entityManager
       ? entityManager.getRepository(Villa)
       : this.villaRepository;
 
-    const villa = await repository.findOne({
+    const villaPriceRulerepository = entityManager
+      ? entityManager.getRepository(VillaPriceRule)
+      : this.villaRepository;
+
+    const villa = await villaRepository.findOne({
       where: {
         id: villaId,
       },
@@ -96,6 +100,10 @@ export class VillaPriceService {
     if (!villa) {
       return;
     }
+
+    const villaPriceRuleIds = villa.villaPriceRules.map(
+      (villaPriceRule) => villaPriceRule.priceRuleId,
+    );
 
     const currentDate = new Date();
 
@@ -123,63 +131,75 @@ export class VillaPriceService {
     if (activePriceRules.length > 0) {
       const currentActiveRule = activePriceRules[0];
 
-      const { discount, isDiscount, season } = currentActiveRule;
+      const priceRuleIdsToDeactivate = villaPriceRuleIds.filter(
+        (id) => id !== currentActiveRule.id,
+      );
 
-      this._setDiscountPrices(villa, season, isDiscount, discount);
+      if (priceRuleIdsToDeactivate.length > 0) {
+        await villaPriceRulerepository.update(
+          { id: In(priceRuleIdsToDeactivate) },
+          { isActive: false },
+        );
+      }
 
-      await repository.save(villa);
+      const { discount, discountType, isDiscount } = currentActiveRule;
+
+      this._setDiscountPrices(villa, isDiscount, discountType, discount);
+
+      await villaRepository.save(villa);
     } else {
       villa.dailyPriceAfterDiscount = villa.dailyPrice;
       villa.peakSeasonDailyPriceAfterDiscount = villa.peakSeasonDailyPrice;
       villa.highSeasonDailyPriceAfterDiscount = villa.highSeasonDailyPrice;
       villa.lowSeasonDailyPriceAfterDiscount = villa.lowSeasonDailyPrice;
 
-      await repository.save(villa);
+      await villaRepository.save(villa);
     }
   }
 
   private _setDiscountPrices(
     villa: VillaDto,
-    season: VillaPriceRuleSeason,
     isDiscount: boolean,
+    discountType: DiscountType,
     discount: number,
   ) {
-    switch (season) {
-      case VillaPriceRuleSeason.Peak_Season:
-        if (villa.peakSeasonDailyPrice) {
-          villa.peakSeasonDailyPriceAfterDiscount = isDiscount
-            ? Math.max(0, villa.peakSeasonDailyPrice) - discount
-            : villa.peakSeasonDailyPrice;
-        }
+    const currentDiscountType = discountType ?? DiscountType.Percentage;
+    const priceRuleDiscount = isDiscount ? (discount ?? 0) : 0;
 
-        break;
+    const dailyPrice = villa.dailyPrice != null ? villa.dailyPrice : 0;
+    const lowSeasonDailyPrice =
+      villa.lowSeasonDailyPrice != null ? villa.lowSeasonDailyPrice : 0;
+    const highSeasonDailyPrice =
+      villa.highSeasonDailyPrice != null ? villa.highSeasonDailyPrice : 0;
+    const peakSeasonDailyPrice =
+      villa.peakSeasonDailyPrice != null ? villa.peakSeasonDailyPrice : 0;
 
-      case VillaPriceRuleSeason.High_Season:
-        if (villa.highSeasonDailyPrice) {
-          villa.highSeasonDailyPriceAfterDiscount = isDiscount
-            ? Math.max(0, villa.highSeasonDailyPrice) - discount
-            : villa.highSeasonDailyPrice;
-        }
+    villa.dailyPriceAfterDiscount = Math.max(
+      0,
+      currentDiscountType === DiscountType.Fixed
+        ? dailyPrice - priceRuleDiscount
+        : dailyPrice * (1 - priceRuleDiscount / 100),
+    );
 
-        break;
+    villa.lowSeasonDailyPriceAfterDiscount = Math.max(
+      0,
+      currentDiscountType === DiscountType.Fixed
+        ? lowSeasonDailyPrice - priceRuleDiscount
+        : lowSeasonDailyPrice * (1 - priceRuleDiscount / 100),
+    );
 
-      case VillaPriceRuleSeason.Low_Season:
-        if (villa.lowSeasonDailyPrice) {
-          villa.lowSeasonDailyPriceAfterDiscount = isDiscount
-            ? Math.max(0, villa.lowSeasonDailyPrice) - discount
-            : villa.lowSeasonDailyPrice;
-        }
+    villa.highSeasonDailyPriceAfterDiscount = Math.max(
+      0,
+      currentDiscountType === DiscountType.Fixed
+        ? highSeasonDailyPrice + priceRuleDiscount
+        : highSeasonDailyPrice * (1 + priceRuleDiscount / 100),
+    );
 
-        break;
-
-      default:
-        if (villa.dailyPrice) {
-          villa.dailyPriceAfterDiscount = isDiscount
-            ? Math.max(0, villa.dailyPrice) - discount
-            : villa.dailyPrice;
-        }
-
-        break;
-    }
+    villa.peakSeasonDailyPriceAfterDiscount = Math.max(
+      0,
+      currentDiscountType === DiscountType.Fixed
+        ? peakSeasonDailyPrice + priceRuleDiscount
+        : peakSeasonDailyPrice * (1 + priceRuleDiscount / 100),
+    );
   }
 }

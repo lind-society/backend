@@ -56,8 +56,13 @@ export class VillaPriceRuleService {
 
     const createdVillaPriceRule = await this.datasource.transaction(
       async (manager: EntityManager) => {
+        const adjustedDateTimeRangeBasePriceVillaPriceRuleData =
+          await this._setDateTimeRange(payload);
+
         const convertedBasePriceVillaPriceRuleData =
-          await this._convertToBaseCurrency(payload);
+          await this._convertToBaseCurrency(
+            adjustedDateTimeRangeBasePriceVillaPriceRuleData,
+          );
 
         const createdVillaPriceRule = await manager.save(
           VillaPriceRule,
@@ -182,8 +187,13 @@ export class VillaPriceRuleService {
     return await this.datasource.transaction(async (manager) => {
       await this.findOne(id, manager);
 
+      const adjustedDateTimeRangeBasePriceVillaPriceRuleData =
+        await this._setDateTimeRange(villaPriceRuleData);
+
       const convertedBasePriceVillaPriceRuleData =
-        await this._convertToBaseCurrency(villaPriceRuleData);
+        await this._convertToBaseCurrency(
+          adjustedDateTimeRangeBasePriceVillaPriceRuleData,
+        );
 
       await this.villaPriceRuleRepository.update(
         id,
@@ -348,6 +358,22 @@ export class VillaPriceRuleService {
     payload: VillaWithPriceRuleDto,
   ): string {
     return `villa ${payload.name} has applied another price rule in date range ${convertDatetimeToDate(payload.priceRuleStartDate)} - ${convertDatetimeToDate(payload.priceRuleEndDate)}`;
+  }
+
+  private async _setDateTimeRange(
+    villaPriceRuleData: CreateVillaPriceRuleDto | UpdateVillaPriceRuleDto,
+  ): Promise<CreateVillaPriceRuleDto | UpdateVillaPriceRuleDto> {
+    const startDate = new Date(villaPriceRuleData.startDate);
+    const endDate = new Date(villaPriceRuleData.endDate);
+
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    return {
+      ...villaPriceRuleData,
+      startDate,
+      endDate,
+    };
   }
 
   private async _convertToBaseCurrency(

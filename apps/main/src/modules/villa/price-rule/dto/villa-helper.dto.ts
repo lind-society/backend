@@ -6,7 +6,7 @@ import {
   PaginationQueryDto,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -59,11 +59,21 @@ export class GetVillaWithPriceRuleDto
   extends PaginationQueryDto
   implements IPriceRuleFilterDate
 {
+  @Transform(({ value }) => {
+    const date = new Date(value);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  })
   @Type(() => Date)
   @IsDate({ message: 'start date must be a valid date' })
   @IsNotEmpty()
   readonly startDate!: Date;
 
+  @Transform(({ value }) => {
+    const date = new Date(value);
+    date.setHours(23, 59, 59, 999);
+    return date;
+  })
   @Type(() => Date)
   @IsDate({ message: 'end date must be a valid date' })
   @IsNotEmpty()
