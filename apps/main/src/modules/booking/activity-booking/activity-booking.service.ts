@@ -20,7 +20,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Between, DataSource, EntityManager, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../../shared/dto';
@@ -36,6 +36,7 @@ export class ActivityBookingService {
   private readonly logger = new Logger(ActivityBookingService.name);
 
   constructor(
+    @InjectDataSource()
     private datasource: DataSource,
     @InjectRepository(Activity)
     private activityRepository: Repository<Activity>,

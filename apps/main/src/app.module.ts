@@ -2,6 +2,8 @@ import { envPaths } from '@libs/common/constants';
 import { LoggerModule } from '@libs/logger';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -75,6 +77,8 @@ import { VillaModule } from './modules/villa/villa.module';
         ...configService.get('database'),
       }),
     }),
+    EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     LoggerModule,
     AxiosModule,
     StorageModule,

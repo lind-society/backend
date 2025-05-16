@@ -1,0 +1,1 @@
+export const DAILY_UPDATE_PRICE_RULE = 'price-rule.daily-update';

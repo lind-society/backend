@@ -1,7 +1,7 @@
 import { paginateResponseMapper } from '@apps/main/common/helpers';
 import { Package, PackageBenefitPivot } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
@@ -25,6 +25,7 @@ import { CreatePackageBenefitPivotDto } from './dto/create-package-benefit-pivot
 @Injectable()
 export class PackageService {
   constructor(
+    @InjectDataSource() 
     private datasource: DataSource,
     @InjectRepository(Package)
     private packageRepository: Repository<Package>,

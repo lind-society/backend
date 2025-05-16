@@ -38,6 +38,8 @@
       "@apps/whatsapp/*": ["apps/whatsapp/src/*"],
       "@apps/mail": ["apps/mail/src"],
       "@apps/mail/*": ["apps/mail/src/*"],
+      "@apps/scheduler": ["apps/scheduler/src"],
+      "@apps/scheduler/*": ["apps/scheduler/src/*"],
       "@apps/message-queue": ["apps/message-queue/src"],
       "@apps/message-queue/*": ["apps/message-queue/src/*"]
     }

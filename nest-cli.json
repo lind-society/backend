@@ -107,6 +107,24 @@
         "tsConfigPath": "libs/rabbitmq/tsconfig.lib.json"
       }
     },
+    "scheduler": {
+      "type": "application",
+      "root": "apps/scheduler",
+      "entryFile": "main",
+      "sourceRoot": "apps/scheduler/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/scheduler/tsconfig.app.json"
+      }
+    },
+    "scheduler-client": {
+      "type": "library",
+      "root": "libs/scheduler-client",
+      "entryFile": "index",
+      "sourceRoot": "libs/scheduler-client/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/scheduler-client/tsconfig.lib.json"
+      }
+    },
     "whatsapp": {
       "type": "application",
       "root": "apps/whatsapp",

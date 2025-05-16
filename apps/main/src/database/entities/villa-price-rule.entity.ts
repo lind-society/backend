@@ -40,13 +40,13 @@ export class VillaPriceRule {
   })
   season!: VillaPriceRuleSeason;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'is_discount', type: 'boolean', default: false })
   isDiscount!: boolean;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   discount!: number | null;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
   @OneToMany(
