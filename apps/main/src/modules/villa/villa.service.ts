@@ -33,8 +33,10 @@ import {
 } from './dto';
 import { CreateVillaDto } from './dto/create-villa.dto';
 import { UpdateVillaDto } from './dto/update-villa.dto';
+import { getVillaCurrentDailyPrice } from './helper';
 import { CreateVillaPolicyDto, UpdateVillaPolicyDto } from './policy/dto';
 import { VillaPolicyTypeService } from './policy/type/villa-policy-type.service';
+import { VillaPriceRuleWithRelationsDto } from './price-rule/dto';
 
 @Injectable()
 export class VillaService {
@@ -315,7 +317,7 @@ export class VillaService {
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
         villaPolicies: { policy: { type: true } },
-        villaPriceRules: { priceRule: true },
+        villaPriceRules: { priceRule: { currency: true } },
       },
     });
 
@@ -325,7 +327,7 @@ export class VillaService {
 
     const currentDate = new Date();
 
-    if (villa.villaPriceRules) {
+    if (villa.villaPriceRules.length > 0) {
       villa.villaPriceRules = villa.villaPriceRules
         .filter((rule) => {
           const startDate = new Date(rule.priceRule.startDate);
@@ -339,7 +341,15 @@ export class VillaService {
         );
     }
 
-    return this._mapVillaData(villa);
+    const currentPriceRule = villa.villaPriceRules[0]?.priceRule;
+
+    const mappedVilla = this._mapVillaData(villa);
+
+    if (currentPriceRule) {
+      this._setCurrentDailyPrice(mappedVilla, currentPriceRule);
+    }
+
+    return mappedVilla;
   }
 
   async update(
@@ -763,5 +773,25 @@ export class VillaService {
     );
 
     return updatedData;
+  }
+
+  private _setCurrentDailyPrice(
+    villa: VillaWithRelationsDto,
+    priceRule: VillaPriceRuleWithRelationsDto,
+  ): void {
+    const { dailyPrice, dailyPriceAfterDiscount } = getVillaCurrentDailyPrice(
+      priceRule.season,
+      villa,
+    );
+
+    villa.currentPrice = {
+      season: priceRule.season,
+      isDiscount: priceRule.isDiscount,
+      discount: priceRule.discount,
+      dailyPrice,
+      dailyPriceAfterDiscount,
+      currencyId: priceRule.currencyId,
+      currency: villa.currency,
+    };
   }
 }

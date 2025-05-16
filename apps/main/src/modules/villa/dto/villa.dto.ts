@@ -8,6 +8,7 @@ import {
   VillaFeaturePivot,
   VillaPolicyPivot,
   VillaPriceRulePivot,
+  VillaPriceRuleSeason,
 } from '@apps/main/database/entities';
 import { VillaBookingDto } from '@apps/main/modules/booking/villa-booking/dto';
 import { CurrencyDto } from '@apps/main/modules/currency/dto';
@@ -39,6 +40,16 @@ export interface IVillaWithRelationsDto extends IVillaDto {
   features?: VillaFeaturePivot[];
   policies?: VillaPolicyPivot[];
   priceRules?: VillaPriceRulePivot[];
+}
+
+export interface ICurrentVillaPrices {
+  season: VillaPriceRuleSeason;
+  isDiscount: boolean;
+  discount?: number;
+  dailyPrice?: number;
+  dailyPriceAfterDiscount?: number;
+  currencyId: string;
+  currency?: CurrencyDto;
 }
 
 export class VillaDto implements IVillaDto {
@@ -89,6 +100,8 @@ export class VillaDto implements IVillaDto {
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
   readonly deletedAt!: Date | null;
+
+  currentPrice?: ICurrentVillaPrices | null;
 }
 
 export class VillaWithRelationsDto
