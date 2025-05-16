@@ -29,7 +29,6 @@ export class VillaPriceRuleEventHandlerService {
 
   @OnEvent(UPDATED_PRICE_RULE)
   async handleUpdatedPriceRule(id: string) {
-    console.log('price rule updated');
     await this.datasource.transaction(async (entityManager) => {
       await this.villaPriceService.updateVillaPrices(id, entityManager);
     });
@@ -37,7 +36,6 @@ export class VillaPriceRuleEventHandlerService {
 
   @OnEvent(DELETED_PRICE_RULE)
   async handleDeletedPriceRule(villaIds: string[]) {
-    console.log('price rule deleted');
     await this.datasource.transaction(async (entityManager) => {
       for (const villaId of villaIds) {
         await this.villaPriceService.recalculateVillaPrices(
@@ -50,7 +48,6 @@ export class VillaPriceRuleEventHandlerService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async updatePriceDaily(): Promise<void> {
-    console.log('called');
     await this.datasource.transaction(async (entityManager) => {
       const villas = await entityManager
         .getRepository(Villa)

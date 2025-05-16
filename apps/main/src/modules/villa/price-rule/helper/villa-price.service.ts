@@ -97,8 +97,6 @@ export class VillaPriceService {
       return;
     }
 
-    console.log(villa);
-
     const currentDate = new Date();
 
     villa.dailyPriceAfterDiscount = null;
