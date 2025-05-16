@@ -114,8 +114,6 @@ export class WhatsappClientService implements OnModuleInit {
         ),
       );
 
-      console.log('healthResult ;', healthResult);
-
       this.isConnected = healthResult.status === 'ok';
       return this.isConnected;
     } catch (error) {
