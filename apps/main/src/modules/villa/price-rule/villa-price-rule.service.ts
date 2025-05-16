@@ -8,6 +8,7 @@ import {
   paginateResponseMapper,
 } from '@apps/main/common/helpers';
 import {
+  DiscountType,
   Villa,
   VillaPriceRule,
   VillaPriceRulePivot,
@@ -24,6 +25,7 @@ import { plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Brackets, DataSource, EntityManager, Repository } from 'typeorm';
+import { CurrencyService } from '../../currency/currency.service';
 import {
   AvailableVillaDto,
   CreateVillaPriceRuleDto,
@@ -45,10 +47,13 @@ export class VillaPriceRuleService {
     private villaPriceRuleRepository: Repository<VillaPriceRule>,
     @InjectRepository(Villa)
     private villaRepository: Repository<Villa>,
+    private currencyService: CurrencyService,
     private eventEmitter: EventEmitter2,
   ) {}
 
   async create(payload: CreateVillaPriceRuleDto): Promise<VillaPriceRuleDto> {
+    this._handleDefaultDiscountType(payload);
+
     const createdVillaPriceRule = await this.datasource.transaction(
       async (manager: EntityManager) => {
         const createdVillaPriceRule = await manager.save(
@@ -119,8 +124,15 @@ export class VillaPriceRuleService {
     );
   }
 
-  async findOne(id: string): Promise<VillaPriceRuleWithRelationsDto> {
-    const villaPriceRule = await this.villaPriceRuleRepository.findOne({
+  async findOne(
+    id: string,
+    entityManager?: EntityManager,
+  ): Promise<VillaPriceRuleWithRelationsDto> {
+    const repository = entityManager
+      ? entityManager.getRepository(VillaPriceRule)
+      : this.villaPriceRuleRepository;
+
+    const villaPriceRule = await repository.findOne({
       where: {
         id,
       },
@@ -140,11 +152,13 @@ export class VillaPriceRuleService {
     id: string,
     payload: UpdateVillaPriceRuleDto,
   ): Promise<VillaPriceRuleWithRelationsDto> {
-    await this.findOne(id);
+    this._handleDefaultDiscountType(payload);
 
     const { villaIds, ...villaPriceRuleData } = payload;
 
     await this.datasource.transaction(async (manager) => {
+      await this.findOne(id, manager);
+
       await this.villaPriceRuleRepository.update(id, villaPriceRuleData);
 
       if (Array.isArray(villaIds)) {
@@ -306,5 +320,29 @@ export class VillaPriceRuleService {
     payload: VillaWithPriceRuleDto,
   ): string {
     return `villa ${payload.name} has applied another price rule in date range ${convertDatetimeToDate(payload.priceRuleStartDate)} - ${convertDatetimeToDate(payload.priceRuleEndDate)}`;
+  }
+
+  private async _convertToBaseCurrency(
+    villaPriceRuleData: CreateVillaPriceRuleDto | UpdateVillaPriceRuleDto,
+  ): Promise<CreateVillaPriceRuleDto | UpdateVillaPriceRuleDto> {
+    return {
+      ...villaPriceRuleData,
+      currencyId: await this.currencyService.findBaseCurrencyId(),
+      discount:
+        villaPriceRuleData.discountType === DiscountType.Fixed
+          ? await this.currencyService.convertToBaseCurrency(
+              villaPriceRuleData.currencyId,
+              villaPriceRuleData.discount,
+            )
+          : villaPriceRuleData.discount,
+    };
+  }
+
+  private async _handleDefaultDiscountType(
+    payload: CreateVillaPriceRuleDto | UpdateVillaPriceRuleDto,
+  ) {
+    if (payload.discount && !payload.discountType) {
+      payload.discountType = DiscountType.Percentage;
+    }
   }
 }

@@ -1,14 +1,17 @@
 import {
+  DiscountType,
   VillaPriceRule,
   VillaPriceRulePivot,
   VillaPriceRuleSeason,
 } from '@apps/main/database/entities';
+import { CurrencyDto } from '@apps/main/modules/currency/dto';
 
 export interface IVillaPriceRuleDto
-  extends Omit<VillaPriceRule, 'villaPriceRules'> {}
+  extends Omit<VillaPriceRule, 'villaPriceRules' | 'currency'> {}
 
 export interface IVillaPriceRuleWithRelationsDto extends IVillaPriceRuleDto {
   villas?: VillaPriceRulePivot[];
+  currency?: CurrencyDto;
 }
 
 export class VillaPriceRuleDto implements IVillaPriceRuleDto {
@@ -19,7 +22,9 @@ export class VillaPriceRuleDto implements IVillaPriceRuleDto {
   readonly endDate!: Date;
   readonly season!: VillaPriceRuleSeason;
   readonly isDiscount!: boolean;
+  readonly discountType!: DiscountType;
   readonly discount!: number | null;
+  readonly currencyId!: string | null;
   readonly isActive!: boolean;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
@@ -31,4 +36,5 @@ export class VillaPriceRuleWithRelationsDto
   implements IVillaPriceRuleWithRelationsDto
 {
   readonly villas?: VillaPriceRulePivot[];
+  readonly currency?: CurrencyDto;
 }

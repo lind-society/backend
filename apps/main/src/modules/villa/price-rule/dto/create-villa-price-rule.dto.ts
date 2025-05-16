@@ -1,5 +1,8 @@
 import { DefaultHttpStatus } from '@apps/main/common/enums';
-import { VillaPriceRuleSeason } from '@apps/main/database/entities';
+import {
+  DiscountType,
+  VillaPriceRuleSeason,
+} from '@apps/main/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -50,6 +53,12 @@ export class CreateVillaPriceRuleDto {
   @IsNotEmpty()
   readonly isDiscount!: boolean;
 
+  @IsEnum(DiscountType, {
+    message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
+  @IsOptional()
+  discountType?: DiscountType;
+
   @Type(() => Number)
   @IsNumber(
     { allowNaN: false, allowInfinity: false },
@@ -68,6 +77,10 @@ export class CreateVillaPriceRuleDto {
   @IsUUID('4', { each: true })
   @IsOptional()
   readonly villaIds?: string[];
+
+  @IsUUID()
+  @IsNotEmpty()
+  readonly currencyId!: string;
 }
 
 export class CreateVillaPriceRuleSuccessResponse

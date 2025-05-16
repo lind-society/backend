@@ -99,15 +99,22 @@ export class FeatureService {
   }
 
   private async _convertToBaseCurrency(
-    feature: CreateFeatureDto | UpdateFeatureDto,
+    featureData: CreateFeatureDto | UpdateFeatureDto,
   ): Promise<CreateFeatureDto | UpdateFeatureDto> {
     return {
-      ...feature,
+      ...featureData,
       currencyId: await this.currencyService.findBaseCurrencyId(),
       price: await this.currencyService.convertToBaseCurrency(
-        feature.currencyId,
-        feature.price,
+        featureData.currencyId,
+        featureData.price,
       ),
+      discount:
+        featureData.discountType === DiscountType.Fixed
+          ? await this.currencyService.convertToBaseCurrency(
+              featureData.currencyId,
+              featureData.discount,
+            )
+          : featureData.discount,
     };
   }
 

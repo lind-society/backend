@@ -3,10 +3,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Currency } from './currency.entity';
+import { DiscountType } from './shared-enum.entity';
 import { VillaPriceRulePivot } from './villa-price-rule-pivot.entity';
 
 export enum VillaPriceRuleSeason {
@@ -43,17 +47,36 @@ export class VillaPriceRule {
   @Column({ name: 'is_discount', type: 'boolean', default: false })
   isDiscount!: boolean;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  @Column({
+    name: 'discount_type',
+    type: 'enum',
+    enum: DiscountType,
+    enumName: 'discount_type_enum',
+    nullable: true,
+  })
+  discountType!: DiscountType | null;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   discount!: number | null;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
+
+  @Column({ name: 'currency_id', type: 'uuid', nullable: true })
+  currencyId: string | null;
 
   @OneToMany(
     () => VillaPriceRulePivot,
     (villaPriceRulePivot) => villaPriceRulePivot.priceRule,
   )
   villaPriceRules!: VillaPriceRulePivot[];
+
+  @ManyToOne(() => Currency, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'currency_id' })
+  currency!: Currency | null;
 
   @CreateDateColumn({
     name: 'created_at',

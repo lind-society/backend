@@ -356,6 +356,13 @@ export class PropertyService {
         propertyData.currencyId,
         propertyData.price,
       ),
+      discount:
+        propertyData.discountType === DiscountType.Fixed
+          ? await this.currencyService.convertToBaseCurrency(
+              propertyData.currencyId,
+              propertyData.discount,
+            )
+          : propertyData.discount,
     };
   }
 

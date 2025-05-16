@@ -12,7 +12,6 @@ import {
   VillaFeaturePivot,
   VillaPolicy,
   VillaPolicyPivot,
-  VillaPriceRuleSeason,
 } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -40,7 +39,7 @@ import { VillaPolicyTypeService } from './policy/type/villa-policy-type.service'
 @Injectable()
 export class VillaService {
   constructor(
-    @InjectDataSource() 
+    @InjectDataSource()
     private datasource: DataSource,
     @InjectRepository(Villa)
     private villaRepository: Repository<Villa>,
@@ -341,15 +340,18 @@ export class VillaService {
     await this.datasource.transaction(async (manager) => {
       const initialData = await this.findOne(id, manager);
 
-      const appliedPriceRuleVillaData =
-        this._handleDailyPriceAfterDiscountUponUpdate(initialData, payload);
-
       const convertedBasePriceVillaData = (await this._convertToBaseCurrency(
-        appliedPriceRuleVillaData,
-      )) as UpdateVillaDto;
+        initialData,
+      )) as VillaWithRelationsDto;
+
+      const appliedPriceRuleVillaData =
+        this._handleDailyPriceAfterDiscountUponUpdate(
+          convertedBasePriceVillaData,
+          payload,
+        );
 
       const { additionals, facilities, features, policies, ...villaData } =
-        convertedBasePriceVillaData;
+        appliedPriceRuleVillaData;
 
       const updatedVilla = await manager.update(Villa, id, villaData);
 
@@ -645,6 +647,20 @@ export class VillaService {
             villaData.priceYearly,
           )
         : null,
+      discountMonthly:
+        villaData.discountMonthlyType === DiscountType.Fixed
+          ? await this.currencyService.convertToBaseCurrency(
+              villaData.currencyId,
+              villaData.discountMonthly,
+            )
+          : villaData.discountMonthly,
+      discountYearly:
+        villaData.discountYearlyType === DiscountType.Fixed
+          ? await this.currencyService.convertToBaseCurrency(
+              villaData.currencyId,
+              villaData.discountYearly,
+            )
+          : villaData.discountYearly,
     };
   }
 
@@ -680,29 +696,54 @@ export class VillaService {
       return updatedData;
     }
 
-    switch (currentActiveDiscount.season) {
-      case VillaPriceRuleSeason.Regular_Season:
-        updatedData.dailyPriceAfterDiscount =
-          updatedData.dailyPrice * (1 - currentActiveDiscount.discount / 100);
-        break;
-      case VillaPriceRuleSeason.Low_Season:
-        updatedData.lowSeasonDailyPriceAfterDiscount =
-          updatedData.lowSeasonDailyPrice *
-          (1 - currentActiveDiscount.discount / 100);
-        break;
-      case VillaPriceRuleSeason.High_Season:
-        updatedData.highSeasonDailyPriceAfterDiscount =
-          updatedData.highSeasonDailyPrice *
-          (1 + currentActiveDiscount.discount / 100);
-        break;
-      case VillaPriceRuleSeason.Peak_Season:
-        updatedData.peakSeasonDailyPriceAfterDiscount =
-          updatedData.peakSeasonDailyPrice *
-          (1 + currentActiveDiscount.discount / 100);
-        break;
-      default:
-        break;
-    }
+    const discountType =
+      currentActiveDiscount.discountType ?? DiscountType.Percentage;
+    const priceRuleDiscount = currentActiveDiscount.discount ?? 0;
+
+    const dailyPrice =
+      updatedData.dailyPrice != null
+        ? updatedData.dailyPrice
+        : (initialData.dailyPrice ?? 0);
+    const lowSeasonDailyPrice =
+      updatedData.lowSeasonDailyPrice != null
+        ? updatedData.lowSeasonDailyPrice
+        : (initialData.lowSeasonDailyPrice ?? 0);
+    const highSeasonDailyPrice =
+      updatedData.highSeasonDailyPrice != null
+        ? updatedData.highSeasonDailyPrice
+        : (initialData.highSeasonDailyPrice ?? 0);
+    const peakSeasonDailyPrice =
+      updatedData.peakSeasonDailyPrice != null
+        ? updatedData.peakSeasonDailyPrice
+        : (initialData.peakSeasonDailyPrice ?? 0);
+
+    updatedData.dailyPriceAfterDiscount = Math.max(
+      0,
+      discountType === DiscountType.Fixed
+        ? dailyPrice - priceRuleDiscount
+        : dailyPrice * (1 - priceRuleDiscount / 100),
+    );
+
+    updatedData.lowSeasonDailyPriceAfterDiscount = Math.max(
+      0,
+      discountType === DiscountType.Fixed
+        ? lowSeasonDailyPrice - priceRuleDiscount
+        : lowSeasonDailyPrice * (1 - priceRuleDiscount / 100),
+    );
+
+    updatedData.highSeasonDailyPriceAfterDiscount = Math.max(
+      0,
+      discountType === DiscountType.Fixed
+        ? highSeasonDailyPrice + priceRuleDiscount
+        : highSeasonDailyPrice * (1 + priceRuleDiscount / 100),
+    );
+
+    updatedData.peakSeasonDailyPriceAfterDiscount = Math.max(
+      0,
+      discountType === DiscountType.Fixed
+        ? peakSeasonDailyPrice + priceRuleDiscount
+        : peakSeasonDailyPrice * (1 + priceRuleDiscount / 100),
+    );
 
     return updatedData;
   }

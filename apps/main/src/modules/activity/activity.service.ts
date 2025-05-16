@@ -305,6 +305,13 @@ export class ActivityService {
         activityData.currencyId,
         activityData.price,
       ),
+      discount:
+        activityData.discountType === DiscountType.Fixed
+          ? await this.currencyService.convertToBaseCurrency(
+              activityData.currencyId,
+              activityData.discount,
+            )
+          : activityData.discount,
     };
   }
 
