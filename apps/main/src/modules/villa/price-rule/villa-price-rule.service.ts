@@ -56,9 +56,12 @@ export class VillaPriceRuleService {
 
     const createdVillaPriceRule = await this.datasource.transaction(
       async (manager: EntityManager) => {
+        const convertedBasePriceVillaPriceRuleData =
+          await this._convertToBaseCurrency(payload);
+
         const createdVillaPriceRule = await manager.save(
           VillaPriceRule,
-          payload,
+          convertedBasePriceVillaPriceRuleData,
         );
 
         // validation for checking villa is not included in other villa price rule for the inputted start - end date
@@ -110,12 +113,23 @@ export class VillaPriceRuleService {
         searchableColumns: ['name'],
         relations: {
           villaPriceRules: { villa: true },
+          currency: true,
         },
       },
     );
 
-    const mappedPaginatedVillaPriceRule = paginatedVillaPriceRule.data.map(
-      (villaPriceRule) => this._mapVillaPriceRuleData(villaPriceRule),
+    const mappedPaginatedVillaPriceRule = await Promise.all(
+      paginatedVillaPriceRule.data.map(async (villaPriceRule) => {
+        const mappedVillaPriceRule =
+          this._mapVillaPriceRuleData(villaPriceRule);
+
+        mappedVillaPriceRule.isAppliedToAllVilla =
+          await this._isCurrentPriceRuleAppliedToAllVilla(
+            villaPriceRule.villaPriceRules.length,
+          );
+
+        return mappedVillaPriceRule;
+      }),
     );
 
     return paginateResponseMapper(
@@ -138,6 +152,7 @@ export class VillaPriceRuleService {
       },
       relations: {
         villaPriceRules: { villa: true },
+        currency: true,
       },
     });
 
@@ -145,7 +160,15 @@ export class VillaPriceRuleService {
       throw new NotFoundException('villa price rule not found');
     }
 
-    return this._mapVillaPriceRuleData(villaPriceRule);
+    const mappedVillaPriceRule = this._mapVillaPriceRuleData(villaPriceRule);
+
+    mappedVillaPriceRule.isAppliedToAllVilla =
+      await this._isCurrentPriceRuleAppliedToAllVilla(
+        villaPriceRule.villaPriceRules.length,
+        entityManager,
+      );
+
+    return mappedVillaPriceRule;
   }
 
   async update(
@@ -156,10 +179,16 @@ export class VillaPriceRuleService {
 
     const { villaIds, ...villaPriceRuleData } = payload;
 
-    await this.datasource.transaction(async (manager) => {
+    return await this.datasource.transaction(async (manager) => {
       await this.findOne(id, manager);
 
-      await this.villaPriceRuleRepository.update(id, villaPriceRuleData);
+      const convertedBasePriceVillaPriceRuleData =
+        await this._convertToBaseCurrency(villaPriceRuleData);
+
+      await this.villaPriceRuleRepository.update(
+        id,
+        convertedBasePriceVillaPriceRuleData,
+      );
 
       if (Array.isArray(villaIds)) {
         await manager.delete(VillaPriceRulePivot, { priceRuleId: id });
@@ -185,17 +214,16 @@ export class VillaPriceRuleService {
           );
         }
       }
+      this.eventEmitter.emit(UPDATED_PRICE_RULE, id);
+
+      return this.findOne(id, manager);
     });
-
-    this.eventEmitter.emit(UPDATED_PRICE_RULE, id);
-
-    return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
-
     await this.datasource.transaction(async (manager) => {
+      await this.findOne(id, manager);
+
       const affectedVillas: GetAffectedVillaDto[] = await manager
         .getRepository(VillaPriceRule)
         .createQueryBuilder('priceRule')
@@ -344,5 +372,24 @@ export class VillaPriceRuleService {
     if (payload.discount && !payload.discountType) {
       payload.discountType = DiscountType.Percentage;
     }
+  }
+
+  private async _totalVillaCount(entityManager?: EntityManager) {
+    const repository = entityManager
+      ? entityManager.getRepository(Villa)
+      : this.villaRepository;
+
+    const totalVilla = await repository.count();
+
+    return totalVilla;
+  }
+
+  private async _isCurrentPriceRuleAppliedToAllVilla(
+    villasCount: number,
+    entityManager?: EntityManager,
+  ) {
+    const totalVilla = await this._totalVillaCount(entityManager);
+
+    return villasCount === totalVilla;
   }
 }

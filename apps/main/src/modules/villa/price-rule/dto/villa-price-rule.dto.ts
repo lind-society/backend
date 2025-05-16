@@ -26,6 +26,7 @@ export class VillaPriceRuleDto implements IVillaPriceRuleDto {
   readonly discount!: number | null;
   readonly currencyId!: string | null;
   readonly isActive!: boolean;
+  isAppliedToAllVilla?: boolean;
   readonly createdAt!: Date;
   readonly updatedAt!: Date | null;
   readonly deletedAt!: Date | null;
