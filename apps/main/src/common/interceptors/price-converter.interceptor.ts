@@ -1,3 +1,4 @@
+import { DiscountType } from '@apps/main/database/entities';
 import { CurrencyConverterService } from '@apps/main/modules/currency/converter/currency-converter.service';
 import { CurrencyService } from '@apps/main/modules/currency/currency.service';
 import {
@@ -12,19 +13,20 @@ import {
   ACTIVITY_DISCOUNT_FIELDS,
   ACTIVITY_PRICE_FIELDS,
   ACTIVITY_PRICE_TO_AFTER_DISCOUNT_MAP,
-  ACTIVITY_PRICE_TO_DISCOUNT_MAP,
+  DISCOUNT_TYPE_FIELDS,
   FEATURE_DISCOUNT_FIELDS,
   FEATURE_PRICE_FIELDS,
   FEATURE_PRICE_TO_AFTER_DISCOUNT_MAP,
-  FEATURE_PRICE_TO_DISCOUNT_MAP,
   PROPERTY_DISCOUNT_FIELDS,
   PROPERTY_PRICE_FIELDS,
   PROPERTY_PRICE_TO_AFTER_DISCOUNT_MAP,
-  PROPERTY_PRICE_TO_DISCOUNT_MAP,
+  VILLA_CURRENT_DISCOUNT_FIELDS,
+  VILLA_CURRENT_PRICE_FIELDS,
+  VILLA_CURRENT_PRICE_TO_AFTER_DISCOUNT_MAP,
   VILLA_DISCOUNT_FIELDS,
   VILLA_PRICE_FIELDS,
+  VILLA_PRICE_RULE_DISCOUNT_FIELDS,
   VILLA_PRICE_TO_AFTER_DISCOUNT_MAP,
-  VILLA_PRICE_TO_DISCOUNT_MAP,
 } from '../constants';
 import { formatPrice } from '../helpers';
 
@@ -73,14 +75,12 @@ export class PriceConverterInterceptor implements NestInterceptor {
     if (!obj || typeof obj !== 'object') {
       return obj;
     }
-    
+
     const converted = { ...obj };
     const currencyId = obj.currencyId;
 
     if (!currencyId || currencyId === baseCurrencyId) {
-      const trasformedData = await this._formatPricesFromPayload(converted);
-
-      return trasformedData;
+      return await this._formatPricesFromPayload(converted);
     }
 
     const isConvertedCurrencyExist =
@@ -168,7 +168,6 @@ export class PriceConverterInterceptor implements NestInterceptor {
       allowRound,
       ACTIVITY_DISCOUNT_FIELDS,
       ACTIVITY_PRICE_FIELDS,
-      ACTIVITY_PRICE_TO_DISCOUNT_MAP,
       ACTIVITY_PRICE_TO_AFTER_DISCOUNT_MAP,
       baseCurrencyId,
     );
@@ -186,10 +185,38 @@ export class PriceConverterInterceptor implements NestInterceptor {
       allowRound,
       VILLA_DISCOUNT_FIELDS,
       VILLA_PRICE_FIELDS,
-      VILLA_PRICE_TO_DISCOUNT_MAP,
       VILLA_PRICE_TO_AFTER_DISCOUNT_MAP,
       baseCurrencyId,
     );
+
+    if (
+      Array.isArray(converted.priceRules) &&
+      converted.priceRules.length > 0
+    ) {
+      await Promise.all(
+        converted.priceRules.map((priceRule) =>
+          this._formatDiscountBaseOnTypeHelper(
+            priceRule,
+            VILLA_PRICE_RULE_DISCOUNT_FIELDS,
+            allowDecimal,
+            allowRound,
+            baseCurrencyId,
+          ),
+        ),
+      );
+    }
+
+    if (converted.currentPrice) {
+      await this._formatPriceHelper(
+        converted.currentPrice,
+        allowDecimal,
+        allowRound,
+        VILLA_CURRENT_DISCOUNT_FIELDS,
+        VILLA_CURRENT_PRICE_FIELDS,
+        VILLA_CURRENT_PRICE_TO_AFTER_DISCOUNT_MAP,
+        baseCurrencyId,
+      );
+    }
   }
 
   private async _formatPropertyPrices(
@@ -204,7 +231,6 @@ export class PriceConverterInterceptor implements NestInterceptor {
       allowRound,
       PROPERTY_DISCOUNT_FIELDS,
       PROPERTY_PRICE_FIELDS,
-      PROPERTY_PRICE_TO_DISCOUNT_MAP,
       PROPERTY_PRICE_TO_AFTER_DISCOUNT_MAP,
       baseCurrencyId,
     );
@@ -216,7 +242,7 @@ export class PriceConverterInterceptor implements NestInterceptor {
     allowRound: boolean,
     baseCurrencyId?: string,
   ) {
-    if (Array.isArray(converted.features)) {
+    if (Array.isArray(converted.features) && converted.features.length > 0) {
       await Promise.all(
         converted.features.map((feature) =>
           this._formatPriceHelper(
@@ -225,7 +251,6 @@ export class PriceConverterInterceptor implements NestInterceptor {
             allowRound,
             FEATURE_DISCOUNT_FIELDS,
             FEATURE_PRICE_FIELDS,
-            FEATURE_PRICE_TO_DISCOUNT_MAP,
             FEATURE_PRICE_TO_AFTER_DISCOUNT_MAP,
             baseCurrencyId,
           ),
@@ -240,20 +265,16 @@ export class PriceConverterInterceptor implements NestInterceptor {
     allowRound: boolean,
     discountFields: string[],
     priceFields: string[],
-    priceToDiscountMap: Record<string, string>,
     priceToAfterDiscountMap: Record<string, string>,
     baseCurrencyId?: string,
   ) {
-    for (const discountField of discountFields) {
-      if (
-        converted[discountField] !== undefined &&
-        converted[discountField] !== null
-      ) {
-        converted[discountField] = this._formatDiscount(
-          converted[discountField],
-        );
-      }
-    }
+    await this._formatDiscountBaseOnTypeHelper(
+      converted,
+      discountFields,
+      allowDecimal,
+      allowRound,
+      baseCurrencyId,
+    );
 
     for (const priceField of priceFields) {
       if (
@@ -274,22 +295,29 @@ export class PriceConverterInterceptor implements NestInterceptor {
 
         converted[priceField] = formatPrice(price, allowDecimal, allowRound);
 
-        // Recalculate villa price after discount
-        const discountField = priceToDiscountMap[priceField];
+        // Recalculate price after discount
         const priceAfterDiscountField = priceToAfterDiscountMap[priceField];
 
         if (
-          converted[discountField] !== undefined &&
-          converted[discountField] !== null &&
+          converted[priceAfterDiscountField] !== undefined &&
+          converted[priceAfterDiscountField] !== null &&
           converted[priceField] !== null
         ) {
-          // Use the numeric discount value for calculation
-          const discountValue = this._getDiscountValue(
-            converted[discountField],
-          );
+          const convertedPriceAfterDiscount = baseCurrencyId
+            ? (
+                await this.currencyConverterService.convertPriceToBasePrice({
+                  basePrice: converted[priceAfterDiscountField],
+                  baseCurrencyId: converted.currencyId,
+                  targetCurrencyId: baseCurrencyId,
+                })
+              ).converted?.price
+            : undefined;
+
+          const priceAfterDiscount =
+            convertedPriceAfterDiscount ?? converted[priceAfterDiscountField];
 
           converted[priceAfterDiscountField] = formatPrice(
-            price - (price * discountValue) / 100,
+            priceAfterDiscount,
             allowDecimal,
             allowRound,
           );
@@ -298,8 +326,88 @@ export class PriceConverterInterceptor implements NestInterceptor {
     }
   }
 
+  private async _formatDiscountBaseOnTypeHelper(
+    converted: any,
+    discountFields: string[],
+    allowDecimal: boolean,
+    allowRound: boolean,
+    baseCurrencyId?: string,
+  ) {
+    try {
+      for (const discountField of discountFields) {
+        if (
+          converted[discountField] === undefined ||
+          converted[discountField] === null
+        ) {
+          continue;
+        }
+
+        const isPercentageDiscount = DISCOUNT_TYPE_FIELDS.some(
+          (typeField) => converted[typeField] === DiscountType.Percentage,
+        );
+
+        const isFixedDiscount = DISCOUNT_TYPE_FIELDS.some(
+          (typeField) => converted[typeField] === DiscountType.Fixed,
+        );
+
+        if (isPercentageDiscount) {
+          converted[discountField] = this._formatPercentageDiscountHelper(
+            converted[discountField],
+          );
+        } else if (isFixedDiscount) {
+          converted[discountField] = await this.formattedFixedDiscountHelper(
+            converted[discountField],
+            converted.currencyId,
+            allowDecimal,
+            allowRound,
+            baseCurrencyId,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.error('Error in discount processing interceptor:', error);
+    }
+
+    return converted;
+  }
+
+  // Helper method to handle fixed discount formatting
+  async formattedFixedDiscountHelper(
+    discount: number,
+    sourceCurrencyId: string,
+    allowDecimal: boolean,
+    allowRound: boolean,
+    targetCurrencyId?: string,
+  ) {
+    if (!targetCurrencyId) {
+      return formatPrice(discount, allowDecimal, allowRound);
+    }
+
+    try {
+      const result =
+        await this.currencyConverterService.convertPriceToBasePrice({
+          basePrice: discount,
+          baseCurrencyId: sourceCurrencyId,
+          targetCurrencyId: targetCurrencyId,
+        });
+
+      const convertedPrice = result?.converted?.price;
+      const finalPrice =
+        convertedPrice !== undefined ? convertedPrice : discount;
+
+      return formatPrice(finalPrice, allowDecimal, allowRound);
+    } catch (error) {
+      this.logger.error(
+        ` ${this.formattedFixedDiscountHelper.name} : Currency conversion failed:`,
+        error,
+      );
+
+      return formatPrice(discount, allowDecimal, allowRound);
+    }
+  }
+
   // Common Helper
-  private _formatDiscount(discount: string): string {
+  private _formatPercentageDiscountHelper(discount: string): string {
     if (discount === undefined || discount === null) {
       return '0';
     }

@@ -68,13 +68,23 @@ export const VILLA_PRICE_TO_AFTER_DISCOUNT_MAP = {
   priceYearly: 'priceYearlyAfterDiscount',
 };
 
-export const VILLA_PRICE_RATE_FIELDS = [
-  'lowSeasonPriceRate',
-  'highSeasonPriceRate',
-  'peakSeasonPriceRate',
+export const VILLA_CURRENT_PRICE_FIELDS = ['currentDailyPrice'];
+export const VILLA_CURRENT_DISCOUNT_FIELDS = ['currentDiscount'];
+export const VILLA_CURRENT_PRICE_AFTER_DISCOUNT_FIELDS = [
+  'currentDailyPriceAfterDiscount',
 ];
+export const VILLA_CURRENT_PRICE_TO_DISCOUNT_MAP = {
+  currentDailyPrice: 'currentDiscount',
+};
+export const VILLA_CURRENT_PRICE_TO_AFTER_DISCOUNT_MAP = {
+  currentDailyPrice: 'currentDailyPriceAfterDiscount',
+};
 
-export const VILLA_DAILY_BASE_PRICE_FIELDS = [
-  'dailyBasePrice',
-  'dailyBasePriceAfterSeasonRate',
+export const VILLA_PRICE_RULE_DISCOUNT_FIELDS = ['discount'];
+
+export const DISCOUNT_TYPE_FIELDS = [
+  'discountType',
+  'discountMonthlyType',
+  'discountYearlyType',
+  'currentDiscountType',
 ];

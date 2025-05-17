@@ -363,6 +363,10 @@ export class VillaPriceRuleService {
   private async _setDateTimeRange(
     villaPriceRuleData: CreateVillaPriceRuleDto | UpdateVillaPriceRuleDto,
   ): Promise<CreateVillaPriceRuleDto | UpdateVillaPriceRuleDto> {
+    if (!villaPriceRuleData.startDate || !villaPriceRuleData.endDate) {
+      return villaPriceRuleData;
+    }
+
     const startDate = new Date(villaPriceRuleData.startDate);
     const endDate = new Date(villaPriceRuleData.endDate);
 

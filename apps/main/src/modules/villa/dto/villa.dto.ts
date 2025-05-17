@@ -43,11 +43,12 @@ export interface IVillaWithRelationsDto extends IVillaDto {
 }
 
 export interface ICurrentVillaPrices {
-  season: VillaPriceRuleSeason;
-  isDiscount: boolean;
-  discount?: number;
-  dailyPrice?: number;
-  dailyPriceAfterDiscount?: number;
+  currentSeason: VillaPriceRuleSeason;
+  currentIsDiscount: boolean;
+  currentDiscountType?: DiscountType;
+  currentDiscount?: number;
+  currentDailyPrice?: number;
+  currentDailyPriceAfterDiscount?: number;
   currencyId: string;
   currency?: CurrencyDto;
 }

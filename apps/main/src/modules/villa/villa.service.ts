@@ -778,13 +778,14 @@ export class VillaService {
     );
 
     villa.currentPrice = {
-      season: priceRule.season,
-      isDiscount: priceRule.isDiscount,
-      discount: priceRule.discount,
-      dailyPrice,
-      dailyPriceAfterDiscount,
+      currentSeason: priceRule.season,
+      currentIsDiscount: priceRule.isDiscount,
+      currentDiscountType: priceRule.discountType,
+      currentDiscount: priceRule.discount,
+      currentDailyPrice: dailyPrice,
+      currentDailyPriceAfterDiscount: dailyPriceAfterDiscount,
       currencyId: priceRule.currencyId,
-      currency: villa.currency,
+      currency: priceRule.currency,
     };
   }
 
