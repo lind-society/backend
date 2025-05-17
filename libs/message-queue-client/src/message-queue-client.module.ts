@@ -1,4 +1,4 @@
-import { MessageQueue } from '@apps/main/database/entities';
+import { MessageQueue } from '@libs/common/entities';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MessageQueueClientService } from './message-queue-client.service';

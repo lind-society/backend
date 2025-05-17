@@ -1,4 +1,4 @@
-import { MessageQueue, MessageQueueStatus } from '@apps/main/database/entities';
+import { MessageQueue, MessageQueueStatus } from '@libs/common/entities';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

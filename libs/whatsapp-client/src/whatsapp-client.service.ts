@@ -1,21 +1,17 @@
+import { MESSAGE_PATTERN, SERVICE } from '@libs/common/constants';
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { SendMessageDto } from './dto';
-import {
-  SEND_WHATSAPP_MESSAGE,
-  WHATSAPP_FORCE_RECONNECT,
-  WHATSAPP_HEALTH_CHECK,
-  WHATSAPP_SERVICE,
-} from './message-pattern';
 
 @Injectable()
 export class WhatsappClientService implements OnModuleInit {
-  private isConnected = false;
   private readonly logger = new Logger(WhatsappClientService.name);
+
+  private isConnected = false;
   private healthCheckInterval: NodeJS.Timeout | null = null;
 
-  constructor(@Inject(WHATSAPP_SERVICE) private readonly client: ClientProxy) {}
+  constructor(@Inject(SERVICE.WHATSAPP) private readonly client: ClientProxy) {}
 
   async onModuleInit() {
     try {
@@ -65,7 +61,7 @@ export class WhatsappClientService implements OnModuleInit {
 
     try {
       return await firstValueFrom(
-        this.client.send(SEND_WHATSAPP_MESSAGE, data).pipe(
+        this.client.send(MESSAGE_PATTERN.WHATSAPP.SEND_MESSAGE, data).pipe(
           timeout(5000), // 5-second timeout
           catchError((error) => {
             this.logger.error('Error sending WhatsApp message:', error.message);
@@ -105,7 +101,7 @@ export class WhatsappClientService implements OnModuleInit {
   async checkConnection(): Promise<boolean> {
     try {
       const healthResult = await firstValueFrom(
-        this.client.send(WHATSAPP_HEALTH_CHECK, {}).pipe(
+        this.client.send(MESSAGE_PATTERN.WHATSAPP.HEALTH_CHECK, {}).pipe(
           timeout(3000),
           catchError((error) => {
             this.logger.error('Health check failed:', error.message);
@@ -126,7 +122,9 @@ export class WhatsappClientService implements OnModuleInit {
   async forceReconnect(): Promise<boolean> {
     try {
       await firstValueFrom(
-        this.client.send(WHATSAPP_FORCE_RECONNECT, {}).pipe(timeout(3000)),
+        this.client
+          .send(MESSAGE_PATTERN.WHATSAPP.FORCE_RECONNECT, {})
+          .pipe(timeout(3000)),
       );
 
       // Wait a bit for reconnection to take effect

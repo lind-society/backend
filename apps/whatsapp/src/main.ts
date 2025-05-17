@@ -1,28 +1,21 @@
+import { QUEUE } from '@libs/common/constants';
+import { RabbitMqService } from '@libs/rabbitmq';
 import {
   Logger,
   UnprocessableEntityException,
   ValidationPipe,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { WhatsappModule } from './whatsapp.module';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    WhatsappModule,
-    {
-      transport: Transport.RMQ,
-      options: {
-        urls: ['amqp://guest:guest@localhost:5672'],
-        queue: 'whatsapp_queue',
-        queueOptions: {
-          durable: true,
-        },
-      },
-    },
-  );
-
   const logger = new Logger('Whatsapp - Bootstrap');
+
+  const app = await NestFactory.create(WhatsappModule);
+
+  const rmqService = app.get<RabbitMqService>(RabbitMqService);
+
+  app.connectMicroservice(rmqService.getOptions(QUEUE.WHATSAPP));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -40,7 +33,9 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen();
+  await app.init();
+  await app.startAllMicroservices();
+
   logger.log('WhatsApp microservice is running...');
 }
 bootstrap();

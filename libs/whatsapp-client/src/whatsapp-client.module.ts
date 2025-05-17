@@ -1,24 +1,10 @@
+import { QUEUE, SERVICE } from '@libs/common/constants';
+import { RabbitMqModule } from '@libs/rabbitmq';
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { WHATSAPP_SERVICE } from './message-pattern';
 import { WhatsappClientService } from './whatsapp-client.service';
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: WHATSAPP_SERVICE,
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://guest:guest@localhost:5672'],
-          queue: 'whatsapp_queue',
-          queueOptions: {
-            durable: true,
-          },
-        },
-      },
-    ]),
-  ],
+  imports: [RabbitMqModule.register(SERVICE.WHATSAPP, QUEUE.WHATSAPP)],
   providers: [WhatsappClientService],
   exports: [WhatsappClientService],
 })

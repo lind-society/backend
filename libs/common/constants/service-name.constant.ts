@@ -1,0 +1,4 @@
+export const SERVICE = {
+  WHATSAPP: 'WHATSAPP_SERVICE',
+  MAIL: 'MAIL_SERVICE',
+};

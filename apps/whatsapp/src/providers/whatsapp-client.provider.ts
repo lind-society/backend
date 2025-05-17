@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as qrcode from 'qrcode-terminal';
 import { Client } from 'whatsapp-web.js';
-import { IWhatsappClient } from '../interfaces';
+import { IWhatsappClient } from '../common/interfaces';
 
 @Injectable()
 export class WhatsappClientProvider implements IWhatsappClient {

@@ -1,6 +1,6 @@
 import { SendMessageDto } from '@libs/whatsapp-client/dto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { IWhatsappClient } from './interfaces';
+import { IWhatsappClient } from './common/interfaces';
 
 @Injectable()
 export class WhatsappService {

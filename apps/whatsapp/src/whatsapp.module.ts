@@ -1,4 +1,5 @@
 import { envPaths } from '@libs/common/constants';
+import { RabbitMqModule } from '@libs/rabbitmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { validateEnv, whatsappConfig } from './config';
@@ -20,6 +21,7 @@ import { WhatsappService } from './whatsapp.service';
       },
       load: [appConfig, whatsappConfig],
     }),
+    RabbitMqModule,
   ],
   controllers: [WhatsappServiceController],
   providers: [
