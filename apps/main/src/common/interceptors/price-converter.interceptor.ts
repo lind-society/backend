@@ -105,6 +105,12 @@ export class PriceConverterInterceptor implements NestInterceptor {
         allowRound,
         baseCurrencyId,
       );
+      await this._formatVillaPriceRulPrices(
+        converted,
+        allowDecimal,
+        allowRound,
+        baseCurrencyId,
+      );
       await this._formatPropertyPrices(
         converted,
         allowDecimal,
@@ -146,6 +152,11 @@ export class PriceConverterInterceptor implements NestInterceptor {
     try {
       await this._formatActivityPrices(converted, allowDecimal, allowRound);
       await this._formatVillaPrices(converted, allowDecimal, allowRound);
+      await this._formatVillaPriceRulPrices(
+        converted,
+        allowDecimal,
+        allowRound,
+      );
       await this._formatPropertyPrices(converted, allowDecimal, allowRound);
       await this._formatFeaturePrices(converted, allowDecimal, allowRound);
     } catch (error) {
@@ -217,6 +228,21 @@ export class PriceConverterInterceptor implements NestInterceptor {
         baseCurrencyId,
       );
     }
+  }
+
+  private async _formatVillaPriceRulPrices(
+    converted: any,
+    allowDecimal: boolean,
+    allowRound: boolean,
+    baseCurrencyId?: string,
+  ) {
+    await this._formatDiscountBaseOnTypeHelper(
+      converted,
+      VILLA_PRICE_RULE_DISCOUNT_FIELDS,
+      allowDecimal,
+      allowRound,
+      baseCurrencyId,
+    );
   }
 
   private async _formatPropertyPrices(

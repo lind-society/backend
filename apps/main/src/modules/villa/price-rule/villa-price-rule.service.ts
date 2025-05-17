@@ -258,7 +258,8 @@ export class VillaPriceRuleService {
 
       villas: villaPriceRule.villaPriceRules.map(({ id, villa }) => ({
         pivotId: id,
-        ...villa,
+        id: villa.id,
+        name: villa.name,
       })),
     });
   }
@@ -302,6 +303,7 @@ export class VillaPriceRuleService {
       (availableVilla) => ({
         id: availableVilla.id,
         name: availableVilla.name,
+        address: availableVilla.address,
         city: availableVilla.city,
         state: availableVilla.state,
         country: availableVilla.country,
