@@ -41,7 +41,9 @@
       "@apps/scheduler": ["apps/scheduler/src"],
       "@apps/scheduler/*": ["apps/scheduler/src/*"],
       "@apps/message-queue": ["apps/message-queue/src"],
-      "@apps/message-queue/*": ["apps/message-queue/src/*"]
+      "@apps/message-queue/*": ["apps/message-queue/src/*"],
+      "@apps/queue-management": ["apps/queue-management/src"],
+      "@apps/queue-management/*": ["apps/queue-management/src/*"]
     }
   }
 }

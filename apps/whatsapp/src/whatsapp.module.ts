@@ -1,5 +1,6 @@
 import { envPaths } from '@libs/common/constants';
 import { RabbitMqModule } from '@libs/rabbitmq';
+import { MessageHandlerService } from '@libs/rabbitmq/services/message-handler.service';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { validateEnv, whatsappConfig } from './config';
@@ -28,6 +29,7 @@ import { WhatsappService } from './whatsapp.service';
     WhatsappService,
     WhatsAppClientFactory,
     MainWhatsappClientProvider,
+    MessageHandlerService,
   ],
   exports: [WhatsappService],
 })

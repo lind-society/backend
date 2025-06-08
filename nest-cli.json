@@ -98,6 +98,15 @@
         "tsConfigPath": "libs/message-queue-client/tsconfig.lib.json"
       }
     },
+    "queue-management": {
+      "type": "application",
+      "root": "apps/queue-management",
+      "entryFile": "main",
+      "sourceRoot": "apps/queue-management/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/queue-management/tsconfig.app.json"
+      }
+    },
     "rabbitmq": {
       "type": "library",
       "root": "libs/rabbitmq",

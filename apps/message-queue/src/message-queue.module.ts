@@ -1,5 +1,6 @@
 import { envPaths } from '@libs/common/constants';
 import { MessageQueue } from '@libs/common/entities';
+import { RabbitMqModule } from '@libs/rabbitmq';
 import { WhatsappClientModule } from '@libs/whatsapp-client';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -32,6 +33,7 @@ import { MessageQueueService } from './message-queue.service';
     }),
     TypeOrmModule.forFeature([MessageQueue]),
     ScheduleModule.forRoot(),
+    RabbitMqModule,
     WhatsappClientModule,
     TerminusModule,
   ],

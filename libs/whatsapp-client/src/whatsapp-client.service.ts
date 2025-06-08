@@ -16,6 +16,7 @@ export class WhatsappClientService implements OnModuleInit {
   async onModuleInit() {
     try {
       await this.client.connect();
+
       this.isConnected = true;
 
       // Start periodic health checks
@@ -65,10 +66,17 @@ export class WhatsappClientService implements OnModuleInit {
           timeout(5000), // 5-second timeout
           catchError((error) => {
             this.logger.error('Error sending WhatsApp message:', error.message);
+
             // If error indicates connection issue, mark service as disconnected
             if (this.isConnectionError(error)) {
               this.isConnected = false;
+
+              // Attempt to re-establish connection on the next request
+              this.client.connect().catch((err) => {
+                this.logger.error('Failed to reconnect:', err.message);
+              });
             }
+
             throw error;
           }),
         ),

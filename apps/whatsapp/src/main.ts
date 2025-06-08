@@ -1,11 +1,13 @@
 import { QUEUE } from '@libs/common/constants';
 import { RabbitMqService } from '@libs/rabbitmq';
+import { MessageHandlerService } from '@libs/rabbitmq/services/message-handler.service';
 import {
   Logger,
   UnprocessableEntityException,
   ValidationPipe,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import * as amqp from 'amqplib';
 import { WhatsappModule } from './whatsapp.module';
 
 async function bootstrap() {
@@ -14,8 +16,28 @@ async function bootstrap() {
   const app = await NestFactory.create(WhatsappModule);
 
   const rmqService = app.get<RabbitMqService>(RabbitMqService);
+  const messageHandlerService = app.get<MessageHandlerService>(
+    MessageHandlerService,
+  );
 
-  app.connectMicroservice(rmqService.getOptions(QUEUE.WHATSAPP));
+  // Connect to RabbitMQ and set up dead letter queues
+  try {
+    const connection = await amqp.connect(rmqService.getUrl());
+    const channel = await connection.createChannel();
+
+    // Setup dead letter queues
+    await rmqService.setupDeadLetterQueue(channel, QUEUE.WHATSAPP);
+
+    // Close the setup connection
+    await channel.close();
+    await connection.close();
+
+    logger.log('Dead letter queues configured successfully');
+  } catch (error) {
+    logger.error(`Failed to configure dead letter queues: ${error.message}`);
+  }
+
+  app.connectMicroservice(rmqService.getOptions(QUEUE.WHATSAPP, true));
 
   app.useGlobalPipes(
     new ValidationPipe({
