@@ -1,4 +1,3 @@
-import { envPaths } from '@libs/common/constants';
 import { megabyteToByte } from '@apps/main/common/helpers';
 import { Environment } from '@libs/common/enums';
 import { plainToInstance } from 'class-transformer';
@@ -13,6 +12,7 @@ import {
   validateSync,
 } from 'class-validator';
 import { config, DotenvConfigOptions } from 'dotenv';
+import { envPaths } from '../common/constants/env-path.constant';
 
 export class EnvironmentVariables {
   @IsEnum(Environment, {

@@ -4,6 +4,6 @@
     "declaration": true,
     "outDir": "../../dist/libs/config"
   },
-  "include": ["./**/*"],
+  "include": ["./**/*", "../rabbitmq/src/services/rabbitmq-config.service.ts"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

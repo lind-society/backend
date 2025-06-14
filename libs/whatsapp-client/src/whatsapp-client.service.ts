@@ -11,6 +11,7 @@ import {
 
 @Injectable()
 export class WhatsappClientService implements OnModuleInit {
+  private firstConnectAttempt = true;
   private isConnected = false;
   private readonly logger = new Logger(WhatsappClientService.name);
   private healthCheckInterval: NodeJS.Timeout | null = null;
@@ -20,7 +21,17 @@ export class WhatsappClientService implements OnModuleInit {
   async onModuleInit() {
     try {
       await this.client.connect();
-      this.isConnected = true;
+
+      const connected = await this.checkConnection();
+
+      if (connected) {
+        this.isConnected = true;
+        this.logger.log('Successfully connected to whatsapp microservice');
+      } else {
+        this.logger.log('Failed connecting to whatsapp microservice');
+      }
+
+      this.firstConnectAttempt = false;
 
       // Start periodic health checks
       this.startHealthChecks();
@@ -63,28 +74,29 @@ export class WhatsappClientService implements OnModuleInit {
       }
     }
 
-    try {
-      return await firstValueFrom(
-        this.client.send(SEND_WHATSAPP_MESSAGE, data).pipe(
-          timeout(5000), // 5-second timeout
-          catchError((error) => {
-            this.logger.error('Error sending WhatsApp message:', error.message);
-            // If error indicates connection issue, mark service as disconnected
-            if (this.isConnectionError(error)) {
-              this.isConnected = false;
-            }
-            throw error;
-          }),
-        ),
-      );
-    } catch (error) {
-      // If this is a WhatsApp-specific error (not connection-related),
-      // we can still consider the service connected
-      if (!this.isConnectionError(error)) {
-        this.logger.warn(`WhatsApp specific error: ${error.message}`);
-      }
-      throw error;
-    }
+    // Send in background
+    firstValueFrom(
+      this.client.send(SEND_WHATSAPP_MESSAGE, data).pipe(
+        timeout(15000),
+        catchError((error) => {
+          this.logger.error('Error sending WhatsApp message:', error.message);
+          if (this.isConnectionError(error)) {
+            this.isConnected = false;
+          }
+          throw error;
+        }),
+      ),
+    )
+      .then(() => {
+        this.logger.log('✅ WhatsApp message sent (background)');
+      })
+      .catch((err) => {
+        this.logger.warn(
+          '❌ WhatsApp message failed in background',
+          err.message,
+        );
+        // Optionally schedule a manual retry here
+      });
   }
 
   // Helper method to check if an error is connection-related
@@ -113,6 +125,10 @@ export class WhatsappClientService implements OnModuleInit {
           }),
         ),
       );
+
+      if (!this.isConnected && !this.firstConnectAttempt) {
+        this.logger.log('Successfully reconnected to whatsapp microservice');
+      }
 
       this.isConnected = healthResult.status === 'ok';
       return this.isConnected;

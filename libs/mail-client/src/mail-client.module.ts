@@ -1,20 +1,21 @@
+import { MAIL_QUEUE } from '@libs/common/constants';
+import { getClientConfig } from '@libs/rabbitmq/services';
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ClientsModule } from '@nestjs/microservices';
 import { MailClientService } from './mail-client.service';
 import { MAIL_SERVICE } from './message-pattern';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: MAIL_SERVICE,
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://guest:guest@localhost:5672'],
-          queue: 'mail_queue',
-          queueOptions: {
-            durable: true,
-          },
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => {
+          const rmqUrl = configService.get<string>('RABBITMQ_URL');
+          return getClientConfig(rmqUrl, MAIL_QUEUE);
         },
       },
     ]),

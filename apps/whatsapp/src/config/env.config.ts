@@ -31,7 +31,11 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  WHATSAPP_BROWSER_EXECUTABLE_PATH!: string;
+  WHATSAPP_BROWSER_EXECUTABLE_PATH_UBUNTU!: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  WHATSAPP_BROWSER_EXECUTABLE_PATH_WINDOWS!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {

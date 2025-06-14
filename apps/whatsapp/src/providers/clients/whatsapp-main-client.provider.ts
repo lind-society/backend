@@ -12,12 +12,10 @@ export const MainWhatsappClientProvider = {
       }),
       puppeteer: {
         headless: true,
-        ...(configService.get<string>('app.env') !==
-          Environment.Development && {
-          executablePath: configService.get<string>(
-            'whatsapp.config.browserPath',
-          ),
-        }),
+        executablePath:
+          configService.get<string>('app.env') === Environment.Development
+            ? configService.get<string>('whatsapp.config.browserPathWindows')
+            : configService.get<string>('whatsapp.config.browserPathUbuntu'),
       },
     });
     return client;

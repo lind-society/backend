@@ -1,30 +1,26 @@
+import { MAIL_QUEUE } from '@libs/common/constants';
+import { getClientConfig, setupDeadLetterQueue, setupRetryQueue } from '@libs/rabbitmq/services';
 import {
   Logger,
   UnprocessableEntityException,
   ValidationPipe,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { MicroserviceOptions } from '@nestjs/microservices';
 import { MailModule } from './mail.module';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    MailModule,
-    {
-      transport: Transport.RMQ,
-      options: {
-        urls: ['amqp://guest:guest@localhost:5672'],
-        queue: 'mail_queue',
-        queueOptions: {
-          durable: true,
-        },
-      },
-    },
-  );
+  await setupDeadLetterQueue(process.env.RABBITMQ_URL, MAIL_QUEUE);
+  await setupRetryQueue(process.env.RABBITMQ_URL, MAIL_QUEUE);
+
+  const microservice =
+    await NestFactory.createMicroservice<MicroserviceOptions>(MailModule, {
+      ...getClientConfig(process.env.RABBITMQ_URL, MAIL_QUEUE),
+    });
 
   const logger = new Logger('Mail - Bootstrap');
 
-  app.useGlobalPipes(
+  microservice.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
@@ -40,7 +36,7 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen();
+  await microservice.listen();
   logger.log('Mail microservice is running...');
 }
 bootstrap();

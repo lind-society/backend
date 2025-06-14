@@ -76,6 +76,7 @@
     "@nestjs/cli": "^11.0.4",
     "@nestjs/schematics": "^11.0.1",
     "@nestjs/testing": "^11.0.10",
+    "@types/amqplib": "^0.10.7",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
@@ -104,9 +105,9 @@
   },
   "engines": {
     "node": "22.16.0",
-    "pnpm": "10.11.1"
+    "pnpm": "10.12.1"
   },
-  "packageManager": "pnpm@10.11.1",
+  "packageManager": "pnpm@10.12.1",
   "jest": {
     "moduleFileExtensions": [
       "js",

@@ -1,5 +1,3 @@
-import { envPaths } from '@libs/common/constants';
-import { LoggerModule } from '@libs/logger';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -8,7 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigHelper } from './common/helpers/config-helper';
+import { envPaths } from './common/constants';
 import {
   appConfig,
   currencyConfig,
@@ -79,7 +77,6 @@ import { VillaModule } from './modules/villa/villa.module';
     }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
-    LoggerModule,
     AxiosModule,
     StorageModule,
     AuthModule,
@@ -97,7 +94,6 @@ import { VillaModule } from './modules/villa/villa.module';
     PackageModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ConfigHelper],
-  exports: [ConfigHelper],
+  providers: [AppService],
 })
 export class AppModule {}

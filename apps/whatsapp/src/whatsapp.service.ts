@@ -1,3 +1,5 @@
+import { WHATSAPP_QUEUE } from '@libs/common/constants';
+import { retryFailedMessage } from '@libs/rabbitmq/services';
 import { SendMessageDto } from '@libs/whatsapp-client/dto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IWhatsappClient } from './interfaces';
@@ -10,6 +12,24 @@ export class WhatsappService {
     @Inject('WHATSAPP_PROVIDER')
     private readonly whatsappProvider: IWhatsappClient,
   ) {}
+
+  async sendMessageWithRetryMechanism(
+    payload: SendMessageDto & { retry_count?: number },
+  ) {
+    const result = await this.sendMessage(payload);
+
+    if (result.success) {
+      return result;
+    }
+
+    return retryFailedMessage({
+      queue: WHATSAPP_QUEUE,
+      payload,
+      resultErrorMessage: result.error?.message,
+      loggerContext: WhatsappService.name,
+    });
+  }
+
   async sendMessage(payload: SendMessageDto) {
     try {
       const chatId = this._convertPhoneNumberToChatId(payload.phoneNumber);

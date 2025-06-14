@@ -6,7 +6,7 @@ import { config, DotenvConfigOptions } from 'dotenv';
 export class LibEnvironmentVariables {
   @IsString()
   @IsNotEmpty()
-  RABBITMQ_URL!: string;
+  RABBIT_MQ_URI!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {

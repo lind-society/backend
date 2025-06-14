@@ -9,7 +9,9 @@ export class MailController {
   constructor(private readonly mailService: MailService) {}
 
   @MessagePattern(SEND_MAIL)
-  async handleSendEmail(@Payload() payload: SendMailDto) {
-    return this.mailService.sendMail(payload);
+  async handleSendEmail(
+    @Payload() payload: SendMailDto & { retry_count?: number },
+  ) {
+    return this.mailService.sendMailWithRetryMechanism(payload);
   }
 }

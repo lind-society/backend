@@ -4,6 +4,6 @@
     "declaration": false,
     "outDir": "../../dist/apps/main"
   },
-  "include": ["src/**/*", "../../libs/common/entities/message-queue.entity.ts"],
+  "include": ["src/**/*", "../../libs/common/entitie/message-queue.entity.ts"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

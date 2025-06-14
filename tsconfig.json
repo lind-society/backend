@@ -13,19 +13,10 @@
       "path": "./apps/mail/tsconfig.app.json"
     },
     {
-      "path": "./apps/message-queue/tsconfig.app.json"
-    },
-    {
-      "path": "./apps/scheduler/tsconfig.app.json"
-    },
-    {
       "path": "./libs/common/tsconfig.lib.json"
     },
     {
       "path": "./libs/config/tsconfig.lib.json"
-    },
-    {
-      "path": "./libs/logger/tsconfig.lib.json"
     },
     {
       "path": "./libs/rabbitmq/tsconfig.lib.json"
@@ -36,8 +27,5 @@
     {
       "path": "./libs/mail-client/tsconfig.lib.json"
     },
-    {
-      "path": "./libs/message-queue-client/tsconfig.lib.json"
-    }
   ]
 }

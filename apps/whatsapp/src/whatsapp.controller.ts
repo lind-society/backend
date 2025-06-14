@@ -13,8 +13,10 @@ export class WhatsappServiceController {
   constructor(private readonly whatsappService: WhatsappService) {}
 
   @MessagePattern(SEND_WHATSAPP_MESSAGE)
-  async handleSendMessage(@Payload() data: SendMessageDto) {
-    return this.whatsappService.sendMessage(data);
+  async handleSendMessage(
+    @Payload() data: SendMessageDto & { retry_count?: number },
+  ) {
+    return this.whatsappService.sendMessageWithRetryMechanism(data);
   }
 
   @MessagePattern(WHATSAPP_HEALTH_CHECK)

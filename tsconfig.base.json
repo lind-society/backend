@@ -22,26 +22,18 @@
       "@libs/common/*": ["libs/common/*"],
       "@libs/config": ["libs/config"],
       "@libs/config/*": ["libs/config/*"],
-      "@libs/logger": ["libs/logger/src"],
-      "@libs/logger/*": ["libs/logger/src/*"],
       "@libs/rabbitmq": ["libs/rabbitmq/src"],
       "@libs/rabbitmq/*": ["libs/rabbitmq/src/*"],
       "@libs/whatsapp-client": ["libs/whatsapp-client/src"],
       "@libs/whatsapp-client/*": ["libs/whatsapp-client/src/*"],
       "@libs/mail-client": ["libs/mail-client/src"],
       "@libs/mail-client/*": ["libs/mail-client/src/*"],
-      "@libs/message-queue-client": ["libs/message-queue-client/src"],
-      "@libs/message-queue-client/*": ["libs/message-queue-client/src/*"],
       "@apps/main": ["apps/main/src"],
       "@apps/main/*": ["apps/main/src/*"],
       "@apps/whatsapp": ["apps/whatsapp/src"],
       "@apps/whatsapp/*": ["apps/whatsapp/src/*"],
       "@apps/mail": ["apps/mail/src"],
-      "@apps/mail/*": ["apps/mail/src/*"],
-      "@apps/scheduler": ["apps/scheduler/src"],
-      "@apps/scheduler/*": ["apps/scheduler/src/*"],
-      "@apps/message-queue": ["apps/message-queue/src"],
-      "@apps/message-queue/*": ["apps/message-queue/src/*"]
+      "@apps/mail/*": ["apps/mail/src/*"]
     }
   }
 }

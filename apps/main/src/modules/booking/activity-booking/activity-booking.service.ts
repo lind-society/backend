@@ -8,11 +8,6 @@ import {
   ActivityBooking,
   ActivityBookingStatus,
 } from '@apps/main/database/entities';
-import {
-  MessageQueue,
-  MessageQueueStatus,
-  MessageQueueType,
-} from '@libs/common/entities';
 import { WhatsappClientService } from '@libs/whatsapp-client';
 import {
   BadRequestException,
@@ -69,7 +64,6 @@ export class ActivityBookingService {
         payload.customer.phoneCountryCode,
         payload.customer.phoneNumber,
         bookingDetail,
-        manager,
       );
 
       return bookingDetail;
@@ -328,7 +322,6 @@ export class ActivityBookingService {
     phoneCountryCode: string,
     phoneNumber: string,
     bookingDetail: ActivityBookingWithRelationsDto,
-    manager: EntityManager,
   ) {
     const constructedPhoneNumber = constructPhoneNumber(
       phoneCountryCode,
@@ -336,61 +329,12 @@ export class ActivityBookingService {
     );
 
     try {
-      // First check if WhatsApp service is connected
-      const isConnected = await this.whatsappClientService.checkConnection();
-
-      if (!isConnected) {
-        // Log warning but continue with the booking process
-        this.logger.warn(
-          'WhatsApp service is not available. Message will not be sent.',
-        );
-
-        // Save to database for later retry
-        await manager.save(MessageQueue, {
-          type: MessageQueueType.Whatsapp,
-          recipient: constructedPhoneNumber,
-          content: this._formatActivityBookingMessage(bookingDetail),
-          status: MessageQueueStatus.Pending,
-          createdAt: new Date(),
-          retryCount: 0,
-        });
-      } else {
-        // WhatsApp service is connected, try to send
-        await Promise.race([
-          this.whatsappClientService.sendMessage({
-            phoneNumber: constructedPhoneNumber,
-            message: this._formatActivityBookingMessage(bookingDetail),
-          }),
-          // Timeout after 3 seconds to avoid hanging
-          new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error('WhatsApp message send timeout')),
-              3000,
-            ),
-          ),
-        ]);
-      }
+      await this.whatsappClientService.sendMessage({
+        phoneNumber: constructedPhoneNumber,
+        message: this._formatActivityBookingMessage(bookingDetail),
+      });
     } catch (error) {
-      // Log the error but don't fail the transaction
       this.logger.error('Failed to send WhatsApp message:', error.message);
-
-      // Save failed message to a queue for retry
-      try {
-        await manager.save(MessageQueue, {
-          type: MessageQueueType.Whatsapp,
-          recipient: constructedPhoneNumber,
-          content: this._formatActivityBookingMessage(bookingDetail),
-          status: MessageQueueStatus.Pending,
-          createdAt: new Date(),
-          errorMessage: error.message,
-          retryCount: 0,
-        });
-      } catch (queueError) {
-        this.logger.error(
-          'Failed to save message to queue:',
-          queueError.message,
-        );
-      }
     }
   }
 }
