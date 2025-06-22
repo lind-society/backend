@@ -1,4 +1,5 @@
-import { Public } from '@apps/main/common/decorators';
+import { HalEmbedded, Public } from '@apps/main/common/decorators';
+import { HalInterceptor } from '@apps/main/common/interceptors';
 import { AuthorizedRequest } from '@apps/main/common/types';
 import {
   Body,
@@ -11,6 +12,7 @@ import {
   Post,
   Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { JwtAuthGuard } from '../auth/guards';
@@ -26,6 +28,11 @@ import {
 } from './dto';
 
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(HalInterceptor)
+@HalEmbedded(
+  { name: 'author', path: 'admins' },
+  { name: 'category', path: 'blog-categories' },
+)
 @Controller('blogs')
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}

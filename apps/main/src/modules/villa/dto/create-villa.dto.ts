@@ -1,8 +1,8 @@
 import {
   RegexValidator,
   ValidateDiscountValue,
+  ValidateRequiredVillaPolicies,
 } from '@apps/main/common/decorators';
-import { ValidateRequiredVillaPolicies } from '@apps/main/common/decorators/validate-required-villa-policies.decorator';
 import { DefaultHttpStatus } from '@apps/main/common/enums';
 import { DiscountType, VillaAvailability } from '@apps/main/database/entities';
 import { CreateAdditionalDto } from '@apps/main/modules/additional/dto';
