@@ -8,7 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { HAL_EMBED_KEYS, HAL_ENTITY_TYPE } from '../constants';
+import { HAL_EMBED_KEYS, HAL_ENTITY_TYPE, SKIP_HAL } from '../constants';
 import { getOriginalUrlEntity, HalHelper } from '../helpers';
 import { IHalEmbededConfig } from '../interfaces';
 
@@ -19,6 +19,14 @@ export class HalInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const httpCtx = context.switchToHttp();
     const request = httpCtx.getRequest<Request>();
+
+    const skipHal =
+      this.reflector.get<boolean>(SKIP_HAL, context.getHandler()) ??
+      this.reflector.get<boolean>(SKIP_HAL, context.getClass());
+
+    if (skipHal) {
+      return next.handle();
+    }
 
     const entityType =
       this.reflector.get<string>(HAL_ENTITY_TYPE, context.getHandler()) ??

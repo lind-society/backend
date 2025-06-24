@@ -3,6 +3,7 @@ import { BlogCategory } from '@apps/main/database/entities';
 import { PaginateResponseDataProps } from '@apps/main/modules/shared/dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import {
@@ -54,7 +55,7 @@ export class BlogCategoryService {
         id,
       },
       relations: {
-        blogs: true,
+        blogs: { author: true },
       },
     });
 
@@ -62,14 +63,9 @@ export class BlogCategoryService {
       throw new NotFoundException('blog category not found');
     }
 
-    const { blogs, ...blogCategoryData } = blogCategory;
-
-    return {
-      ...blogCategoryData,
-      blogs: blogs.map((blog) => ({
-        ...blog,
-      })),
-    };
+    return plainToInstance(BlogCategoryWithRelationsDto, blogCategory, {
+      enableImplicitConversion: true,
+    });
   }
 
   async update(

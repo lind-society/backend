@@ -1,4 +1,4 @@
-import { Public } from '@apps/main/common/decorators';
+import { HalEmbedded, Public } from '@apps/main/common/decorators';
 import { PriceConverterInterceptor } from '@apps/main/common/interceptors';
 import {
   Body,
@@ -29,8 +29,13 @@ import {
 } from './dto';
 
 @UseGuards(JwtAuthGuard)
-@Controller('activities')
+@HalEmbedded(
+  { name: 'category', path: 'activity-categories' },
+  { name: 'owner', path: 'owners' },
+  { name: 'reviews', path: 'reviews' },
+)
 @UseInterceptors(PriceConverterInterceptor)
+@Controller('activities')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 

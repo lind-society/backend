@@ -1,3 +1,4 @@
+import { HalEmbedded } from '@apps/main/common/decorators';
 import { AuthorizedRequest } from '@apps/main/common/types';
 import {
   Body,
@@ -23,6 +24,7 @@ import {
 } from './dto';
 
 @UseGuards(JwtAuthGuard)
+@HalEmbedded({ name: 'blogs', path: 'blogs' })
 @Controller('admins')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}

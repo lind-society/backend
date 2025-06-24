@@ -1,4 +1,4 @@
-import { Public } from '@apps/main/common/decorators';
+import { HalEmbedded, Public } from '@apps/main/common/decorators';
 import {
   Body,
   Controller,
@@ -24,6 +24,7 @@ import {
 import { PackageService } from './package.service';
 
 @UseGuards(JwtAuthGuard)
+@HalEmbedded({ name: 'benefits', path: 'package-benefits' })
 @Controller('packages')
 export class PackageController {
   constructor(private readonly packageService: PackageService) {}

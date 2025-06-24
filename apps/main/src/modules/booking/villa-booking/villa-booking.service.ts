@@ -4,7 +4,7 @@ import {
 } from '@apps/main/common/helpers';
 import { VillaBooking } from '@apps/main/database/entities';
 import { WhatsappClientService } from '@libs/whatsapp-client';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -18,8 +18,10 @@ import {
 
 @Injectable()
 export class VillaBookingService {
+  private readonly logger = new Logger(VillaBookingService.name);
+
   constructor(
-    @InjectDataSource() 
+    @InjectDataSource()
     private datasource: DataSource,
     @InjectRepository(VillaBooking)
     private villaBookingRepository: Repository<VillaBooking>,
@@ -41,13 +43,11 @@ export class VillaBookingService {
 
       const bookingDetail = await this.findOne(createdVillaBooking.id, manager);
 
-      await this.whatsappClientService.sendMessage({
-        phoneNumber: constructPhoneNumber(
-          payload.customer.phoneCountryCode,
-          payload.customer.phoneNumber,
-        ),
-        message: this._formatVillaBookingMessage(bookingDetail),
-      });
+      await this._sendWhatsappActivityBookingHelper(
+        payload.customer.phoneCountryCode,
+        payload.customer.phoneNumber,
+        bookingDetail,
+      );
 
       return bookingDetail;
     });
@@ -212,5 +212,25 @@ export class VillaBookingService {
 🗺️ *Map*: ${booking.villa?.mapLink || '-'}
   
 We look forward to welcoming you!`;
+  }
+
+  async _sendWhatsappActivityBookingHelper(
+    phoneCountryCode: string,
+    phoneNumber: string,
+    bookingDetail: VillaBookingWithRelationsDto,
+  ) {
+    const constructedPhoneNumber = constructPhoneNumber(
+      phoneCountryCode,
+      phoneNumber,
+    );
+
+    try {
+      await this.whatsappClientService.sendMessage({
+        phoneNumber: constructedPhoneNumber,
+        message: this._formatVillaBookingMessage(bookingDetail),
+      });
+    } catch (error) {
+      this.logger.error('Failed to send WhatsApp message:', error.message);
+    }
   }
 }

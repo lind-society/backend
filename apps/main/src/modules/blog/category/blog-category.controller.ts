@@ -1,3 +1,4 @@
+import { HalEmbedded } from '@apps/main/common/decorators';
 import { JwtAuthGuard } from '@apps/main/modules/auth/guards';
 import { DeleteResponse } from '@apps/main/modules/shared/dto/custom-responses';
 import {
@@ -23,6 +24,10 @@ import {
 } from './dto';
 
 @UseGuards(JwtAuthGuard)
+@HalEmbedded(
+  { name: 'blogs', path: 'blogs' },
+  { name: 'author', path: 'admins' },
+)
 @Controller('blog-categories')
 export class BlogCategoryController {
   constructor(private readonly blogCategoryService: BlogCategoryService) {}

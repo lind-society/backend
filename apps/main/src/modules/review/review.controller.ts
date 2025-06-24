@@ -1,4 +1,4 @@
-import { Public } from '@apps/main/common/decorators';
+import { HalEmbedded, Public } from '@apps/main/common/decorators';
 import {
   Body,
   Controller,
@@ -23,6 +23,14 @@ import {
 import { ReviewService } from './review.service';
 
 @UseGuards(JwtAuthGuard)
+@HalEmbedded(
+  { name: 'activityBooking', path: 'bookings/activities' },
+  { name: 'customer', path: 'booking-customers' },
+  { name: 'villaBooking', path: 'bookings/villas' },
+  { name: 'activity', path: 'activities' },
+  { name: 'villa', path: 'villas' },
+  { name: 'owner', path: 'owners' },
+)
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}

@@ -118,7 +118,7 @@ export class WhatsappClientService implements OnModuleInit {
     try {
       const healthResult = await firstValueFrom(
         this.client.send(WHATSAPP_HEALTH_CHECK, {}).pipe(
-          timeout(3000),
+          timeout(100),
           catchError((error) => {
             this.logger.error('Health check failed:', error.message);
             throw error;

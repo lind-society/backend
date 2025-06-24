@@ -1,4 +1,4 @@
-import { Public } from '@apps/main/common/decorators';
+import { HalEmbedded, Public } from '@apps/main/common/decorators';
 import { JwtAuthGuard } from '@apps/main/modules/auth/guards';
 import { DeleteResponse } from '@apps/main/modules/shared/dto/custom-responses';
 import {
@@ -24,6 +24,10 @@ import {
 } from './dto';
 
 @UseGuards(JwtAuthGuard)
+@HalEmbedded(
+  { name: 'activityBookings', path: 'bookings/activities' },
+  { name: 'villaBookings', path: 'bookings/villas' },
+)
 @Controller('booking-customers')
 export class BookingCustomerController {
   constructor(

@@ -1,10 +1,11 @@
 import { BlogCategory } from '@apps/main/database/entities';
-import { BlogDto } from '../../dto';
+import { BlogWithRelationsDto } from '../../dto';
+import { Type } from 'class-transformer';
 
 export interface IBlogCategoryDto extends Omit<BlogCategory, 'blogs'> {}
 
 export interface IBlogCategoryWithRelationsDto extends IBlogCategoryDto {
-  blogs: BlogDto[];
+  blogs: BlogWithRelationsDto[];
 }
 
 export class BlogCategoryDto implements IBlogCategoryDto {
@@ -19,5 +20,6 @@ export class BlogCategoryWithRelationsDto
   extends BlogCategoryDto
   implements IBlogCategoryDto
 {
-  readonly blogs?: BlogDto[];
+  @Type(() => BlogWithRelationsDto)
+  readonly blogs?: BlogWithRelationsDto[];
 }

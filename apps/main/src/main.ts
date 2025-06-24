@@ -4,17 +4,15 @@ dotenv.config();
 
 import { Environment } from '@libs/common/enums';
 import {
-  ClassSerializerInterceptor,
   Logger,
   UnprocessableEntityException,
   ValidationPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { validationExceptionFactory } from './common/factories';
 import { HttpExceptionFilter } from './common/filters';
-import { SetHttpCodeInterceptor } from './common/interceptors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -56,9 +54,6 @@ async function bootstrap() {
       },
     }),
   );
-
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
-  app.useGlobalInterceptors(new SetHttpCodeInterceptor());
 
   await app.listen(port, () => {
     logger.log(`env : ${env}`);

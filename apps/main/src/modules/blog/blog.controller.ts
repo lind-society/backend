@@ -28,7 +28,6 @@ import {
 } from './dto';
 
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HalInterceptor)
 @HalEmbedded(
   { name: 'author', path: 'admins' },
   { name: 'category', path: 'blog-categories' },

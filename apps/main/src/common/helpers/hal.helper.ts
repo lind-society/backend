@@ -40,27 +40,36 @@ export class HalHelper {
     request: Request,
     entityType: string,
     embedKeys: IHalEmbededConfig[] = [],
-  ): IHalResource<T> {
-    const selfHref = `${request.protocol}://${request.get('host')}/api/v1/${entityType}/${item.id}`;
-    const embeddedLinks: Record<string, ILinkHal> = {};
+  ): any {
+    const selfLink = `${request.protocol}://${request.get('host')}/api/v1/${entityType}${item.id ? `/${item.id}` : ''}`;
+    const result: any = {
+      ...item,
+      link: selfLink,
+    };
 
-    if (embedKeys?.length) {
-      for (const { name, path } of embedKeys) {
-        const embeddedEntity = item[name];
-        if (embeddedEntity?.id) {
-          embeddedLinks[name] = {
-            href: `${request.protocol}://${request.get('host')}/api/v1/${path}/${embeddedEntity.id}`,
-          };
-        }
+    for (const { name, path } of embedKeys) {
+      const embeddedEntity = (item as any)[name];
+
+      if (!embeddedEntity) continue;
+
+      if (Array.isArray(embeddedEntity)) {
+        result[name] = embeddedEntity
+          .map((e: any) =>
+            e?.id
+              ? this.generateHalLinksWithEmbedded(e, request, path, embedKeys)
+              : null,
+          )
+          .filter(Boolean);
+      } else if (embeddedEntity.id) {
+        result[name] = this.generateHalLinksWithEmbedded(
+          embeddedEntity,
+          request,
+          path,
+          embedKeys,
+        );
       }
     }
 
-    return {
-      ...item,
-      _links: {
-        self: { href: selfHref },
-        ...embeddedLinks,
-      },
-    };
+    return result;
   }
 }

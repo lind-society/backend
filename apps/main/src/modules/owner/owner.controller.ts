@@ -1,3 +1,4 @@
+import { HalEmbedded } from '@apps/main/common/decorators';
 import {
   Body,
   Controller,
@@ -10,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreateOwnerDto,
@@ -20,9 +22,13 @@ import {
   UpdateOwnerSuccessResponse,
 } from './dto';
 import { OwnerService } from './owner.service';
-import { JwtAuthGuard } from '../auth/guards';
 
 @UseGuards(JwtAuthGuard)
+@HalEmbedded(
+  { name: 'activities', path: 'activities' },
+  { name: 'properties', path: 'properties' },
+  { name: 'villas', path: 'villas' },
+)
 @Controller('owners')
 export class OwnerController {
   constructor(private readonly ownerService: OwnerService) {}

@@ -1,4 +1,4 @@
-import { Public } from '@apps/main/common/decorators';
+import { HalEmbedded, Public } from '@apps/main/common/decorators';
 import { PriceConverterInterceptor } from '@apps/main/common/interceptors';
 import { JwtAuthGuard } from '@apps/main/modules/auth/guards';
 import { DeleteResponse } from '@apps/main/modules/shared/dto/custom-responses';
@@ -27,6 +27,11 @@ import {
 
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(PriceConverterInterceptor)
+@HalEmbedded(
+  { name: 'customer', path: 'booking-customers' },
+  { name: 'activityBooking', path: 'bookings/activities' },
+  { name: 'villaBooking', path: 'bookings/villas' },
+)
 @Controller('booking-payments')
 export class BookingPaymentController {
   constructor(private readonly bookingPaymentService: BookingPaymentService) {}

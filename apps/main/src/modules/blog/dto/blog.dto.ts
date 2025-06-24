@@ -1,5 +1,6 @@
 import { Blog } from '@apps/main/database/entities';
 import { AdminDto } from '@apps/main/modules/admin/dto';
+import { Type } from 'class-transformer';
 import { BlogCategoryDto } from '../category/dto';
 
 export interface IBlogDto extends Omit<Blog, 'category' | 'author'> {}
@@ -25,5 +26,7 @@ export class BlogWithRelationsDto
   implements IBlogWithRelationsDto
 {
   readonly category!: BlogCategoryDto;
+
+  @Type(() => AdminDto)
   readonly author!: AdminDto;
 }

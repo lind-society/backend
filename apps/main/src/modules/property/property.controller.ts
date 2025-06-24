@@ -1,4 +1,4 @@
-import { Public } from '@apps/main/common/decorators';
+import { HalEmbedded, Public } from '@apps/main/common/decorators';
 import { PriceConverterInterceptor } from '@apps/main/common/interceptors';
 import {
   Body,
@@ -27,6 +27,10 @@ import { PropertyService } from './property.service';
 
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(PriceConverterInterceptor)
+@HalEmbedded(
+  { name: 'facilities', path: 'facilities' },
+  { name: 'owner', path: 'owners' },
+)
 @Controller('properties')
 export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}

@@ -1,3 +1,4 @@
+import { SkipHal } from '@apps/main/common/decorators';
 import { AuthorizedRequest } from '@apps/main/common/types';
 import {
   Body,
@@ -14,6 +15,7 @@ import { AuthService } from './auth.service';
 import { LoginSuccessResponse, RefreshTokenSuccessResponse } from './dto';
 import { JwtAuthGuard, JwtRefreshGuard, LocalAuthGuard } from './guards';
 
+@SkipHal()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

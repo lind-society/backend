@@ -2,6 +2,7 @@ import { paginateResponseMapper } from '@apps/main/common/helpers';
 import { Blog } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import { AdminService } from '../admin/admin.service';
@@ -65,7 +66,9 @@ export class BlogService {
       throw new NotFoundException('blog not found');
     }
 
-    return blog;
+    return plainToInstance(BlogWithRelationsDto, blog, {
+      enableImplicitConversion: true,
+    });
   }
 
   async update(

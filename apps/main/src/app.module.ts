@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -7,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envPaths } from './common/constants';
+import { HalInterceptor, SetHttpCodeInterceptor } from './common/interceptors';
 import {
   appConfig,
   currencyConfig,
@@ -94,6 +96,20 @@ import { VillaModule } from './modules/villa/villa.module';
     PackageModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SetHttpCodeInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HalInterceptor,
+    },
+  ],
 })
 export class AppModule {}

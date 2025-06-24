@@ -1,4 +1,4 @@
-import { Public } from '@apps/main/common/decorators';
+import { HalEmbedded, Public } from '@apps/main/common/decorators';
 import { PriceConverterInterceptor } from '@apps/main/common/interceptors';
 import {
   Body,
@@ -30,6 +30,13 @@ import { VillaService } from './villa.service';
 
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(PriceConverterInterceptor)
+@HalEmbedded(
+  { name: 'facilities', path: 'facilities' },
+  { name: 'policies', path: 'villa-policies' },
+  { name: 'priceRules', path: 'villa-price-rules' },
+  { name: 'owner', path: 'owners' },
+  { name: 'reviews', path: 'reviews' },
+)
 @Controller('villas')
 export class VillaController {
   constructor(private readonly villaService: VillaService) {}
