@@ -9,30 +9,20 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, switchMap } from 'rxjs';
-import {
-  ACTIVITY_DISCOUNT_FIELDS,
-  ACTIVITY_PRICE_FIELDS,
-  ACTIVITY_PRICE_TO_AFTER_DISCOUNT_MAP,
-  DISCOUNT_TYPE_FIELDS,
-  FEATURE_DISCOUNT_FIELDS,
-  FEATURE_PRICE_FIELDS,
-  FEATURE_PRICE_TO_AFTER_DISCOUNT_MAP,
-  PROPERTY_DISCOUNT_FIELDS,
-  PROPERTY_PRICE_FIELDS,
-  PROPERTY_PRICE_TO_AFTER_DISCOUNT_MAP,
-  VILLA_CURRENT_DISCOUNT_FIELDS,
-  VILLA_CURRENT_PRICE_FIELDS,
-  VILLA_CURRENT_PRICE_TO_AFTER_DISCOUNT_MAP,
-  VILLA_DISCOUNT_FIELDS,
-  VILLA_PRICE_FIELDS,
-  VILLA_PRICE_RULE_DISCOUNT_FIELDS,
-  VILLA_PRICE_TO_AFTER_DISCOUNT_MAP,
-} from '../constants';
+import { PRICE_FIELD_CONFIGURATIONS } from '../constants';
 import { formatPrice } from '../helpers';
+import { IPriceFieldConfig } from '../interfaces';
 
 @Injectable()
 export class PriceConverterInterceptor implements NestInterceptor {
   private readonly logger = new Logger(PriceConverterInterceptor.name);
+
+  // Add caching for currencies and conversion rates
+  private exchangeRate: number;
+  private defaultCurrencyId: string;
+  private currencyCache = new Map<string, any>();
+  private conversionCache = new Map<string, boolean>();
+  private rateCache = new Map<string, number>();
 
   constructor(
     private readonly currencyService: CurrencyService,
@@ -48,6 +38,24 @@ export class PriceConverterInterceptor implements NestInterceptor {
         const items = Array.isArray(data.data?.data)
           ? data.data.data
           : [data.data];
+
+        // Pre-load all currencies we'll need
+        await this._preloadCurrencies(items, baseCurrencyId);
+        this.defaultCurrencyId = Array.from(this.currencyCache.keys())[0];
+
+        if (this.currencyCache.size <= 0 || !this.defaultCurrencyId) {
+          return data;
+        }
+
+        // Always fetch the latest exchange rate once
+        const latestRate = await this.currencyConverterService.getExchangeRate(
+          this.defaultCurrencyId,
+          baseCurrencyId,
+        );
+
+        if (!this.exchangeRate || this.exchangeRate !== latestRate) {
+          this.exchangeRate = latestRate;
+        }
 
         const transformed = await Promise.all(
           items.map((item) =>
@@ -68,6 +76,106 @@ export class PriceConverterInterceptor implements NestInterceptor {
     );
   }
 
+  private async _preloadCurrencies(
+    items: any[],
+    baseCurrencyId?: string,
+  ): Promise<void> {
+    const currencyIds = new Set<string>();
+
+    // Collect all currency IDs from the data
+    this._collectCurrencyIds(items, currencyIds);
+
+    if (baseCurrencyId) {
+      currencyIds.add(baseCurrencyId);
+    }
+
+    if (currencyIds.size === 0) {
+      return;
+    }
+
+    // Batch load all currencies
+    await Promise.all(
+      Array.from(currencyIds).map(async (id) => {
+        if (!this.currencyCache.has(id)) {
+          const currency = await this.currencyService.findOne(id);
+          this.currencyCache.set(id, currency);
+          return { id, currency };
+        }
+        return { id, currency: this.currencyCache.get(id) };
+      }),
+    );
+
+    // Pre-check conversion availability if baseCurrencyId is provided
+    if (baseCurrencyId) {
+      const conversionChecks = Array.from(currencyIds)
+        .filter((id) => id !== baseCurrencyId)
+        .map(async (sourceCurrencyId) => {
+          const cacheKey = `${sourceCurrencyId}-${baseCurrencyId}`;
+          if (!this.conversionCache.has(cacheKey)) {
+            const isAvailable = await this.currencyConverterService.isExist(
+              sourceCurrencyId,
+              baseCurrencyId,
+            );
+            this.conversionCache.set(cacheKey, Boolean(isAvailable));
+          }
+        });
+
+      await Promise.all(conversionChecks);
+    }
+  }
+
+  private _collectCurrencyIds(items: any[], currencyIds: Set<string>): void {
+    items.forEach((item) => {
+      if (item?.currencyId) {
+        currencyIds.add(item.currencyId);
+      }
+
+      // Collect from nested objects based on known structures
+      this._collectFromNested(item, currencyIds);
+    });
+  }
+
+  private _collectFromNested(obj: any, currencyIds: Set<string>): void {
+    if (!obj || typeof obj !== 'object') return;
+
+    // Handle common nested structures
+    const nestedArrays = [
+      'activities',
+      'reviews',
+      'villaFeatures',
+      'villaPriceRules',
+      'priceRules',
+      'features',
+    ];
+    const nestedObjects = [
+      'activityBooking',
+      'villaBooking',
+      'priceRule',
+      'feature',
+      'currency',
+    ];
+
+    nestedArrays.forEach((arrayField) => {
+      if (Array.isArray(obj[arrayField])) {
+        obj[arrayField].forEach((item) => {
+          if (item?.currencyId) {
+            currencyIds.add(item.currencyId);
+          }
+          this._collectFromNested(item, currencyIds);
+        });
+      }
+    });
+
+    nestedObjects.forEach((objectField) => {
+      if (obj[objectField]) {
+        if (obj[objectField].currencyId) {
+          currencyIds.add(obj[objectField].currencyId);
+        }
+        this._collectFromNested(obj[objectField], currencyIds);
+      }
+    });
+  }
+
   private async _convertPricesFromPayload(
     obj: any,
     baseCurrencyId: string,
@@ -77,17 +185,18 @@ export class PriceConverterInterceptor implements NestInterceptor {
     }
 
     const converted = { ...obj };
-    const currencyId = obj.currencyId;
 
-    if (!currencyId || currencyId === baseCurrencyId) {
+    if (!this.defaultCurrencyId || this.defaultCurrencyId === baseCurrencyId) {
       return await this._formatPricesFromPayload(converted);
     }
 
-    const isConvertedCurrencyExist =
-      await this.currencyConverterService.isExist(currencyId, baseCurrencyId);
+    const isConvertedCurrencyExist = this._getCachedConversionAvailability(
+      this.defaultCurrencyId,
+      baseCurrencyId,
+    );
 
-    const convertedCurrency = await this.currencyService.findOne(
-      isConvertedCurrencyExist ? baseCurrencyId : currencyId, // switch back to the default currencyId if conversion not available
+    const convertedCurrency = this._getCachedCurrency(
+      isConvertedCurrencyExist ? baseCurrencyId : this.defaultCurrencyId,
     );
 
     const { allowDecimal, allowRound } = convertedCurrency;
@@ -95,39 +204,7 @@ export class PriceConverterInterceptor implements NestInterceptor {
     try {
       const processedFields = new Set<string>();
 
-      await this._formatActivityPrices(
-        converted,
-        allowDecimal,
-        allowRound,
-        baseCurrencyId,
-        processedFields,
-      );
-
-      await this._formatVillaPrices(
-        converted,
-        allowDecimal,
-        allowRound,
-        baseCurrencyId,
-        processedFields,
-      );
-
-      await this._formatVillaPriceRulPrices(
-        converted,
-        allowDecimal,
-        allowRound,
-        baseCurrencyId,
-        processedFields,
-      );
-
-      await this._formatPropertyPrices(
-        converted,
-        allowDecimal,
-        allowRound,
-        baseCurrencyId,
-        processedFields,
-      );
-
-      await this._formatFeaturePrices(
+      await this._processAllPriceFields(
         converted,
         allowDecimal,
         allowRound,
@@ -138,7 +215,7 @@ export class PriceConverterInterceptor implements NestInterceptor {
       converted.currencyId = baseCurrencyId;
       converted.currency = convertedCurrency;
     } catch (error) {
-      this.logger.error('Price formatting failed:', error);
+      this.logger.error('Price conversion failed:', error);
     }
 
     return converted;
@@ -150,26 +227,20 @@ export class PriceConverterInterceptor implements NestInterceptor {
     }
 
     const converted = { ...obj };
-    const currencyId = obj.currencyId;
 
-    if (!currencyId) {
-      return obj;
-    }
-
-    const currency = await this.currencyService.findOne(currencyId);
-
+    const currency = this._getCachedCurrency(this.defaultCurrencyId);
     const { allowDecimal, allowRound } = currency;
 
     try {
-      await this._formatActivityPrices(converted, allowDecimal, allowRound);
-      await this._formatVillaPrices(converted, allowDecimal, allowRound);
-      await this._formatVillaPriceRulPrices(
+      const processedFields = new Set<string>();
+
+      await this._processAllPriceFields(
         converted,
         allowDecimal,
         allowRound,
+        undefined,
+        processedFields,
       );
-      await this._formatPropertyPrices(converted, allowDecimal, allowRound);
-      await this._formatFeaturePrices(converted, allowDecimal, allowRound);
     } catch (error) {
       this.logger.error('Price formatting failed:', error);
     }
@@ -177,197 +248,398 @@ export class PriceConverterInterceptor implements NestInterceptor {
     return converted;
   }
 
-  // Format Price Helper
-  private async _formatActivityPrices(
-    converted: any,
-    allowDecimal: boolean,
-    allowRound: boolean,
-    baseCurrencyId?: string,
-    processedFields?: Set<string>,
-  ) {
-    await this._formatPriceHelper(
-      converted,
-      allowDecimal,
-      allowRound,
-      ACTIVITY_DISCOUNT_FIELDS,
-      ACTIVITY_PRICE_FIELDS,
-      ACTIVITY_PRICE_TO_AFTER_DISCOUNT_MAP,
-      baseCurrencyId,
-      processedFields,
-    );
+  private _getCachedCurrency(currencyId: string): any {
+    return this.currencyCache.get(currencyId);
   }
 
-  private async _formatVillaPrices(
-    converted: any,
+  private _getCachedConversionAvailability(
+    sourceCurrencyId: string,
+    targetCurrencyId: string,
+  ): boolean {
+    const cacheKey = `${sourceCurrencyId}-${targetCurrencyId}`;
+    return this.conversionCache.get(cacheKey) ?? false;
+  }
+
+  private async _processAllPriceFields(
+    obj: any,
     allowDecimal: boolean,
     allowRound: boolean,
     baseCurrencyId?: string,
-    processedFields?: Set<string>,
-  ) {
-    await this._formatPriceHelper(
-      converted,
-      allowDecimal,
-      allowRound,
-      VILLA_DISCOUNT_FIELDS,
-      VILLA_PRICE_FIELDS,
-      VILLA_PRICE_TO_AFTER_DISCOUNT_MAP,
-      baseCurrencyId,
-      processedFields,
-    );
+    processedFields: Set<string> = new Set(),
+  ): Promise<void> {
+    const entityType = this._detectEntityType(obj);
 
-    if (
-      Array.isArray(converted.priceRules) &&
-      converted.priceRules.length > 0
-    ) {
-      await Promise.all(
-        converted.priceRules.map((priceRule) =>
-          this._formatDiscountBaseOnTypeHelper(
-            priceRule,
-            VILLA_PRICE_RULE_DISCOUNT_FIELDS,
-            allowDecimal,
-            allowRound,
-            baseCurrencyId,
-          ),
-        ),
-      );
-    }
+    console.log('entityType :', entityType);
 
-    if (converted.currentPrice) {
-      await this._formatPriceHelper(
-        converted.currentPrice,
+    if (entityType) {
+      const config = PRICE_FIELD_CONFIGURATIONS[entityType];
+      await this._processPriceFieldsWithConfig(
+        obj,
+        config,
         allowDecimal,
         allowRound,
-        VILLA_CURRENT_DISCOUNT_FIELDS,
-        VILLA_CURRENT_PRICE_FIELDS,
-        VILLA_CURRENT_PRICE_TO_AFTER_DISCOUNT_MAP,
         baseCurrencyId,
         processedFields,
       );
     }
-  }
 
-  private async _formatVillaPriceRulPrices(
-    converted: any,
-    allowDecimal: boolean,
-    allowRound: boolean,
-    baseCurrencyId?: string,
-    processedFields?: Set<string>,
-  ) {
-    await this._formatDiscountBaseOnTypeHelper(
-      converted,
-      VILLA_PRICE_RULE_DISCOUNT_FIELDS,
+    await this._processGenericPriceFields(
+      obj,
       allowDecimal,
       allowRound,
-      baseCurrencyId,
-    );
-  }
-
-  private async _formatPropertyPrices(
-    converted: any,
-    allowDecimal: boolean,
-    allowRound: boolean,
-    baseCurrencyId?: string,
-    processedFields?: Set<string>,
-  ) {
-    await this._formatPriceHelper(
-      converted,
-      allowDecimal,
-      allowRound,
-      PROPERTY_DISCOUNT_FIELDS,
-      PROPERTY_PRICE_FIELDS,
-      PROPERTY_PRICE_TO_AFTER_DISCOUNT_MAP,
       baseCurrencyId,
       processedFields,
     );
   }
 
-  private async _formatFeaturePrices(
-    converted: any,
-    allowDecimal: boolean,
-    allowRound: boolean,
-    baseCurrencyId?: string,
-    processedFields?: Set<string>,
-  ) {
-    if (Array.isArray(converted.features) && converted.features.length > 0) {
-      await Promise.all(
-        converted.features.map((feature) =>
-          this._formatPriceHelper(
-            feature,
-            allowDecimal,
-            allowRound,
-            FEATURE_DISCOUNT_FIELDS,
-            FEATURE_PRICE_FIELDS,
-            FEATURE_PRICE_TO_AFTER_DISCOUNT_MAP,
-            baseCurrencyId,
-            processedFields,
-          ),
-        ),
-      );
+  private _detectEntityType(obj: any): string | null {
+    if (obj.activities !== undefined) {
+      return 'activityCategory';
     }
+
+    if (obj.duration !== undefined || obj.activities !== undefined) {
+      return 'activity';
+    }
+
+    if (
+      obj.priceRules !== undefined ||
+      obj.bedrooms !== undefined ||
+      obj.dailyPrice !== undefined
+    ) {
+      return 'villa';
+    }
+
+    if (obj.ownershipType !== undefined) {
+      return 'property';
+    }
+
+    if (obj.featureType !== undefined) {
+      return 'feature';
+    }
+
+    return null;
   }
 
-  private async _formatPriceHelper(
-    converted: any,
+  private async _processPriceFieldsWithConfig(
+    obj: any,
+    config: IPriceFieldConfig,
     allowDecimal: boolean,
     allowRound: boolean,
-    discountFields: string[],
-    priceFields: string[],
-    priceToAfterDiscountMap: Record<string, string>,
     baseCurrencyId?: string,
     processedFields: Set<string> = new Set(),
-  ) {
-    await this._formatDiscountBaseOnTypeHelper(
-      converted,
-      discountFields,
+  ): Promise<void> {
+    // Process discount fields first
+    console.log("config :", config);
+    await this._formatDiscountFields(
+      obj,
+      config.discountFields,
+      config.discountTypeFields,
       allowDecimal,
       allowRound,
       baseCurrencyId,
     );
 
+    // Process price fields
+    await this._formatPriceFields(
+      obj,
+      config.priceFields,
+      config.priceToAfterDiscountMap,
+      allowDecimal,
+      allowRound,
+      baseCurrencyId,
+      processedFields,
+    );
+
+    // Process nested arrays
+    if (config.nestedArrays) {
+      for (const nestedConfig of config.nestedArrays) {
+        if (Array.isArray(obj[nestedConfig.arrayField])) {
+          await Promise.all(
+            obj[nestedConfig.arrayField].map(async (item) => {
+              await this._processNestedItem(
+                item,
+                nestedConfig.config,
+                baseCurrencyId,
+              );
+            }),
+          );
+        }
+      }
+    }
+
+    // Process nested objects
+    if (config.nestedObjects) {
+      for (const nestedConfig of config.nestedObjects) {
+        if (obj[nestedConfig.objectField]) {
+          await this._processNestedItem(
+            obj[nestedConfig.objectField],
+            nestedConfig.config,
+            baseCurrencyId,
+          );
+        }
+      }
+    }
+  }
+
+  private async _processNestedItem(
+    item: any,
+    config: IPriceFieldConfig,
+    baseCurrencyId?: string,
+  ): Promise<void> {
+    if (!item || typeof item !== 'object') {
+      return;
+    }
+
+    const nestedCurrency = this._getCurrencyForNestedItem(item, baseCurrencyId);
+
+    await this._processPriceFieldsWithConfig(
+      item,
+      config,
+      nestedCurrency.allowDecimal,
+      nestedCurrency.allowRound,
+      baseCurrencyId,
+      new Set(),
+    );
+
+    if (
+      baseCurrencyId &&
+      item.currencyId &&
+      item.currencyId !== baseCurrencyId
+    ) {
+      const isConvertedCurrencyExist = this._getCachedConversionAvailability(
+        item.currencyId,
+        baseCurrencyId,
+      );
+
+      if (isConvertedCurrencyExist) {
+        item.currencyId = baseCurrencyId;
+        item.currency = nestedCurrency.currency;
+      }
+    }
+  }
+
+  private async _formatPriceFields(
+    obj: any,
+    priceFields: string[],
+    priceToAfterDiscountMap: Record<string, string>,
+    allowDecimal: boolean,
+    allowRound: boolean,
+    baseCurrencyId?: string,
+    processedFields: Set<string> = new Set(),
+  ): Promise<void> {
+    // Batch process price conversions
+    const conversionsNeeded: Array<{
+      field: string;
+      value: number;
+      sourceCurrencyId: string;
+    }> = [];
+
+    // Collect all prices that need conversion
     for (const priceField of priceFields) {
-      // 🛡️ Prevent double conversion
+      const fieldId = `${this._generateObjectId(obj)}_${priceField}`;
+
       if (
-        processedFields.has(priceField) ||
-        converted[priceField] === undefined ||
-        converted[priceField] === null
+        processedFields.has(fieldId) ||
+        obj[priceField] === undefined ||
+        obj[priceField] === null
       ) {
         continue;
       }
 
-      processedFields.add(priceField);
+      processedFields.add(fieldId);
 
-      const res = await this.currencyConverterService.convertPriceToBasePrice({
-        basePrice: converted[priceField],
-        baseCurrencyId: converted.currencyId,
-        targetCurrencyId: baseCurrencyId,
-      });
+      if (
+        baseCurrencyId &&
+        obj.currencyId &&
+        obj.currencyId !== baseCurrencyId
+      ) {
+        conversionsNeeded.push({
+          field: priceField,
+          value: obj[priceField],
+          sourceCurrencyId: obj.currencyId,
+        });
+      }
 
-      const convertedPrice = baseCurrencyId ? res.converted?.price : undefined;
-
-      const price = convertedPrice ?? converted[priceField];
-      converted[priceField] = formatPrice(price, allowDecimal, allowRound);
-
-      // Recalculate price after discount
+      // Handle price after discount
       const priceAfterDiscountField = priceToAfterDiscountMap[priceField];
       if (
-        converted[priceAfterDiscountField] !== undefined &&
-        converted[priceAfterDiscountField] !== null
+        priceAfterDiscountField &&
+        obj[priceAfterDiscountField] !== undefined &&
+        obj[priceAfterDiscountField] !== null
       ) {
-        const convertedPriceAfterDiscount = baseCurrencyId
-          ? (
-              await this.currencyConverterService.convertPriceToBasePrice({
-                basePrice: converted[priceAfterDiscountField],
-                baseCurrencyId: converted.currencyId,
-                targetCurrencyId: baseCurrencyId,
-              })
-            ).converted?.price
-          : undefined;
+        if (
+          baseCurrencyId &&
+          obj.currencyId &&
+          obj.currencyId !== baseCurrencyId
+        ) {
+          conversionsNeeded.push({
+            field: priceAfterDiscountField,
+            value: obj[priceAfterDiscountField],
+            sourceCurrencyId: obj.currencyId,
+          });
+        }
+      }
+    }
 
-        const priceAfterDiscount =
-          convertedPriceAfterDiscount ?? converted[priceAfterDiscountField];
+    // Batch convert prices
+    const conversions = await Promise.all(
+      conversionsNeeded.map(async ({ field, value, sourceCurrencyId }) => ({
+        field,
+        convertedPrice: await this._convertSinglePrice(
+          value,
+          sourceCurrencyId,
+          baseCurrencyId,
+        ),
+        originalPrice: value,
+      })),
+    );
 
-        converted[priceAfterDiscountField] = formatPrice(
-          priceAfterDiscount,
+    // Apply conversions and formatting
+    for (const priceField of priceFields) {
+      const conversion = conversions.find((c) => c.field === priceField);
+      if (conversion) {
+        obj[priceField] = formatPrice(
+          conversion.convertedPrice ?? conversion.originalPrice,
+          allowDecimal,
+          allowRound,
+        );
+      } else if (obj[priceField] !== undefined && obj[priceField] !== null) {
+        obj[priceField] = formatPrice(
+          obj[priceField],
+          allowDecimal,
+          allowRound,
+        );
+      }
+
+      // Handle price after discount
+      const priceAfterDiscountField = priceToAfterDiscountMap[priceField];
+      if (
+        priceAfterDiscountField &&
+        obj[priceAfterDiscountField] !== undefined
+      ) {
+        const afterDiscountConversion = conversions.find(
+          (c) => c.field === priceAfterDiscountField,
+        );
+        if (afterDiscountConversion) {
+          obj[priceAfterDiscountField] = formatPrice(
+            afterDiscountConversion.convertedPrice ??
+              afterDiscountConversion.originalPrice,
+            allowDecimal,
+            allowRound,
+          );
+        } else {
+          obj[priceAfterDiscountField] = formatPrice(
+            obj[priceAfterDiscountField],
+            allowDecimal,
+            allowRound,
+          );
+        }
+      }
+    }
+  }
+
+  private async _formatDiscountFields(
+    obj: any,
+    discountFields: string[],
+    discountTypeFields: string[],
+    allowDecimal: boolean,
+    allowRound: boolean,
+    baseCurrencyId?: string,
+  ): Promise<void> {
+    for (const discountField of discountFields) {
+      if (obj[discountField] === undefined || obj[discountField] === null) {
+        continue;
+      }
+
+      const isPercentageDiscount = discountTypeFields.some(
+        (typeField) => obj[typeField] === DiscountType.Percentage,
+      );
+
+      const isFixedDiscount = discountTypeFields.some(
+        (typeField) => obj[typeField] === DiscountType.Fixed,
+      );
+
+      if (isPercentageDiscount) {
+        obj[discountField] = this._formatPercentageDiscount(obj[discountField]);
+      } else if (isFixedDiscount) {
+        obj[discountField] = await this._formatFixedDiscount(
+          obj[discountField],
+          obj.currencyId,
+          allowDecimal,
+          allowRound,
+          baseCurrencyId,
+        );
+      }
+    }
+  }
+
+  private async _convertSinglePrice(
+    price: number,
+    sourceCurrencyId: string,
+    targetCurrencyId?: string,
+  ): Promise<number | undefined> {
+    if (
+      !targetCurrencyId ||
+      !sourceCurrencyId ||
+      sourceCurrencyId === targetCurrencyId
+    ) {
+      return undefined;
+    }
+
+    const rateKey = `${sourceCurrencyId}-${targetCurrencyId}`;
+
+    try {
+      const cachedRate = this.rateCache.get(rateKey);
+
+      // Update the cache if it's new or changed
+      if (cachedRate !== this.exchangeRate) {
+        this.logger.debug(
+          `Exchange rate updated for ${rateKey}: ${cachedRate} -> ${this.exchangeRate}`,
+        );
+        this.rateCache.set(rateKey, this.exchangeRate);
+      }
+
+      return price * this.exchangeRate;
+    } catch (error) {
+      this.logger.error('Currency conversion failed:', error);
+      return undefined;
+    }
+  }
+
+  private async _processGenericPriceFields(
+    obj: any,
+    allowDecimal: boolean,
+    allowRound: boolean,
+    baseCurrencyId?: string,
+    processedFields: Set<string> = new Set(),
+  ): Promise<void> {
+    const genericPriceFields = [
+      'price',
+      'amount',
+      'totalAmount',
+      'cost',
+      'fee',
+    ];
+
+    for (const field of genericPriceFields) {
+      const fieldId = `${this._generateObjectId(obj)}_${field}`;
+
+      if (
+        !processedFields.has(fieldId) &&
+        obj[field] !== undefined &&
+        obj[field] !== null &&
+        typeof obj[field] === 'number'
+      ) {
+        processedFields.add(fieldId);
+
+        const convertedPrice = await this._convertSinglePrice(
+          obj[field],
+          obj.currencyId,
+          baseCurrencyId,
+        );
+
+        obj[field] = formatPrice(
+          convertedPrice ?? obj[field],
           allowDecimal,
           allowRound,
         );
@@ -375,113 +647,104 @@ export class PriceConverterInterceptor implements NestInterceptor {
     }
   }
 
-  private async _formatDiscountBaseOnTypeHelper(
-    converted: any,
-    discountFields: string[],
-    allowDecimal: boolean,
-    allowRound: boolean,
-    baseCurrencyId?: string,
-  ) {
-    try {
-      for (const discountField of discountFields) {
-        if (
-          converted[discountField] === undefined ||
-          converted[discountField] === null
-        ) {
-          continue;
-        }
-
-        const isPercentageDiscount = DISCOUNT_TYPE_FIELDS.some(
-          (typeField) => converted[typeField] === DiscountType.Percentage,
-        );
-
-        const isFixedDiscount = DISCOUNT_TYPE_FIELDS.some(
-          (typeField) => converted[typeField] === DiscountType.Fixed,
-        );
-
-        if (isPercentageDiscount) {
-          converted[discountField] = this._formatPercentageDiscountHelper(
-            converted[discountField],
-          );
-        } else if (isFixedDiscount) {
-          converted[discountField] = await this.formattedFixedDiscountHelper(
-            converted[discountField],
-            converted.currencyId,
-            allowDecimal,
-            allowRound,
-            baseCurrencyId,
-          );
-        }
-      }
-    } catch (error) {
-      this.logger.error('Error in discount processing interceptor:', error);
-    }
-
-    return converted;
+  private _generateObjectId(obj: any): string {
+    return obj.id || obj._id || JSON.stringify(obj).slice(0, 50);
   }
 
-  // Helper method to handle fixed discount formatting
-  async formattedFixedDiscountHelper(
-    discount: number,
-    sourceCurrencyId: string,
-    allowDecimal: boolean,
-    allowRound: boolean,
-    targetCurrencyId?: string,
-  ) {
-    if (!targetCurrencyId) {
-      return formatPrice(discount, allowDecimal, allowRound);
-    }
-
-    try {
-      const result =
-        await this.currencyConverterService.convertPriceToBasePrice({
-          basePrice: discount,
-          baseCurrencyId: sourceCurrencyId,
-          targetCurrencyId: targetCurrencyId,
-        });
-
-      const convertedPrice = result?.converted?.price;
-      const finalPrice =
-        convertedPrice !== undefined ? convertedPrice : discount;
-
-      return formatPrice(finalPrice, allowDecimal, allowRound);
-    } catch (error) {
-      this.logger.error(
-        ` ${this.formattedFixedDiscountHelper.name} : Currency conversion failed:`,
-        error,
-      );
-
-      return formatPrice(discount, allowDecimal, allowRound);
-    }
-  }
-
-  // Common Helper
-  private _formatPercentageDiscountHelper(discount: string): string {
+  private _formatPercentageDiscount(discount: string | number): string {
     if (discount === undefined || discount === null) {
       return '0';
     }
 
-    const numValue = parseFloat(discount);
+    const numValue =
+      typeof discount === 'string' ? parseFloat(discount) : discount;
 
     if (isNaN(numValue)) {
       return '0';
     }
 
-    // Check if the discount is a whole number
-    if (Number.isInteger(numValue)) {
-      return numValue.toString();
-    } else {
-      // Format with no trailing zeros
-      return numValue.toString();
+    return Number.isInteger(numValue)
+      ? numValue.toString()
+      : numValue.toString();
+  }
+
+  private async _formatFixedDiscount(
+    discount: number,
+    sourceCurrencyId: string,
+    allowDecimal: boolean,
+    allowRound: boolean,
+    targetCurrencyId?: string,
+  ): Promise<string> {
+    if (!targetCurrencyId) {
+      return formatPrice(discount, allowDecimal, allowRound);
+    }
+
+    try {
+      const convertedPrice = await this._convertSinglePrice(
+        discount,
+        sourceCurrencyId,
+        targetCurrencyId,
+      );
+
+      return formatPrice(convertedPrice ?? discount, allowDecimal, allowRound);
+    } catch (error) {
+      this.logger.error('Fixed discount conversion failed:', error);
+      return formatPrice(discount, allowDecimal, allowRound);
     }
   }
 
-  private _getDiscountValue(discount: string): number {
-    if (discount === undefined || discount === null) {
-      return 0;
+  private _getCurrencyForNestedItem(
+    item: any,
+    baseCurrencyId?: string,
+  ): {
+    currency: any;
+    allowDecimal: boolean;
+    allowRound: boolean;
+  } {
+    if (!baseCurrencyId || !item.currencyId) {
+      const currency =
+        item.currency || this._getCachedCurrency(item.currencyId);
+      return {
+        currency,
+        allowDecimal: currency?.allowDecimal ?? true,
+        allowRound: currency?.allowRound ?? false,
+      };
     }
 
-    const numValue = parseFloat(discount);
-    return isNaN(numValue) ? 0 : numValue;
+    const isConvertedCurrencyExist = this._getCachedConversionAvailability(
+      item.currencyId,
+      baseCurrencyId,
+    );
+
+    const targetCurrencyId = isConvertedCurrencyExist
+      ? baseCurrencyId
+      : item.currencyId;
+    const currency = this._getCachedCurrency(targetCurrencyId);
+
+    return {
+      currency,
+      allowDecimal: currency?.allowDecimal ?? true,
+      allowRound: currency?.allowRound ?? false,
+    };
+  }
+
+  private async _checkCurrencyIdExist(obj: any): Promise<string | null> {
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        const id = await this._checkCurrencyIdExist(item);
+        if (id) return id;
+      }
+    } else if (typeof obj === 'object' && obj !== null) {
+      if (obj.currencyId) {
+        return obj.currencyId;
+      }
+
+      for (const key of Object.keys(obj)) {
+        const id = await this._checkCurrencyIdExist(obj[key]);
+        if (id) return id;
+      }
+    }
+
+    return null;
   }
 }

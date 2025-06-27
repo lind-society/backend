@@ -1,4 +1,5 @@
 import { HalEmbedded } from '@apps/main/common/decorators';
+import { PriceConverterInterceptor } from '@apps/main/common/interceptors';
 import { JwtAuthGuard } from '@apps/main/modules/auth/guards';
 import { DeleteResponse } from '@apps/main/modules/shared/dto/custom-responses';
 import {
@@ -11,6 +12,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { ActivityCategoryService } from './activity-category.service';
@@ -24,6 +26,7 @@ import {
 } from './dto';
 
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(PriceConverterInterceptor)
 @HalEmbedded({ name: 'activities', path: 'activities' })
 @Controller('activity-categories')
 export class ActivityCategoryController {

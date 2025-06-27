@@ -134,7 +134,7 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
-        reviews: { activityBooking: { customer: true } },
+        reviews: { activityBooking: { currency: true, customer: true } },
       },
     });
 
@@ -175,7 +175,7 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
-        reviews: { activityBooking: { customer: true } },
+        reviews: { activityBooking: { currency: true, customer: true } },
       },
     });
 
@@ -197,7 +197,7 @@ export class ActivityService {
     id: string,
     payload: UpdateActivityDto,
   ): Promise<ActivityWithRelationsDto> {
-    await this.findOne(id);
+    const initial = await this.findOne(id);
 
     this._handleDefaultDiscountType(payload);
 
@@ -207,8 +207,10 @@ export class ActivityService {
       payload.ownerId,
     );
 
-    const convertedBasePriceActivity =
-      await this._convertToBaseCurrency(payload);
+    const convertedBasePriceActivity = await this._convertToBaseCurrency(
+      payload,
+      initial.currencyId,
+    );
 
     await this.activityRepository.update(id, convertedBasePriceActivity);
 
@@ -297,12 +299,13 @@ export class ActivityService {
 
   private async _convertToBaseCurrency(
     activityData: CreateActivityDto | UpdateActivityDto,
+    currencyId?: string,
   ): Promise<CreateActivityDto | UpdateActivityDto> {
     return {
       ...activityData,
       currencyId: await this.currencyService.findBaseCurrencyId(),
       price: await this.currencyService.convertToBaseCurrency(
-        activityData.currencyId,
+        currencyId ?? activityData.currencyId,
         activityData.price,
       ),
       discount:

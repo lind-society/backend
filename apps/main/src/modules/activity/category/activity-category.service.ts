@@ -50,7 +50,7 @@ export class ActivityCategoryService {
         id,
       },
       relations: {
-        activities: true,
+        activities: { currency: true },
       },
     });
 

@@ -19,6 +19,23 @@ export class CurrencyConverterService {
     private currencyConverterRepository: Repository<CurrencyConverter>,
   ) {}
 
+  async getExchangeRate(
+    baseCurrencyId: string,
+    targetCurrencyId: string,
+  ): Promise<number> {
+    const exchangeRate = await this.currencyConverterRepository.findOne({
+      where: {
+        baseCurrencyId: baseCurrencyId,
+        targetCurrencyId: targetCurrencyId,
+      },
+      select: {
+        exchangeRate: true,
+      },
+    });
+
+    return exchangeRate.exchangeRate;
+  }
+
   async convertPriceToBasePrice(
     payload: ConvertedPriceRequestDto,
   ): Promise<ConvertedPriceResponsetDto> {
@@ -152,6 +169,7 @@ export class CurrencyConverterService {
       : price;
 
     const convertedPriceResult: ConvertedPriceResponsetDto = {
+      exchangeRate: convertedPrice?.exchangeRate ?? null,
       initial: {
         price,
         currencyId: convertedPrice?.baseCurrency.id ?? '',

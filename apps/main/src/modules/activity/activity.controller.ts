@@ -33,6 +33,8 @@ import {
   { name: 'category', path: 'activity-categories' },
   { name: 'owner', path: 'owners' },
   { name: 'reviews', path: 'reviews' },
+  { name: 'activityBooking', path: 'bookings/activities' },
+  { name: 'customer', path: 'booking-customers' },
 )
 @UseInterceptors(PriceConverterInterceptor)
 @Controller('activities')

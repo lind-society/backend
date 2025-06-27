@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import * as compression from 'compression';
 import { AppModule } from './app.module';
 import { validationExceptionFactory } from './common/factories';
 import { HttpExceptionFilter } from './common/filters';
@@ -54,6 +55,8 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.use(compression());
 
   await app.listen(port, () => {
     logger.log(`env : ${env}`);

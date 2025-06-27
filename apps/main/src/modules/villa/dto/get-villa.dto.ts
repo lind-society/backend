@@ -5,7 +5,7 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 import { VillaWithRelationsDto } from './villa.dto';
 
 export class GetVillaBestSellerQueryDto {
@@ -14,6 +14,10 @@ export class GetVillaBestSellerQueryDto {
   })
   @IsNotEmpty()
   option: BestSeller = BestSeller.Rating;
+
+  @IsUUID()
+  @IsOptional()
+  baseCurrencyId?: string;
 }
 
 export class GetVillaBestSellerDto {

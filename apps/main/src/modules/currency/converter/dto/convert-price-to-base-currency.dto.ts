@@ -26,6 +26,7 @@ export class ConvertedPriceRequestDto {
 }
 
 export class ConvertedPriceResponsetDto {
+  readonly exchangeRate: number;
   readonly initial: priceDetailDto;
   readonly converted: priceDetailDto;
 }

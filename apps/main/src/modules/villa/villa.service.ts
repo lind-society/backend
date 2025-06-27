@@ -773,7 +773,7 @@ export class VillaService {
     priceRule: VillaPriceRuleWithRelationsDto,
   ): void {
     const { dailyPrice, dailyPriceAfterDiscount } = getVillaCurrentDailyPrice(
-      priceRule.season,
+      priceRule,
       villa,
     );
 
