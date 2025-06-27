@@ -33,7 +33,7 @@ export class CurrencyConverterService {
       },
     });
 
-    return exchangeRate.exchangeRate;
+    return exchangeRate?.exchangeRate;
   }
 
   async convertPriceToBasePrice(

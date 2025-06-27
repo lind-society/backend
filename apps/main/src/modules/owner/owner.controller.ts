@@ -1,4 +1,5 @@
 import { HalEmbedded } from '@apps/main/common/decorators';
+import { PriceConverterInterceptor } from '@apps/main/common/interceptors';
 import {
   Body,
   Controller,
@@ -9,6 +10,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { JwtAuthGuard } from '../auth/guards';
@@ -29,6 +31,7 @@ import { OwnerService } from './owner.service';
   { name: 'properties', path: 'properties' },
   { name: 'villas', path: 'villas' },
 )
+@UseInterceptors(PriceConverterInterceptor)
 @Controller('owners')
 export class OwnerController {
   constructor(private readonly ownerService: OwnerService) {}

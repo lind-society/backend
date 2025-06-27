@@ -269,8 +269,6 @@ export class PriceConverterInterceptor implements NestInterceptor {
   ): Promise<void> {
     const entityType = this._detectEntityType(obj);
 
-    console.log('entityType :', entityType);
-
     if (entityType) {
       const config = PRICE_FIELD_CONFIGURATIONS[entityType];
       await this._processPriceFieldsWithConfig(
@@ -309,12 +307,47 @@ export class PriceConverterInterceptor implements NestInterceptor {
       return 'villa';
     }
 
+    if (obj.season !== undefined && obj.isAppliedToAllVilla !== undefined) {
+      return 'villaPriceRule';
+    }
+
     if (obj.ownershipType !== undefined) {
       return 'property';
     }
 
     if (obj.featureType !== undefined) {
       return 'feature';
+    }
+
+    if (obj.paymentMethod !== undefined) {
+      return 'bookingPayment';
+    }
+
+    if (obj.totalAmount !== undefined && obj.activity !== undefined) {
+      return 'activityBooking';
+    }
+
+    if (obj.totalAmount !== undefined && obj.villa !== undefined) {
+      return 'villaBooking';
+    }
+
+    if (
+      obj.companyName !== undefined &&
+      obj.activities !== undefined &&
+      obj.properties !== undefined &&
+      obj.villas !== undefined
+    ) {
+      return 'owner';
+    }
+
+    if (
+      obj.rating !== undefined &&
+      obj.activityBooking !== undefined &&
+      obj.activity !== undefined &&
+      obj.villaBooking !== undefined &&
+      obj.villa !== undefined
+    ) {
+      return 'review';
     }
 
     return null;
@@ -329,7 +362,6 @@ export class PriceConverterInterceptor implements NestInterceptor {
     processedFields: Set<string> = new Set(),
   ): Promise<void> {
     // Process discount fields first
-    console.log("config :", config);
     await this._formatDiscountFields(
       obj,
       config.discountFields,

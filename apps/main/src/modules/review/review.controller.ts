@@ -1,4 +1,5 @@
 import { HalEmbedded, Public } from '@apps/main/common/decorators';
+import { PriceConverterInterceptor } from '@apps/main/common/interceptors';
 import {
   Body,
   Controller,
@@ -8,6 +9,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { JwtAuthGuard } from '../auth/guards';
@@ -31,6 +33,7 @@ import { ReviewService } from './review.service';
   { name: 'villa', path: 'villas' },
   { name: 'owner', path: 'owners' },
 )
+@UseInterceptors(PriceConverterInterceptor)
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
