@@ -1,7 +1,9 @@
+import { SkipHal } from '@apps/main/common/decorators';
 import { Controller, Get, Query } from '@nestjs/common';
 import { GetGlobalPostalCodePayload } from './global/dto';
 import { RegionService } from './region.service';
 
+@SkipHal()
 @Controller('regions')
 export class RegionController {
   constructor(private readonly regionService: RegionService) {}
