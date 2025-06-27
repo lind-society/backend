@@ -222,6 +222,10 @@ export class ActivityBookingService {
     activityIds: string[],
     entityManager?: EntityManager,
   ): Promise<Record<string, number>> {
+    if (activityIds.length < 1) {
+      return {};
+    }
+
     const [todayDayStart, todayDayEnd] = generateTodayDateRange();
 
     const repository = entityManager
