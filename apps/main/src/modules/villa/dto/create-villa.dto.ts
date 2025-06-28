@@ -247,6 +247,10 @@ export class CreateVillaDto {
   @IsOptional()
   readonly floorPlans?: string[];
 
+  @IsBoolean()
+  @IsOptional()
+  readonly isFavorite?: boolean;
+
   @IsUUID()
   @IsNotEmpty()
   readonly currencyId!: string;

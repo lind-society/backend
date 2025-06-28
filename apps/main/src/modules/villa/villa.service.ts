@@ -153,6 +153,7 @@ export class VillaService {
   ): Promise<PaginateResponseDataProps<VillaWithRelationsDto[]>> {
     const paginatedVilla = await paginate(query, this.villaRepository, {
       sortableColumns: [
+        'isFavorite',
         'createdAt',
         'name',
         'secondaryName',
@@ -179,6 +180,7 @@ export class VillaService {
         'availabilityQuotaPerYear',
       ],
       defaultSortBy: [
+        ['isFavorite', 'DESC'],
         ['averageRating', 'DESC'],
         ['createdAt', 'DESC'],
       ],
@@ -239,6 +241,7 @@ export class VillaService {
           FilterOperator.GTE,
           FilterOperator.LTE,
         ],
+        isFavorite: [FilterOperator.EQ],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE],
 
         'placeNearby.name': [FilterOperator.ILIKE],

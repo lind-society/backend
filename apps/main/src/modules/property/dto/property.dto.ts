@@ -51,6 +51,7 @@ export class PropertyDto implements IPropertyDto {
   readonly floorPlans!: string[] | null;
   readonly soldStatus!: boolean;
   readonly averageRating!: number | null;
+  readonly isFavorite!: boolean | null;
   readonly currencyId!: string | null;
   readonly ownerId!: string | null;
   readonly createdAt!: Date;

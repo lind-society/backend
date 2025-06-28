@@ -125,6 +125,14 @@ export class Property {
   })
   averageRating!: number | null;
 
+  @Column({
+    name: 'is_favorite',
+    type: 'boolean',
+    default: false,
+    nullable: true,
+  })
+  isFavorite!: boolean | null;
+
   @Column({ name: 'currency_id', type: 'uuid', nullable: true })
   currencyId: string | null;
 

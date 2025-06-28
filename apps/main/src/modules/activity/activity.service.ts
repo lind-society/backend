@@ -63,6 +63,7 @@ export class ActivityService {
   ): Promise<PaginateResponseDataProps<ActivityWithRelationsDto[]>> {
     const paginatedActivity = await paginate(query, this.activityRepository, {
       sortableColumns: [
+        'isFavorite',
         'createdAt',
         'name',
         'secondaryName',
@@ -81,6 +82,7 @@ export class ActivityService {
         'averageRating',
       ],
       defaultSortBy: [
+        ['isFavorite', 'DESC'],
         ['averageRating', 'DESC'],
         ['createdAt', 'DESC'],
       ],
@@ -117,6 +119,7 @@ export class ActivityService {
         ],
         startDate: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
         endDate: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+        isFavorite: [FilterOperator.EQ],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE],
 
         'placeNearby.name': [FilterOperator.ILIKE],

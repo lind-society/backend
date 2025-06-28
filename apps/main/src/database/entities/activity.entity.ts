@@ -137,6 +137,14 @@ export class Activity {
   })
   averageRating!: number | null;
 
+  @Column({
+    name: 'is_favorite',
+    type: 'boolean',
+    default: false,
+    nullable: true,
+  })
+  isFavorite!: boolean | null;
+
   @Column({ name: 'category_id', type: 'uuid', nullable: true })
   categoryId: string | null;
 

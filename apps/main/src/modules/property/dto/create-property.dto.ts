@@ -131,6 +131,10 @@ export class CreatePropertyDto {
   @IsNotEmpty()
   readonly soldStatus!: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  readonly isFavorite?: boolean;
+
   @IsUUID()
   @IsNotEmpty()
   readonly currencyId!: string;

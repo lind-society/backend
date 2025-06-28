@@ -58,6 +58,7 @@ export class ActivityDto implements IActivityDto {
   readonly video360s!: string[] | null;
   readonly floorPlans!: string[] | null;
   readonly averageRating!: number | null;
+  readonly isFavorite!: boolean | null;
   readonly categoryId!: string | null;
   readonly currencyId!: string | null;
   readonly ownerId!: string | null;

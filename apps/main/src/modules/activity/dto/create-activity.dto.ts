@@ -14,6 +14,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsDate,
   IsEnum,
   IsNotEmpty,
@@ -153,6 +154,10 @@ export class CreateActivityDto {
   @IsString({ each: true })
   @IsOptional()
   readonly floorPlans?: string[];
+
+  @IsBoolean()
+  @IsOptional()
+  readonly isFavorite?: boolean;
 
   @IsUUID()
   @IsNotEmpty()
