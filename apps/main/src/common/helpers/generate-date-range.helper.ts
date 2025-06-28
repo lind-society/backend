@@ -47,3 +47,4 @@ export function generateDateRangeWithinDateInterval(
     endDate: generatedEndDate,
   };
 }
+

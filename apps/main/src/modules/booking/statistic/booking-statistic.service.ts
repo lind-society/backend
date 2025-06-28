@@ -2,13 +2,16 @@ import {
   generateDateRangeWithinDateInterval,
   generateDateRangeWithinOneDay,
   generateMonthDateRange,
-  generateYearDateRange,
 } from '@apps/main/common/helpers';
 import { Booking, BookingType } from '@apps/main/database/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TotalBookingDto } from './dto';
+import {
+  TotalBookingDto,
+  TotalBookingPerMonthDto,
+  TotalBookingPerYearDto,
+} from './dto';
 
 @Injectable()
 export class BookingStatisticService {
@@ -25,8 +28,6 @@ export class BookingStatisticService {
       ? generateDateRangeWithinOneDay(date)
       : generateDateRangeWithinOneDay(new Date());
 
-    console.log(startDate);
-    console.log(endDate);
     const totalBooking = await this._getBookingWithinDateRange(
       startDate,
       endDate,
@@ -39,7 +40,11 @@ export class BookingStatisticService {
     };
   }
 
-  async getBookingMonthly(month: number, year?: number, type?: BookingType) {
+  async getBookingMonthly(
+    month: number,
+    year?: number,
+    type?: BookingType,
+  ): Promise<TotalBookingDto> {
     const { startDate, endDate } = generateMonthDateRange(month, year);
 
     const totalBooking = await this._getBookingWithinDateRange(
@@ -55,19 +60,35 @@ export class BookingStatisticService {
     };
   }
 
-  async getBookingYearly(year: number, type?: BookingType) {
-    const { startDate, endDate } = generateYearDateRange(year);
+  async getBookingYearly(
+    year: number,
+    type?: BookingType,
+  ): Promise<TotalBookingPerYearDto> {
+    const monthlyStats: TotalBookingPerMonthDto[] = [];
 
-    const totalBooking = await this._getBookingWithinDateRange(
-      startDate,
-      endDate,
-      type,
-    );
+    for (let month = 0; month < 12; month++) {
+      const startDate = new Date(year, month, 1, 0, 0, 0, 0);
+      const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999); // last day of the month
+
+      const totalBooking = await this._getBookingWithinDateRange(
+        startDate,
+        endDate,
+        type,
+      );
+
+      monthlyStats.push({
+        month: month + 1,
+        monthName: startDate.toLocaleString('en-US', { month: 'long' }),
+        startDate: startDate.toLocaleDateString('sv-SE').split('T')[0],
+        endDate: endDate.toLocaleDateString('sv-SE').split('T')[0],
+        total: totalBooking,
+      });
+    }
 
     return {
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
-      total: totalBooking,
+      year,
+      totalPerMonth: monthlyStats,
+      totalPerYear: monthlyStats.reduce((sum, month) => sum + month.total, 0),
     };
   }
 
@@ -75,7 +96,7 @@ export class BookingStatisticService {
     startDate: Date | string,
     endDate: Date | string,
     type?: BookingType,
-  ) {
+  ): Promise<TotalBookingDto> {
     const { startDate: generatedStartDate, endDate: generatedEndDate } =
       generateDateRangeWithinDateInterval(startDate, endDate);
 

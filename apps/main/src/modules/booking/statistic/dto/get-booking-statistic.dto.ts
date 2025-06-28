@@ -94,7 +94,7 @@ export class GetBookingWithinDateRangeQueryDto extends GetBookingTypeDto {
   @IsDate({ message: 'start date must be a valid date' })
   @IsOptional()
   startDate!: string;
-  
+
   @Type(() => Date)
   @IsDate({ message: 'end date must be a valid date' })
   @IsOptional()
