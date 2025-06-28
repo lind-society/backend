@@ -9,13 +9,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Booking } from './booking.entity';
 import { Currency } from './currency.entity';
 import { Owner } from './owner.entity';
 import { Review } from './review.entity';
 import { DiscountType } from './shared-enum.entity';
 import { PlaceNearby } from './shared-interface.entity';
 import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
-import { VillaBooking } from './villa-booking.entity';
 import { VillaFacilityPivot } from './villa-facility-pivot.entity';
 import { VillaFeaturePivot } from './villa-feature-pivot.entity';
 import { VillaPolicyPivot } from './villa-policy-pivot.entity';
@@ -280,8 +280,8 @@ export class Villa {
   @Column({ name: 'owner_id', type: 'uuid', nullable: true })
   ownerId: string | null;
 
-  @OneToMany(() => VillaBooking, (booking) => booking.villa)
-  bookings: VillaBooking[];
+  @OneToMany(() => Booking, (booking) => booking.villa)
+  bookings: Booking[];
 
   @OneToMany(() => Review, (review) => review.villa)
   reviews: Review[];

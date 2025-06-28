@@ -10,11 +10,43 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Activity } from './activity.entity';
 import { BookingCustomer } from './booking-customer.entity';
 import { BookingPayment } from './booking-payment.entity';
 import { Currency } from './currency.entity';
 import { Review } from './review.entity';
 import { Villa } from './villa.entity';
+
+export enum BookingType {
+  Activity = 'activity',
+  Villa = 'villa',
+}
+
+export enum BookingStatus {
+  // Activity
+  Pending = 'Pending',
+  Confirmed = 'Confirmed',
+  Completed = 'Completed',
+
+  // Villa
+  Requested = 'Requested',
+  Negotiation = 'Negotiation',
+  WaitingForPayment = 'Waiting for Payment',
+  Booked = 'Booked',
+  CheckedIn = 'Checked In',
+  Done = 'Done',
+
+  // Both
+  Canceled = 'Canceled',
+}
+
+// Seperate booking status enum for application validation
+export enum ActivityBookingStatus {
+  Pending = 'Pending',
+  Confirmed = 'Confirmed',
+  Completed = 'Completed',
+  Canceled = 'Canceled',
+}
 
 export enum VillaBookingStatus {
   Requested = 'Requested',
@@ -26,10 +58,13 @@ export enum VillaBookingStatus {
   Canceled = 'Canceled',
 }
 
-@Entity({ name: 'villa_bookings' })
-export class VillaBooking {
+@Entity({ name: 'bookings' })
+export class Booking {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @Column({ type: 'enum', enum: BookingType })
+  type!: BookingType;
 
   @Column({
     name: 'total_guest',
@@ -45,14 +80,21 @@ export class VillaBooking {
   })
   totalAmount!: number;
 
-  @Column({ name: 'check_in_date', type: 'timestamptz' })
+  // Activity Only
+  @Column({ name: 'booking_date', type: 'timestamptz', nullable: true })
+  bookingDate!: Date;
+
+  // Villa Only
+  @Column({ name: 'check_in_date', type: 'timestamptz', nullable: true })
   checkInDate!: Date;
 
-  @Column({ name: 'check_out_date', type: 'timestamptz' })
+  // Villa Only
+  @Column({ name: 'check_out_date', type: 'timestamptz', nullable: true })
   checkOutDate!: Date;
 
-  @Column({ type: 'enum', enum: VillaBookingStatus })
-  status!: VillaBookingStatus;
+  // Both with different validation each
+  @Column({ type: 'enum', enum: BookingStatus, nullable: true })
+  status!: ActivityBookingStatus | VillaBookingStatus;
 
   @Column({ name: 'currency_id', type: 'uuid' })
   currencyId!: string;
@@ -60,35 +102,44 @@ export class VillaBooking {
   @Column({ name: 'customer_id', type: 'uuid' })
   customerId!: string;
 
+  @Column({ name: 'activity_id', type: 'uuid', nullable: true })
+  activityId!: string | null;
+
   @Column({ name: 'villa_id', type: 'uuid', nullable: true })
   villaId!: string | null;
 
-  @OneToOne(() => Review, (review) => review.villaBooking, {
+  @OneToOne(() => Review, (review) => review.booking, {
     nullable: true,
   })
-  review?: Review;
+  review?: Review | null;
 
-  @OneToMany(
-    () => BookingPayment,
-    (bookingPayment) => bookingPayment.villaBooking,
-  )
+  @OneToMany(() => BookingPayment, (bookingPayment) => bookingPayment.booking)
   payments: BookingPayment[];
 
   @ManyToOne(() => Currency, {
     onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn({ name: 'currency_id' })
-  currency!: Currency;
+  currency!: Currency | null;
 
   @ManyToOne(
     () => BookingCustomer,
-    (bookingCustomer) => bookingCustomer.villaBookings,
+    (bookingCustomer) => bookingCustomer.bookings,
     {
       onDelete: 'SET NULL',
+      nullable: true,
     },
   )
   @JoinColumn({ name: 'customer_id' })
-  customer!: BookingCustomer;
+  customer!: BookingCustomer | null;
+
+  @ManyToOne(() => Activity, (activity) => activity.bookings, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'activity_id' })
+  activity!: Activity | null;
 
   @ManyToOne(() => Villa, (villa) => villa.bookings, {
     onDelete: 'SET NULL',

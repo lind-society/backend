@@ -1,6 +1,7 @@
 import { Villa } from '@apps/main/database/entities';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BookingModule } from '../booking/booking.module';
 import { CurrencyModule } from '../currency/currency.module';
 import { FacilityModule } from '../facility/facility.module';
 import { FeatureModule } from '../feature/feature.module';
@@ -15,6 +16,7 @@ import { VillaService } from './villa.service';
   providers: [VillaService],
   imports: [
     TypeOrmModule.forFeature([Villa]),
+    BookingModule,
     CurrencyModule,
     FacilityModule,
     FeatureModule,

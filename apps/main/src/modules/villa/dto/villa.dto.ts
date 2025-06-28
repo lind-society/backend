@@ -10,11 +10,11 @@ import {
   VillaPriceRulePivot,
   VillaPriceRuleSeason,
 } from '@apps/main/database/entities';
-import { VillaBookingDto } from '@apps/main/modules/booking/villa-booking/dto';
 import { CurrencyDto } from '@apps/main/modules/currency/dto';
 import { OwnerDto } from '@apps/main/modules/owner/dto';
 import { ReviewDto } from '@apps/main/modules/review/dto';
 import { Transform, Type } from 'class-transformer';
+import { BookingDto } from '../../booking/dto';
 
 export interface IVillaDto
   extends Omit<
@@ -33,7 +33,7 @@ export interface IVillaDto
 export interface IVillaWithRelationsDto extends IVillaDto {
   currency?: CurrencyDto;
   owner?: OwnerDto;
-  bookings?: VillaBookingDto[];
+  bookings?: BookingDto[];
   reviews?: ReviewDto[];
   additionals?: VillaAdditionalPivot[];
   facilities?: VillaFacilityPivot[];
@@ -112,7 +112,7 @@ export class VillaWithRelationsDto
   readonly currency?: CurrencyDto;
   @Type(() => OwnerDto)
   readonly owner?: OwnerDto;
-  readonly bookings?: VillaBookingDto[];
+  readonly bookings?: BookingDto[];
   readonly reviews?: ReviewDto[];
   readonly additionals?: VillaAdditionalPivot[];
   readonly facilities?: VillaFacilityPivot[];

@@ -1,3 +1,4 @@
+export * from './date-range.interface';
 export * from './file-config.interface';
 export * from './hal.interface';
 export * from './jwt-payload.interface';

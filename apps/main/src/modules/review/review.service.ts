@@ -1,11 +1,11 @@
 import { paginateResponseMapper } from '@apps/main/common/helpers';
 import {
   Activity,
-  ActivityBooking,
   ActivityBookingStatus,
+  Booking,
+  BookingType,
   Review,
   Villa,
-  VillaBooking,
   VillaBookingStatus,
 } from '@apps/main/database/entities';
 import {
@@ -37,11 +37,9 @@ export class ReviewService {
   ) {}
   async create(payload: CreateReviewDto): Promise<ReviewWithRelationsDto> {
     return this.dataSource.transaction(async (manager) => {
-      await this._validateBookingStatus(
-        manager,
-        payload.activityBookingId,
-        payload.villaBookingId,
-      );
+      const bookingId = payload.activityBookingId ?? payload.villaBookingId;
+
+      await this._validateBookingStatus(manager, bookingId);
 
       await this._validateRelatedEntities(
         manager,
@@ -75,17 +73,12 @@ export class ReviewService {
         createdAt: [FilterOperator.GTE, FilterOperator.LTE],
       },
       searchableColumns: [
-        'activityBooking.customer.name',
-        'villaBooking.customer.name',
+        'booking.customer.name',
         'activity.name',
         'villa.name',
       ],
       relations: {
-        activityBooking: {
-          customer: true,
-          currency: true,
-        },
-        villaBooking: {
+        booking: {
           customer: true,
           currency: true,
         },
@@ -113,11 +106,7 @@ export class ReviewService {
         id,
       },
       relations: {
-        activityBooking: {
-          customer: true,
-          currency: true,
-        },
-        villaBooking: {
+        booking: {
           customer: true,
           currency: true,
         },
@@ -166,29 +155,21 @@ export class ReviewService {
 
   private async _validateBookingStatus(
     manager: EntityManager,
-    activityBookingId?: string,
-    villaBookingId?: string,
+    bookingId?: string,
   ): Promise<void> {
-    if (activityBookingId) {
-      const activityBooking = await manager.findOne(ActivityBooking, {
-        where: { id: activityBookingId },
-        select: ['status'],
-      });
+    const booking = await manager.findOne(Booking, {
+      where: { id: bookingId },
+      select: ['status'],
+    });
 
-      if (activityBooking.status !== ActivityBookingStatus.Completed) {
+    if (booking.type === BookingType.Activity) {
+      if (booking.status !== ActivityBookingStatus.Completed) {
         throw new BadRequestException(
           'Activity booking status must be completed to add review',
         );
       }
-    }
-
-    if (villaBookingId) {
-      const villaBooking = await manager.findOne(VillaBooking, {
-        where: { id: villaBookingId },
-        select: ['status'],
-      });
-
-      if (villaBooking.status !== VillaBookingStatus.Done) {
+    } else {
+      if (booking.status !== VillaBookingStatus.Done) {
         throw new BadRequestException(
           'Villa booking status must be done to add review',
         );

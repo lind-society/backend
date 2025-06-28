@@ -8,9 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ActivityBooking } from './activity-booking.entity';
+import { Booking } from './booking.entity';
 import { Currency } from './currency.entity';
-import { VillaBooking } from './villa-booking.entity';
 
 @Entity({ name: 'booking_payments' })
 export class BookingPayment {
@@ -29,27 +28,14 @@ export class BookingPayment {
   @Column({ name: 'currency_id', type: 'uuid' })
   currencyId!: string;
 
-  @Column({ name: 'activity_booking_id', type: 'uuid', nullable: true })
-  activityBookingId: string | null;
+  @Column({ name: 'booking_id', type: 'uuid', nullable: true })
+  bookingId: string | null;
 
-  @Column({ name: 'villa_booking_id', type: 'uuid', nullable: true })
-  villaBookingId: string | null;
-
-  @ManyToOne(
-    () => ActivityBooking,
-    (activityBooking) => activityBooking.payments,
-    {
-      onDelete: 'SET NULL',
-    },
-  )
-  @JoinColumn({ name: 'activity_booking_id' })
-  activityBooking: ActivityBooking;
-
-  @ManyToOne(() => VillaBooking, (villaBooking) => villaBooking.payments, {
+  @ManyToOne(() => Booking, (booking) => booking.payments, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'villa_booking_id' })
-  villaBooking: VillaBooking;
+  @JoinColumn({ name: 'booking_id' })
+  booking: Booking;
 
   @ManyToOne(() => Currency, {
     onDelete: 'SET NULL',

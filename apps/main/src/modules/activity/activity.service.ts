@@ -6,7 +6,6 @@ import {
   ActivityBookingStatus,
   DiscountType,
 } from '@apps/main/database/entities';
-import { ActivityBookingService } from '@apps/main/modules/booking/activity-booking/activity-booking.service';
 import { CurrencyService } from '@apps/main/modules/currency/currency.service';
 import { OwnerService } from '@apps/main/modules/owner/owner.service';
 import { PaginateResponseDataProps } from '@apps/main/modules/shared/dto';
@@ -15,6 +14,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { EntityManager, Repository } from 'typeorm';
+import { BookingService } from '../booking/booking.service';
+import { BookingWithRelationsDto, CreateBookingDto } from '../booking/dto';
 import { ActivityCategoryService } from './category/activity-category.service';
 import {
   ActivityWithRelationsDto,
@@ -29,7 +30,7 @@ export class ActivityService {
     @InjectRepository(Activity)
     private activityRepository: Repository<Activity>,
     private activityCategoryService: ActivityCategoryService,
-    private activityBookingService: ActivityBookingService,
+    private bookingService: BookingService,
     private currencyService: CurrencyService,
     private ownerService: OwnerService,
   ) {}
@@ -134,16 +135,14 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
-        reviews: { activityBooking: { currency: true, customer: true } },
+        reviews: { booking: { currency: true, customer: true } },
       },
     });
 
     const activityIds = paginatedActivity.data.map((a) => a.id);
 
     const todayBookings =
-      await this.activityBookingService.findTotalTodayMultipleBooking(
-        activityIds,
-      );
+      await this.bookingService.findTotalTodayMultipleBooking(activityIds);
 
     const activitiesWithTodayBooking = paginatedActivity.data.map(
       (activity) => {
@@ -175,7 +174,7 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
-        reviews: { activityBooking: { currency: true, customer: true } },
+        reviews: { booking: { currency: true, customer: true } },
       },
     });
 
@@ -183,8 +182,7 @@ export class ActivityService {
       throw new NotFoundException('activity not found');
     }
 
-    const todayBooking =
-      await this.activityBookingService.findTotalTodayBooking(id);
+    const todayBooking = await this.bookingService.findTotalTodayBooking(id);
 
     const activityDto = plainToInstance(ActivityWithRelationsDto, activity);
 
@@ -324,5 +322,14 @@ export class ActivityService {
     if (payload.discount && !payload.discountType) {
       payload.discountType = DiscountType.Percentage;
     }
+  }
+
+  // Booking
+  async createBooking(
+    payload: CreateBookingDto,
+  ): Promise<BookingWithRelationsDto> {
+    const booking = await this.bookingService.create(payload);
+
+    return booking;
   }
 }

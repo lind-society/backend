@@ -9,9 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ActivityBooking } from './activity-booking.entity';
 import { Activity } from './activity.entity';
-import { VillaBooking } from './villa-booking.entity';
+import { Booking } from './booking.entity';
 import { Villa } from './villa.entity';
 
 @Entity({ name: 'reviews' })
@@ -25,11 +24,8 @@ export class Review {
   @Column({ type: 'text' })
   message!: string;
 
-  @Column({ name: 'activity_booking_id', type: 'uuid', nullable: true })
-  activityBookingId!: string | null;
-
-  @Column({ name: 'villa_booking_id', type: 'uuid', nullable: true })
-  villaBookingId!: string | null;
+  @Column({ name: 'booking_id', type: 'uuid', nullable: true })
+  bookingId!: string | null;
 
   @Column({ name: 'activity_id', type: 'uuid', nullable: true })
   activityId!: string | null;
@@ -37,23 +33,12 @@ export class Review {
   @Column({ name: 'villa_id', type: 'uuid', nullable: true })
   villaId!: string | null;
 
-  @OneToOne(
-    () => ActivityBooking,
-    (activityBooking) => activityBooking.review,
-    {
-      onDelete: 'SET NULL',
-      nullable: true,
-    },
-  )
-  @JoinColumn({ name: 'activity_booking_id' })
-  activityBooking: ActivityBooking;
-
-  @OneToOne(() => VillaBooking, (villaBooking) => villaBooking.review, {
+  @OneToOne(() => Booking, (booking) => booking.review, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn({ name: 'villa_booking_id' })
-  villaBooking: VillaBooking;
+  booking: Booking;
 
   @ManyToOne(() => Activity, (activity) => activity.reviews, {
     onDelete: 'SET NULL',

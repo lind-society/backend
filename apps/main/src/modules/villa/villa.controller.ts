@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { JwtAuthGuard } from '../auth/guards';
+import { CreateBookingDto, CreateBookingSuccessResponse } from '../booking/dto';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreateVillaDto,
@@ -87,5 +88,14 @@ export class VillaController {
     await this.villaService.remove(id);
 
     return new DeleteResponse('delete villa success');
+  }
+
+  // Booking
+  @Public()
+  @Post(':id/book')
+  async book(@Body() payload: CreateBookingDto) {
+    const result = await this.villaService.createBooking(payload);
+
+    return new CreateBookingSuccessResponse(result, payload.type);
   }
 }

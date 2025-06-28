@@ -20,6 +20,8 @@ import { plainToClass, plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { DataSource, EntityManager, Repository } from 'typeorm';
+import { BookingService } from '../booking/booking.service';
+import { BookingWithRelationsDto, CreateBookingDto } from '../booking/dto';
 import { CurrencyService } from '../currency/currency.service';
 import { FacilityService } from '../facility/facility.service';
 import { CreateFeatureDto } from '../feature/dto';
@@ -46,6 +48,7 @@ export class VillaService {
     private datasource: DataSource,
     @InjectRepository(Villa)
     private villaRepository: Repository<Villa>,
+    private bookingService: BookingService,
     private currencyService: CurrencyService,
     private facilityService: FacilityService,
     private featureService: FeatureService,
@@ -266,7 +269,7 @@ export class VillaService {
       relations: {
         currency: true,
         owner: true,
-        reviews: { villaBooking: { customer: true } },
+        reviews: { booking: { customer: true } },
         villaAdditionals: { additional: true },
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
@@ -312,7 +315,7 @@ export class VillaService {
       relations: {
         currency: true,
         owner: true,
-        reviews: { villaBooking: { customer: true } },
+        reviews: { booking: { customer: true } },
         villaAdditionals: { additional: true },
         villaFeatures: { feature: { currency: true } },
         villaFacilities: { facility: true },
@@ -806,5 +809,14 @@ export class VillaService {
       );
 
     return villaPriceRules;
+  }
+
+  // Booking
+  async createBooking(
+    payload: CreateBookingDto,
+  ): Promise<BookingWithRelationsDto> {
+    const booking = await this.bookingService.create(payload);
+
+    return booking;
   }
 }
