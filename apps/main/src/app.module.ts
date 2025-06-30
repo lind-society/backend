@@ -38,6 +38,7 @@ import { AxiosModule } from './modules/shared/axios/axios.module';
 import { RegionModule } from './modules/shared/region/region.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
 import { VillaModule } from './modules/villa/villa.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { VillaModule } from './modules/villa/villa.module';
     VillaModule,
     ReviewModule,
     PackageModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

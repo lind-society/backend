@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { IHalEmbededConfig, IHalResource, ILinkHal } from '../interfaces';
+import { entityNameMapper } from './entity-name-mapper.helper';
 
 export class HalHelper {
   static generateResource<T>(
@@ -36,12 +37,14 @@ export class HalHelper {
     };
   }
   static generateHalLinksWithEmbedded<T>(
-    item: T & { id: string },
+    item: T & { id: string; type?: string },
     request: Request,
     entityType: string,
     embedKeys: IHalEmbededConfig[] = [],
   ): any {
-    const selfLink = `${request.protocol}://${request.get('host')}/api/v1/${entityType}${item.id ? `/${item.id}` : ''}`;
+    const entity =
+      entityType === 'search' ? entityNameMapper(item.type) : entityType;
+    const selfLink = `${request.protocol}://${request.get('host')}/api/v1/${entity}${item.id ? `/${item.id}` : ''}`;
     const result: any = {
       ...item,
       link: selfLink,

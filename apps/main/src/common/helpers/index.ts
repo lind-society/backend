@@ -1,6 +1,7 @@
 export * from './calculate-discounted-price.helper';
 export * from './construct-phone-number.helper';
 export * from './convert-datetime-to-date.helper';
+export * from './entity-name-mapper.helper';
 export * from './extract-coordinate-from-google-map';
 export * from './format-price.helper';
 export * from './generate-date-range.helper';
@@ -11,6 +12,7 @@ export * from './hal.helper';
 export * from './hash.helper';
 export * from './load-country-code-json.helper';
 export * from './paginate-response-mapper.helper';
+export * from './pagination-helper';
 export * from './sanitize-postgresql-error-response.helper';
 export * from './sanitize-string.helper';
 export * from './size-converter.helper';

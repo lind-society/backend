@@ -80,3 +80,37 @@ export class PaginateResponseDataProps<
 > extends PaginateResponseDefaultDataProps {
   readonly data!: T;
 }
+
+// custom pagination
+export class CustomPaginateResponseMetaProps {
+  readonly itemsPerPage?: number;
+  readonly totalItems?: number;
+  readonly currentPage?: number;
+  readonly totalPages?: number;
+  readonly sortBy?: unknown;
+  readonly searchBy?: unknown;
+  readonly search?: string;
+  readonly select?: string[];
+  readonly filter?: {
+    [column: string]: string | string[];
+  };
+}
+
+export class CustomPaginateResponseLinksProps {
+  readonly first?: string | null;
+  readonly previous?: string | null;
+  readonly current?: string;
+  readonly next?: string | null;
+  readonly last?: string | null;
+}
+
+export class CustomPaginateResponseDefaultDataProps {
+  readonly meta!: CustomPaginateResponseMetaProps;
+  readonly links!: CustomPaginateResponseLinksProps;
+}
+
+export class CustomPaginateResponseDataProps<
+  T extends Array<unknown>,
+> extends CustomPaginateResponseDefaultDataProps {
+  readonly data!: T;
+}
