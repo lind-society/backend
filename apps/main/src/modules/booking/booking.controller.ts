@@ -12,8 +12,11 @@ import {
   Post,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { GetMultipleBookingPaymentSuccessResponse } from '../booking-payment/dto';
+import { CreateInvoiceResponseSuccessResponse } from '../payment/dto';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import { BookingService } from './booking.service';
+import { GetBookingCustomerSuccessResponse } from './customer/dto';
 import {
   CreateBookingDto,
   CreateBookingSuccessResponse,
@@ -69,5 +72,32 @@ export class BookingController {
     const bookingType = this.bookingService.determineBookingType(booking);
 
     return new DeleteResponse(`delete ${bookingType ?? ''} booking success`);
+  }
+
+  // Customer related endpoints
+  @Public()
+  @Get(':id/customer')
+  async getCustomerDetail(@Param('id', ParseUUIDPipe) id: string) {
+    const customer = await this.bookingService.getCustomerDetail(id);
+
+    return new GetBookingCustomerSuccessResponse(customer);
+  }
+
+  // Payment related endpoints
+  @Public()
+  @Get(':id/payments')
+  async getPaymentsDetail(@Param('id', ParseUUIDPipe) id: string) {
+    const payments = await this.bookingService.getPaymentsDetail(id);
+
+    return new GetMultipleBookingPaymentSuccessResponse(payments);
+  }
+
+  // Payment Gateway related endpoints
+  @Public()
+  @Post(':id/pay-invoice')
+  async createPaymentInvoice(@Param('id', ParseUUIDPipe) id: string) {
+    const invoice = await this.bookingService.createPaymentInvoice(id);
+
+    return new CreateInvoiceResponseSuccessResponse(invoice);
   }
 }

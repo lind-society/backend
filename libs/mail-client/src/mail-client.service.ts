@@ -1,8 +1,8 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { MAIL_SERVICE, SEND_MAIL } from './constant';
 import { SendMailDto } from './dto';
-import { MAIL_SERVICE, SEND_MAIL } from './message-pattern';
 
 @Injectable()
 export class MailClientService implements OnModuleInit {

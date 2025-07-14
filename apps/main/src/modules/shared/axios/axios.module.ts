@@ -1,10 +1,11 @@
 import { HttpModule } from '@nestjs/axios';
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import * as http from 'http';
 import * as https from 'https';
 import { AxiosService } from './axios.service';
 import { CustomAxiosModule } from './redirect/custom-axios.module';
 
+@Global()
 @Module({
   providers: [AxiosService],
   imports: [

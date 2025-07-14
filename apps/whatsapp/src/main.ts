@@ -1,5 +1,9 @@
 import { WHATSAPP_QUEUE } from '@libs/common/constants';
-import { getClientConfig, setupDeadLetterQueue, setupRetryQueue } from '@libs/rabbitmq/services';
+import {
+  getClientConfig,
+  setupDeadLetterQueue,
+  setupRetryQueue,
+} from '@libs/rabbitmq/services';
 import {
   Logger,
   UnprocessableEntityException,
@@ -38,5 +42,6 @@ async function bootstrap() {
 
   await microservice.listen();
   logger.log('WhatsApp microservice is running...');
+  logger.log(`WhatsApp microservice listening to queue : ${WHATSAPP_QUEUE}`);
 }
 bootstrap();

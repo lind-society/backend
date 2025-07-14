@@ -25,7 +25,7 @@ import { CreatePackageBenefitPivotDto } from './dto/create-package-benefit-pivot
 @Injectable()
 export class PackageService {
   constructor(
-    @InjectDataSource() 
+    @InjectDataSource()
     private datasource: DataSource,
     @InjectRepository(Package)
     private packageRepository: Repository<Package>,

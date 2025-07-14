@@ -9,7 +9,7 @@ import {
   HttpResponseOptions,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,

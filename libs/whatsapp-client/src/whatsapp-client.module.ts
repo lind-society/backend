@@ -3,7 +3,7 @@ import { getClientConfig } from '@libs/rabbitmq/services';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
-import { WHATSAPP_SERVICE } from './message-pattern';
+import { WHATSAPP_SERVICE } from './constant';
 import { WhatsappClientService } from './whatsapp-client.service';
 
 @Module({

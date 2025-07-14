@@ -20,13 +20,19 @@ import {
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Between, DataSource, EntityManager, Repository } from 'typeorm';
+import { BookingPaymentService } from '../booking-payment/booking-payment.service';
+import { BookingPaymentWithRelationsDto } from '../booking-payment/dto';
+import { CreateInvoiceResponseDto } from '../payment/dto';
+import { PaymentService } from '../payment/payment.service';
 import { PaginateResponseDataProps } from './../shared/dto';
 import { BookingCustomerService } from './customer/booking-customer.service';
+import { BookingCustomerWithRelationsDto } from './customer/dto';
 import {
   BookingWithRelationsDto,
   CreateBookingDto,
   UpdateBookingDto,
 } from './dto';
+import { BookingHelperService } from './helper/booking-helper.service';
 
 @Injectable()
 export class BookingService {
@@ -40,6 +46,9 @@ export class BookingService {
     @InjectRepository(Booking)
     private bookingRepository: Repository<Booking>,
     private bookingCustomerService: BookingCustomerService,
+    private bookingHelperService: BookingHelperService,
+    private bookingPaymentService: BookingPaymentService,
+    private paymentService: PaymentService,
     private whatsappClientService: WhatsappClientService,
   ) {}
 
@@ -435,5 +444,40 @@ We look forward to welcoming you!`;
     } else {
       return undefined;
     }
+  }
+
+  // Other module related to module wrapper
+
+  // Booking Customer wrapper
+  async getCustomerDetail(
+    bookingId: string,
+    entityManager?: EntityManager,
+  ): Promise<BookingCustomerWithRelationsDto> {
+    return await this.bookingCustomerService.findOneByBookingId(
+      bookingId,
+      entityManager,
+    );
+  }
+
+  // Booking Payment wrapper
+  async getPaymentsDetail(
+    bookingId: string,
+    entityManager?: EntityManager,
+  ): Promise<BookingPaymentWithRelationsDto[]> {
+    return await this.bookingPaymentService.findAllByBookingId(
+      bookingId,
+      entityManager,
+    );
+  }
+
+  // Payment Gateway wrapper (real payment initiation)
+  async createPaymentInvoice(
+    bookingId: string,
+  ): Promise<CreateInvoiceResponseDto> {
+    const bookingPayload = await this.findOne(bookingId);
+    const formattedPayload =
+      this.bookingHelperService.mapBookingToInvoiceRequestDto(bookingPayload);
+
+    return await this.paymentService.createInvoice(formattedPayload);
   }
 }

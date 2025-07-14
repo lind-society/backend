@@ -5,6 +5,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { EntityManager, Repository } from 'typeorm';
+import { BookingHelperService } from '../helper/booking-helper.service';
 import {
   BookingCustomerDto,
   BookingCustomerWithRelationsDto,
@@ -16,20 +17,22 @@ import {
 export class BookingCustomerService {
   constructor(
     @InjectRepository(BookingCustomer)
-    private bookingCustomer: Repository<BookingCustomer>,
+    private bookingCustomerRepository: Repository<BookingCustomer>,
+    private bookingHelperService: BookingHelperService,
   ) {}
 
   async create(
     payload: CreateBookingCustomerDto,
-    manager?: EntityManager,
+    entityManager?: EntityManager,
   ): Promise<BookingCustomerDto> {
-    if (manager) {
-      return await manager.save(BookingCustomer, payload);
+    if (entityManager) {
+      return await entityManager.save(BookingCustomer, payload);
     }
 
-    const createdBookingCustomer = this.bookingCustomer.create(payload);
+    const createdBookingCustomer =
+      this.bookingCustomerRepository.create(payload);
 
-    return await this.bookingCustomer.save(createdBookingCustomer);
+    return await this.bookingCustomerRepository.save(createdBookingCustomer);
   }
 
   async findAll(
@@ -37,7 +40,7 @@ export class BookingCustomerService {
   ): Promise<PaginateResponseDataProps<BookingCustomerWithRelationsDto[]>> {
     const paginatedBookingCustomer = await paginate(
       query,
-      this.bookingCustomer,
+      this.bookingCustomerRepository,
       {
         sortableColumns: ['createdAt', 'name'],
         defaultSortBy: [['createdAt', 'DESC']],
@@ -59,7 +62,7 @@ export class BookingCustomerService {
 
   async findOne(
     id: string,
-    manager?: EntityManager,
+    entityManager?: EntityManager,
   ): Promise<BookingCustomerWithRelationsDto> {
     const query = {
       where: {
@@ -70,28 +73,59 @@ export class BookingCustomerService {
       },
     };
 
-    const bookingCustomer = manager
-      ? await manager.findOne(BookingCustomer, query)
-      : await this.bookingCustomer.findOne(query);
+    const bookingCustomerRepository = entityManager
+      ? await entityManager.findOne(BookingCustomer, query)
+      : await this.bookingCustomerRepository.findOne(query);
 
-    if (!bookingCustomer) {
+    if (!bookingCustomerRepository) {
       throw new NotFoundException(`booking customer not found`);
     }
 
-    return bookingCustomer;
+    return bookingCustomerRepository;
+  }
+
+  async findOneByBookingId(
+    bookingId: string,
+    entityManager?: EntityManager,
+  ): Promise<BookingCustomerWithRelationsDto> {
+    await this.bookingHelperService.validateBookingExist(
+      bookingId,
+      entityManager,
+    );
+
+    const query = {
+      where: {
+        bookings: {
+          id: bookingId,
+        },
+      },
+      relations: {
+        bookings: true,
+      },
+    };
+
+    const bookingCustomerRepositoryRepository = entityManager
+      ? await entityManager.findOne(BookingCustomer, query)
+      : await this.bookingCustomerRepository.findOne(query);
+
+    if (!bookingCustomerRepositoryRepository) {
+      throw new NotFoundException(`booking customer not found`);
+    }
+
+    return bookingCustomerRepositoryRepository;
   }
 
   async update(
     id: string,
     payload: UpdateBookingCustomerDto,
-    manager?: EntityManager,
+    entityManager?: EntityManager,
   ): Promise<BookingCustomerWithRelationsDto> {
     await this.findOne(id);
 
-    if (manager) {
-      await manager.update(BookingCustomer, id, payload);
+    if (entityManager) {
+      await entityManager.update(BookingCustomer, id, payload);
     } else {
-      await this.bookingCustomer.update(id, payload);
+      await this.bookingCustomerRepository.update(id, payload);
     }
 
     return await this.findOne(id);
@@ -100,6 +134,6 @@ export class BookingCustomerService {
   async remove(id: string) {
     await this.findOne(id);
 
-    await this.bookingCustomer.delete(id);
+    await this.bookingCustomerRepository.delete(id);
   }
 }

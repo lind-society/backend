@@ -69,8 +69,7 @@
     "rxjs": "^7.8.2",
     "typeorm": "^0.3.20",
     "whatsapp-web.js": "^1.27.0",
-    "winston": "^3.17.0",
-    "xendit-node": "^6.2.0"
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@nestjs/axios": "^4.0.0",

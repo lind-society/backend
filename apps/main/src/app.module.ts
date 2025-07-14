@@ -17,6 +17,7 @@ import {
   frontEndConfig,
   gcpConfig,
   jwtConfig,
+  paymentConfig,
   postalCodeConfig,
   regionConfig,
   storageConfig,
@@ -32,13 +33,14 @@ import { CurrencyModule } from './modules/currency/currency.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { OwnerModule } from './modules/owner/owner.module';
 import { PackageModule } from './modules/package/package.module';
+import { PaymentModule } from './modules/payment/payment.module';
 import { PropertyModule } from './modules/property/property.module';
 import { ReviewModule } from './modules/review/review.module';
+import { SearchModule } from './modules/search/search.module';
 import { AxiosModule } from './modules/shared/axios/axios.module';
 import { RegionModule } from './modules/shared/region/region.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
 import { VillaModule } from './modules/villa/villa.module';
-import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -58,6 +60,7 @@ import { SearchModule } from './modules/search/search.module';
         frontEndConfig,
         gcpConfig,
         jwtConfig,
+        paymentConfig,
         postalCodeConfig,
         regionConfig,
         storageConfig,
@@ -96,6 +99,7 @@ import { SearchModule } from './modules/search/search.module';
     ReviewModule,
     PackageModule,
     SearchModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [

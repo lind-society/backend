@@ -3,13 +3,14 @@ import { retryFailedMessage } from '@libs/rabbitmq/services';
 import { SendMessageDto } from '@libs/whatsapp-client/dto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IWhatsappClient } from './interfaces';
+import { MainProvider } from '@libs/common/enums';
 
 @Injectable()
 export class WhatsappService {
   private readonly logger = new Logger(WhatsappService.name);
 
   constructor(
-    @Inject('WHATSAPP_PROVIDER')
+    @Inject(MainProvider.Whatsapp)
     private readonly whatsappProvider: IWhatsappClient,
   ) {}
 

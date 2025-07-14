@@ -1,5 +1,9 @@
 import { MAIL_QUEUE } from '@libs/common/constants';
-import { getClientConfig, setupDeadLetterQueue, setupRetryQueue } from '@libs/rabbitmq/services';
+import {
+  getClientConfig,
+  setupDeadLetterQueue,
+  setupRetryQueue,
+} from '@libs/rabbitmq/services';
 import {
   Logger,
   UnprocessableEntityException,
@@ -38,5 +42,6 @@ async function bootstrap() {
 
   await microservice.listen();
   logger.log('Mail microservice is running...');
+  logger.log(`Mail microservice listening to queue : ${MAIL_QUEUE}`);
 }
 bootstrap();

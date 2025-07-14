@@ -1,13 +1,13 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
-import { SendMessageDto } from './dto';
 import {
   SEND_WHATSAPP_MESSAGE,
   WHATSAPP_FORCE_RECONNECT,
   WHATSAPP_HEALTH_CHECK,
   WHATSAPP_SERVICE,
-} from './message-pattern';
+} from './constant';
+import { SendMessageDto } from './dto';
 
 @Injectable()
 export class WhatsappClientService implements OnModuleInit {

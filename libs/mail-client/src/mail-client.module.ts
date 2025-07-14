@@ -3,8 +3,8 @@ import { getClientConfig } from '@libs/rabbitmq/services';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
+import { MAIL_SERVICE } from './constant';
 import { MailClientService } from './mail-client.service';
-import { MAIL_SERVICE } from './message-pattern';
 
 @Module({
   imports: [

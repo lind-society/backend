@@ -17,7 +17,6 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { Response } from 'express';
 import { MulterError } from 'multer';
 import { QueryFailedError } from 'typeorm';
-import { XenditSdkError } from 'xendit-node';
 import { DefaultHttpStatus } from '../enums';
 import { extractChildrenErrors } from '../factories';
 import { GCPExceptionFilter } from './gcp-exception.filter';
@@ -48,10 +47,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       return this.typeOrmExceptionFilter.catch(exception, host);
     }
 
-    if (
-      exception instanceof XenditSdkError ||
-      (exception?.response?.error_code && exception?.response?.message)
-    ) {
+    if (exception?.config?.url.includes('xendit')) {
       this.logger.error('Xendit API error');
       this.logger.error('================\n');
 

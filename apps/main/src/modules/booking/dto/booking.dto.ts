@@ -8,7 +8,7 @@ import { BookingCustomerDto } from '@apps/main/modules/booking/customer/dto';
 import { CurrencyDto } from '@apps/main/modules/currency/dto';
 import { VillaDto } from '@apps/main/modules/villa/dto';
 import { ActivityDto } from '../../activity/dto';
-import { BookingPaymentDto } from '../payment/dto';
+import { BookingPaymentDto } from '../../booking-payment/dto';
 
 export interface IBookingDto
   extends Omit<

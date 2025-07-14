@@ -170,6 +170,18 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   BASE_CURRENCY_CODE!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  PAYMENT_GATEWAY_PROVIDER_NAME!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  PAYMENT_GATEWAY_PROVIDER_URL!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  XENDIT_USERNAME!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {

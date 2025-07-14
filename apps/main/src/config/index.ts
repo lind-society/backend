@@ -7,6 +7,7 @@ export * from './file.config';
 export * from './frontend.config';
 export * from './gcp.config';
 export * from './jwt.config';
+export * from './payment.config';
 export * from './postal-code.config';
 export * from './region.config';
 export * from './storage.config';

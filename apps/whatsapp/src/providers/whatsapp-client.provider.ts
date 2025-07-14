@@ -1,3 +1,4 @@
+import { WhatsappClientProviders } from '@libs/common/enums';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as qrcode from 'qrcode-terminal';
 import { Client } from 'whatsapp-web.js';
@@ -12,7 +13,9 @@ export class WhatsappClientProvider implements IWhatsappClient {
   private readonly retryDelay = 10000; // 10.000 ms = 10 s
   private reconnectTimer: NodeJS.Timeout | null = null;
 
-  constructor(@Inject('MAIN_WHATSAPP_CLIENT') private readonly client: Client) {
+  constructor(
+    @Inject(WhatsappClientProviders.Main) private readonly client: Client,
+  ) {
     this.setupEventListeners();
   }
 

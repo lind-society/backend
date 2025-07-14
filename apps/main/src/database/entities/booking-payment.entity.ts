@@ -11,19 +11,34 @@ import {
 import { Booking } from './booking.entity';
 import { Currency } from './currency.entity';
 
+export enum BookingPaymentStatus {
+  Pending = 'pending',
+  Paid = 'paid',
+  Expired = 'expired',
+}
+
 @Entity({ name: 'booking_payments' })
 export class BookingPayment {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
-  paymentMethod!: string;
+  @Column({ name: 'payment_method', nullable: true })
+  paymentMethod!: string | null;
+
+  @Column({ name: 'payment_channel', nullable: true })
+  paymentChannel!: string | null;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
-  amount!: number;
+  amount!: number | null;
 
-  @Column()
-  status!: string;
+  @Column({ enum: BookingPaymentStatus, nullable: true })
+  status!: BookingPaymentStatus | null;
+
+  @Column({ name: 'paid_at', nullable: true })
+  paidAt!: Date | null;
+
+  @Column({ name: 'payment_reference_id', nullable: true })
+  paymentReferenceId: string | null;
 
   @Column({ name: 'currency_id', type: 'uuid' })
   currencyId!: string;

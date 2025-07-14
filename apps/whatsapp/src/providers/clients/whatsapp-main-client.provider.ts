@@ -1,9 +1,9 @@
-import { Environment, WhatsappClientProvider } from '@libs/common/enums';
+import { Environment, WhatsappClientProviders } from '@libs/common/enums';
 import { ConfigService } from '@nestjs/config';
 import { Client, LocalAuth } from 'whatsapp-web.js';
 
 export const MainWhatsappClientProvider = {
-  provide: WhatsappClientProvider.Main,
+  provide: WhatsappClientProviders.Main,
   useFactory: (configService: ConfigService) => {
     const client = new Client({
       authStrategy: new LocalAuth({
