@@ -2,30 +2,34 @@ import {
   InvoiceCardChannelPropertiesDto,
   InvoiceCardChannelPropertiesInstallmentConfigurationAllowedTermDto,
   InvoiceCardChannelPropertiesInstallmentConfigurationDto,
-  InvoiceCustomerNotificationPreferenceDto,
   InvoiceFeeDto,
-} from '@apps/main/modules/payment/dto/invoice/invoice-related-field.dto';
+  PaymentAvailableCustomerNotificationPreferenceDto,
+} from '@apps/main/modules/payment/dto/invoice/shared-invoice-field.dto';
 import {
   XenditInvoiceCardChannelPropertiesDto,
   XenditInvoiceCardChannelPropertiesInstallmentConfigurationAllowedTermDto,
   XenditInvoiceCardChannelPropertiesInstallmentConfigurationDto,
-  XenditInvoiceCustomerNotificationPreferenceDto,
   XenditInvoiceFeeDto,
+  XenditPaymentAvailableCustomerNotificationPreferenceDto,
 } from '../../../dto/invoice';
-import { mapXenditToGenericInvoiceCustomerNotificationPreference } from '../../enum-mapper/xendit-invoice-customer-notification-preference-enum-mapper.helper';
+import { mapXenditToGenericPaymentAvailableCustomerNotificationPreference } from '../../enum-mapper/xendit-invoice-customer-notification-preference-enum-mapper.helper';
 
-export function mapXenditToGenericInvoiceCustomerNotificationPreferenceDto(
-  payload: XenditInvoiceCustomerNotificationPreferenceDto,
-): InvoiceCustomerNotificationPreferenceDto {
+export function mapXenditToGenericPaymentAvailableCustomerNotificationPreferenceDto(
+  payload: XenditPaymentAvailableCustomerNotificationPreferenceDto,
+): PaymentAvailableCustomerNotificationPreferenceDto {
+  if (!payload) {
+    return;
+  }
+
   return {
     invoiceCreated: payload.invoice_created?.map(
-      mapXenditToGenericInvoiceCustomerNotificationPreference,
+      mapXenditToGenericPaymentAvailableCustomerNotificationPreference,
     ),
     invoicePaid: payload.invoice_paid?.map(
-      mapXenditToGenericInvoiceCustomerNotificationPreference,
+      mapXenditToGenericPaymentAvailableCustomerNotificationPreference,
     ),
     invoiceReminder: payload.invoice_reminder?.map(
-      mapXenditToGenericInvoiceCustomerNotificationPreference,
+      mapXenditToGenericPaymentAvailableCustomerNotificationPreference,
     ),
   };
 }
@@ -33,6 +37,10 @@ export function mapXenditToGenericInvoiceCustomerNotificationPreferenceDto(
 export function mapXenditToGenericInvoiceCardChannelPropertiesInstallmentConfigurationAllowedTermDto(
   payload: XenditInvoiceCardChannelPropertiesInstallmentConfigurationAllowedTermDto,
 ): InvoiceCardChannelPropertiesInstallmentConfigurationAllowedTermDto {
+  if (!payload) {
+    return;
+  }
+
   return {
     issuer: payload.issuer,
     terms: payload.terms,
@@ -42,6 +50,10 @@ export function mapXenditToGenericInvoiceCardChannelPropertiesInstallmentConfigu
 export function mapXenditToGenericInvoiceCardChannelPropertiesInstallmentConfigurationDto(
   payload: XenditInvoiceCardChannelPropertiesInstallmentConfigurationDto,
 ): InvoiceCardChannelPropertiesInstallmentConfigurationDto {
+  if (!payload) {
+    return;
+  }
+
   return {
     allowFullPayment: payload.allow_full_payment,
     allowInstallment: payload.allow_installment,
@@ -67,10 +79,14 @@ export function mapXenditToGenericInvoicechannelPropertiesDto(
 }
 
 export function mapXenditToGenericCreateInvoiceFeeRequestDto(
-  payload: XenditInvoiceFeeDto,
-): InvoiceFeeDto {
-  return {
-    type: payload.type,
-    value: payload.value,
-  };
+  payload: XenditInvoiceFeeDto[],
+): InvoiceFeeDto[] {
+  if (!payload || !payload.length) {
+    return;
+  }
+
+  return payload.map((item) => ({
+    type: item.type,
+    value: item.value,
+  }));
 }

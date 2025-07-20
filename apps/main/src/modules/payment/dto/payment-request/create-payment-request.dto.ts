@@ -1,35 +1,43 @@
+import {
+  PaymentAvailableCaptureMethod,
+  PaymentAvailableCountry,
+  PaymentAvailableCurrency,
+  PaymentAvailableType,
+} from '../../enum';
+import { IPaymentItemDto, PaymentItemDto } from '../item';
+import {
+  ChannelPropertiesDto,
+  IChannelPropertiesDto,
+  IShippingInformationDto,
+  ShippingInformationDto,
+} from './shared-payment-request-field.dto';
+
 export interface ICreatePaymentRequestDto {
-  reference_id: string;
-  type: string;
-  country: string;
-  currency: string;
-  request_amount: number;
-  capture_method: string;
-  channel_code: string;
-  channel_properties: {
-    failure_return_url: string;
-    success_return_url: string;
-  };
+  referenceId: string;
+  type: PaymentAvailableType;
+  country: PaymentAvailableCountry;
+  currency: PaymentAvailableCurrency;
+  requestAmount: number;
+  captureMethod?: PaymentAvailableCaptureMethod;
+  channelProperties: IChannelPropertiesDto;
+  channelCode: string;
   description?: string;
   metadata?: Record<string, any>;
-  items?: Record<string, any>[];
-  shipping_information?: Record<string, any>;
+  items?: IPaymentItemDto[];
+  shippingInformation?: IShippingInformationDto;
 }
 
 export class CreatePaymentRequestDto implements ICreatePaymentRequestDto {
-  reference_id: string;
-  type: string;
-  country: string;
-  currency: string;
-  request_amount: number;
-  capture_method: string;
-  channel_code: string;
-  channel_properties: {
-    failure_return_url: string;
-    success_return_url: string;
-  };
+  referenceId: string;
+  type: PaymentAvailableType;
+  country: PaymentAvailableCountry;
+  currency: PaymentAvailableCurrency;
+  requestAmount: number;
+  captureMethod?: PaymentAvailableCaptureMethod;
+  channelProperties: ChannelPropertiesDto;
+  channelCode: string;
   description?: string;
   metadata?: Record<string, any>;
-  items?: Record<string, any>[];
-  shipping_information?: Record<string, any>;
+  items?: PaymentItemDto[];
+  shippingInformation?: ShippingInformationDto;
 }

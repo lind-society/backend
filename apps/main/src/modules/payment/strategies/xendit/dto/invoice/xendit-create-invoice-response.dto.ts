@@ -1,12 +1,9 @@
-import { XenditPaymentStatus } from '../../enum';
+import { XenditPaymentAvailableStatus } from '../../enum';
 import {
-  IXenditCreateCustomerRequestDto,
-  XenditCreateCustomerRequestDto,
+  IXenditPaymentCustomerDto,
+  XenditPaymentCustomerDto,
 } from '../customer';
-import {
-  IXenditCreateItemRequestDto,
-  XenditCreateItemRequestDto,
-} from '../item';
+import { IXenditPaymentItemDto, XenditPaymentItemDto } from '../item';
 import {
   IXenditBankDto,
   IXenditDirectDebitDto,
@@ -21,18 +18,18 @@ import {
 } from '../payment-method';
 import {
   IXenditInvoiceCardChannelPropertiesDto,
-  IXenditInvoiceCustomerNotificationPreferenceDto,
   IXenditInvoiceFeeDto,
+  IXenditPaymentAvailableCustomerNotificationPreferenceDto,
   XenditInvoiceCardChannelPropertiesDto,
-  XenditInvoiceCustomerNotificationPreferenceDto,
   XenditInvoiceFeeDto,
+  XenditPaymentAvailableCustomerNotificationPreferenceDto,
 } from './xendit-invoice-related-field-dto';
 
-export interface IXenditCreateInvoiceResponseDto {
+export interface IXenditPaymentInvoiceDto {
   id: string;
   external_id: string;
   user_id: string;
-  status: XenditPaymentStatus;
+  status: XenditPaymentAvailableStatus;
   merchant_name: string;
   merchant_profile_picture_url: string;
   amount: number;
@@ -40,8 +37,8 @@ export interface IXenditCreateInvoiceResponseDto {
   description: string;
   expiry_date: string;
   invoice_url: string;
-  customer: IXenditCreateCustomerRequestDto;
-  customer_notification_preference: IXenditInvoiceCustomerNotificationPreferenceDto;
+  customer: IXenditPaymentCustomerDto;
+  customer_notification_preference: IXenditPaymentAvailableCustomerNotificationPreferenceDto;
   available_banks: IXenditBankDto[];
   available_retail_outlets: IXenditRetailOutletDto[];
   available_ewallets: IXenditEWalletDto[];
@@ -58,20 +55,18 @@ export interface IXenditCreateInvoiceResponseDto {
   created: string;
   updated: string;
   currency: string;
-  items: IXenditCreateItemRequestDto[];
+  items: IXenditPaymentItemDto[];
   fees: IXenditInvoiceFeeDto[];
   should_authenticate_credit_card: boolean;
   channel_properties: IXenditInvoiceCardChannelPropertiesDto;
   metadata: Record<string, any>;
 }
 
-export class XenditCreateInvoiceResponseDto
-  implements IXenditCreateInvoiceResponseDto
-{
+export class XenditPaymentInvoiceDto implements IXenditPaymentInvoiceDto {
   id: string;
   external_id: string;
   user_id: string;
-  status: XenditPaymentStatus;
+  status: XenditPaymentAvailableStatus;
   merchant_name: string;
   merchant_profile_picture_url: string;
   amount: number;
@@ -79,8 +74,8 @@ export class XenditCreateInvoiceResponseDto
   description: string;
   expiry_date: string;
   invoice_url: string;
-  customer: XenditCreateCustomerRequestDto;
-  customer_notification_preference: XenditInvoiceCustomerNotificationPreferenceDto;
+  customer: XenditPaymentCustomerDto;
+  customer_notification_preference: XenditPaymentAvailableCustomerNotificationPreferenceDto;
   available_banks: XenditBankDto[];
   available_retail_outlets: XenditRetailOutletDto[];
   available_ewallets: XenditEWalletDto[];
@@ -97,7 +92,7 @@ export class XenditCreateInvoiceResponseDto
   created: string;
   updated: string;
   currency: string;
-  items: XenditCreateItemRequestDto[];
+  items: XenditPaymentItemDto[];
   fees: XenditInvoiceFeeDto[];
   should_authenticate_credit_card: boolean;
   channel_properties: XenditInvoiceCardChannelPropertiesDto;

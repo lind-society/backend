@@ -22,7 +22,7 @@ import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Between, DataSource, EntityManager, Repository } from 'typeorm';
 import { BookingPaymentService } from '../booking-payment/booking-payment.service';
 import { BookingPaymentWithRelationsDto } from '../booking-payment/dto';
-import { CreateInvoiceResponseDto } from '../payment/dto';
+import { PaymentInvoiceDto } from '../payment/dto';
 import { PaymentService } from '../payment/payment.service';
 import { PaginateResponseDataProps } from './../shared/dto';
 import { BookingCustomerService } from './customer/booking-customer.service';
@@ -471,9 +471,7 @@ We look forward to welcoming you!`;
   }
 
   // Payment Gateway wrapper (real payment initiation)
-  async createPaymentInvoice(
-    bookingId: string,
-  ): Promise<CreateInvoiceResponseDto> {
+  async createPaymentInvoice(bookingId: string): Promise<PaymentInvoiceDto> {
     const bookingPayload = await this.findOne(bookingId);
     const formattedPayload =
       this.bookingHelperService.mapBookingToInvoiceRequestDto(bookingPayload);

@@ -1,19 +1,27 @@
-export class ICreatePaymentItemRequestDto {
+import { PaymentAvailableItemType } from '../../enum';
+
+export class IPaymentItemDto {
+  type: PaymentAvailableItemType;
   name: string;
-  quantity: string;
-  price: number;
-  category?: string;
+  netUnitAmount: number;
+  quantity: number;
   url?: string;
-  [key: string]: any;
+  imageUrl?: string;
+  category?: string;
+  subCategory?: string;
+  description?: string;
+  metadata?: Record<string, any>;
 }
 
-export class CreatePaymentItemRequestDto
-  implements ICreatePaymentItemRequestDto
-{
+export class PaymentItemDto implements IPaymentItemDto {
+  type: PaymentAvailableItemType;
   name: string;
-  quantity: string;
-  price: number;
-  category?: string;
+  netUnitAmount: number;
+  quantity: number;
   url?: string;
-  [key: string]: any;
+  imageUrl?: string;
+  category?: string;
+  subCategory?: string;
+  description?: string;
+  metadata?: Record<string, any>;
 }

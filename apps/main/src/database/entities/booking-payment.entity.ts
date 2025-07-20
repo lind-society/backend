@@ -11,7 +11,7 @@ import {
 import { Booking } from './booking.entity';
 import { Currency } from './currency.entity';
 
-export enum BookingPaymentStatus {
+export enum BookingPaymentAvailableStatus {
   Pending = 'pending',
   Paid = 'paid',
   Expired = 'expired',
@@ -31,8 +31,8 @@ export class BookingPayment {
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   amount!: number | null;
 
-  @Column({ enum: BookingPaymentStatus, nullable: true })
-  status!: BookingPaymentStatus | null;
+  @Column({ enum: BookingPaymentAvailableStatus, nullable: true })
+  status!: BookingPaymentAvailableStatus | null;
 
   @Column({ name: 'paid_at', nullable: true })
   paidAt!: Date | null;

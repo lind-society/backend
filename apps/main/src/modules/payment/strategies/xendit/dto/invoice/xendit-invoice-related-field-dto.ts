@@ -1,9 +1,9 @@
-import { XenditInvoiceCustomerNotificationPreference } from '../../enum';
+import { XenditPaymentAvailableCustomerNotificationPreference } from '../../enum';
 
-export interface IXenditInvoiceCustomerNotificationPreferenceDto {
-  invoice_created?: XenditInvoiceCustomerNotificationPreference[];
-  invoice_reminder?: XenditInvoiceCustomerNotificationPreference[];
-  invoice_paid?: XenditInvoiceCustomerNotificationPreference[];
+export interface IXenditPaymentAvailableCustomerNotificationPreferenceDto {
+  invoice_created?: XenditPaymentAvailableCustomerNotificationPreference[];
+  invoice_reminder?: XenditPaymentAvailableCustomerNotificationPreference[];
+  invoice_paid?: XenditPaymentAvailableCustomerNotificationPreference[];
 }
 
 export interface IXenditInvoiceFeeDto {
@@ -27,12 +27,12 @@ export interface IXenditInvoiceCardChannelPropertiesDto {
   installment_configuration: IXenditInvoiceCardChannelPropertiesInstallmentConfigurationDto[];
 }
 
-export class XenditInvoiceCustomerNotificationPreferenceDto
-  implements IXenditInvoiceCustomerNotificationPreferenceDto
+export class XenditPaymentAvailableCustomerNotificationPreferenceDto
+  implements IXenditPaymentAvailableCustomerNotificationPreferenceDto
 {
-  invoice_created?: XenditInvoiceCustomerNotificationPreference[];
-  invoice_reminder?: XenditInvoiceCustomerNotificationPreference[];
-  invoice_paid?: XenditInvoiceCustomerNotificationPreference[];
+  invoice_created?: XenditPaymentAvailableCustomerNotificationPreference[];
+  invoice_reminder?: XenditPaymentAvailableCustomerNotificationPreference[];
+  invoice_paid?: XenditPaymentAvailableCustomerNotificationPreference[];
 }
 
 export class XenditInvoiceFeeDto implements IXenditInvoiceFeeDto {

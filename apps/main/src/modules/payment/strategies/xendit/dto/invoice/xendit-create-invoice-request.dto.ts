@@ -1,22 +1,19 @@
 import {
-  XenditAvailableLanguage,
-  XenditAvailableReminderTimeUnit,
+  XenditPaymentAvailableLanguage,
+  XenditPaymentAvailableReminderTimeUnit,
 } from '../../enum';
 import {
-  IXenditCreateCustomerRequestDto,
-  XenditCreateCustomerRequestDto,
+  IXenditCreatePaymentCustomerDto,
+  XenditCreatePaymentCustomerDto,
 } from '../customer';
-import {
-  IXenditCreateItemRequestDto,
-  XenditCreateItemRequestDto,
-} from '../item';
+import { IXenditPaymentItemDto, XenditPaymentItemDto } from '../item';
 import {
   IXenditInvoiceCardChannelPropertiesDto,
-  IXenditInvoiceCustomerNotificationPreferenceDto,
   IXenditInvoiceFeeDto,
+  IXenditPaymentAvailableCustomerNotificationPreferenceDto,
   XenditInvoiceCardChannelPropertiesDto,
-  XenditInvoiceCustomerNotificationPreferenceDto,
   XenditInvoiceFeeDto,
+  XenditPaymentAvailableCustomerNotificationPreferenceDto,
 } from './xendit-invoice-related-field-dto';
 
 /**
@@ -27,12 +24,12 @@ import {
  * Reference: https://archive.developers.xendit.co/api-reference/#create-invoice
  */
 
-export interface IXenditCreateInvoiceRequestDto {
+export interface IXenditCreatePaymentInvoiceDto {
   external_id: string;
   amount: number;
   description?: string;
-  customer?: IXenditCreateCustomerRequestDto;
-  customer_notification_preference?: IXenditInvoiceCustomerNotificationPreferenceDto;
+  customer?: IXenditCreatePaymentCustomerDto;
+  customer_notification_preference?: IXenditPaymentAvailableCustomerNotificationPreferenceDto;
   invoice_duration?: number;
   success_redirect_url?: string;
   failure_redirect_url?: string;
@@ -40,24 +37,24 @@ export interface IXenditCreateInvoiceRequestDto {
   currency: string;
   callback_virtual_account_id?: string;
   mid_label?: string;
-  reminder_time_unit?: XenditAvailableReminderTimeUnit;
+  reminder_time_unit?: XenditPaymentAvailableReminderTimeUnit;
   reminder_time?: number;
-  locale?: XenditAvailableLanguage;
-  items?: IXenditCreateItemRequestDto[];
+  locale?: XenditPaymentAvailableLanguage;
+  items?: IXenditPaymentItemDto[];
   fees?: IXenditInvoiceFeeDto[];
   should_authenticate_credit_card?: boolean;
   channel_properties?: IXenditInvoiceCardChannelPropertiesDto;
   metadata?: Record<string, any>;
 }
 
-export class XenditCreateInvoiceRequestDto
-  implements IXenditCreateInvoiceRequestDto
+export class XenditCreatePaymentInvoiceDto
+  implements IXenditCreatePaymentInvoiceDto
 {
   external_id: string;
   amount: number;
   description?: string;
-  customer?: XenditCreateCustomerRequestDto;
-  customer_notification_preference?: XenditInvoiceCustomerNotificationPreferenceDto;
+  customer?: XenditCreatePaymentCustomerDto;
+  customer_notification_preference?: XenditPaymentAvailableCustomerNotificationPreferenceDto;
   invoice_duration?: number;
   success_redirect_url?: string;
   failure_redirect_url?: string;
@@ -65,10 +62,10 @@ export class XenditCreateInvoiceRequestDto
   currency: string;
   callback_virtual_account_id?: string;
   mid_label?: string;
-  reminder_time_unit?: XenditAvailableReminderTimeUnit;
+  reminder_time_unit?: XenditPaymentAvailableReminderTimeUnit;
   reminder_time?: number;
-  locale?: XenditAvailableLanguage;
-  items?: XenditCreateItemRequestDto[];
+  locale?: XenditPaymentAvailableLanguage;
+  items?: XenditPaymentItemDto[];
   fees?: XenditInvoiceFeeDto[];
   should_authenticate_credit_card?: boolean;
   channel_properties?: XenditInvoiceCardChannelPropertiesDto;

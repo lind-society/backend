@@ -1,3 +1,5 @@
-export * from './xendit-card-session-js.dto';
+export * from './xendit-card-session.dto';
+export * from './xendit-create-card-session.dto';
 export * from './xendit-create-payment-session-request.dto';
-export * from './xendit-create-payment-session-response.dto';
+export * from './xendit-payment-session.dto';
+export * from './xendit-shared-card-payment-field.dto';

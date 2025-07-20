@@ -1,29 +1,29 @@
-import { CreateInvoiceResponseDto } from '@apps/main/modules/payment/dto';
-import { XenditCreateInvoiceResponseDto } from '../../../dto/invoice';
-import { mapXenditToGenericPaymentStatus } from '../../enum-mapper';
-import { mapXenditToGenericCustomerDto } from '../customer/xendit-create-customer-dto-mapper.dto';
-import { mapXenditToGenericCreateItemRequestDto } from '../item/xendit-item-dto-mapper.dto';
+import { PaymentInvoiceDto } from '@apps/main/modules/payment/dto';
+import { XenditPaymentInvoiceDto } from '../../../dto/invoice';
+import { mapXenditToGenericPaymentAvailableStatus } from '../../enum-mapper';
+import { mapXenditToGenericPaymentCustomerDto } from '../customer/xendit-payment-customer-dto-mapper.dto';
+import { mapXenditToGenericPaymentItemsDto } from '../item';
 import {
   mapXenditToGenericCreateInvoiceFeeRequestDto,
   mapXenditToGenericInvoicechannelPropertiesDto,
-  mapXenditToGenericInvoiceCustomerNotificationPreferenceDto,
+  mapXenditToGenericPaymentAvailableCustomerNotificationPreferenceDto,
 } from './xendit-invoice-related-field-dto-mapper.helper';
 
-export function mapXenditToGenericCreateInvoiceResponseDto(
-  payload: XenditCreateInvoiceResponseDto,
-): CreateInvoiceResponseDto {
+export function mapXenditToGenericPaymentInvoiceDto(
+  payload: XenditPaymentInvoiceDto,
+): PaymentInvoiceDto {
   return {
     id: payload.id,
     externalId: payload.external_id,
     amount: payload.amount,
     currency: payload.currency,
     description: payload.description,
-    status: mapXenditToGenericPaymentStatus(payload.status),
+    status: mapXenditToGenericPaymentAvailableStatus(payload.status),
     invoiceUrl: payload.invoice_url,
     expiryDate: payload.expiry_date,
-    customer: mapXenditToGenericCustomerDto(payload.customer),
+    customer: mapXenditToGenericPaymentCustomerDto(payload.customer),
     customerNotificationPreference:
-      mapXenditToGenericInvoiceCustomerNotificationPreferenceDto(
+      mapXenditToGenericPaymentAvailableCustomerNotificationPreferenceDto(
         payload.customer_notification_preference,
       ),
     successRedirectUrl: payload.success_redirect_url,
@@ -36,8 +36,8 @@ export function mapXenditToGenericCreateInvoiceResponseDto(
     shouldSendEmail: payload.should_send_email,
     createdAt: payload.created,
     updatedAt: payload.updated,
-    items: payload.items?.map(mapXenditToGenericCreateItemRequestDto),
-    fees: payload.fees?.map(mapXenditToGenericCreateInvoiceFeeRequestDto),
+    items: mapXenditToGenericPaymentItemsDto(payload.items),
+    fees: mapXenditToGenericCreateInvoiceFeeRequestDto(payload.fees),
     channelProperties: mapXenditToGenericInvoicechannelPropertiesDto(
       payload.channel_properties,
     ),

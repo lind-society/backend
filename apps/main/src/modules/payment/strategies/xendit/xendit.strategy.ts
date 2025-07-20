@@ -1,5 +1,5 @@
 // xendit.strategy.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, {
   AxiosBasicCredentials,
@@ -7,32 +7,51 @@ import axios, {
   AxiosResponse,
 } from 'axios';
 import {
-  CreateInvoiceRequestDto,
-  CreateInvoiceResponseDto,
+  CreatePaymentInvoiceDto,
+  CreatePaymentRequestDto,
+  CreateSimulatePaymentDto,
   InvoiceCallbackDto,
+  PaymentInvoiceDto,
+  PaymentRequestDto,
+  SimulatePaymentDto,
 } from '../../dto';
-import { CreatePaymentSessionRequestDto } from '../../dto/card-payment/create-payment-session-request.dto';
-import { CreatePaymentSessionResponseDto } from '../../dto/card-payment/create-payment-session-response.dto';
+import { CreatePaymentSessionDto } from '../../dto/card-payment/create-payment-session-request.dto';
+import { PaymentSessionDto } from '../../dto/card-payment/payment-session.dto';
 import { IPaymentStrategy } from '../../interfaces';
-import { XenditCreatePaymentSessionResponseDto } from './dto/card-payment/xendit-create-payment-session-response.dto';
+import { XenditPaymentSessionDto } from './dto/card-payment/xendit-payment-session.dto';
 
-import { XenditCreateInvoiceResponseDto } from './dto/invoice';
-import { mapGenericToXenditCreateInvoiceRequestDto } from './helper';
-import { mapXenditToGenericCreateInvoiceResponseDto } from './helper/dto-mapper/invoice';
+import { XenditPaymentInvoiceDto } from './dto/invoice';
 import {
-  mapGenericToCreateXenditCreatePaymentSessionRequest,
-  mapXenditToGenericCreateXenditCreatePaymentSessionResponse,
-} from './helper/dto-mapper/xendit-card-payment-dto-mapper.dto';
+  XenditPaymentRequestDto,
+  XenditSimulatePaymentDto,
+} from './dto/payment-request';
+import { mapGenericToXenditCreatePaymentInvoiceDto } from './helper';
+import {
+  mapGenericToXenditCreatePaymentSessionDto,
+  mapXenditToGenericCreatePaymentSessionResponse,
+} from './helper/dto-mapper/card-payment/xendit-card-payment-dto-mapper.dto';
+import { mapXenditToGenericPaymentInvoiceDto } from './helper/dto-mapper/invoice';
+import { mapGenericToXenditCreatePaymentRequestDto } from './helper/dto-mapper/payment-request/xendit-create-payment-request-dto-mapper.helper';
+import { mapXenditToGenericPaymentRequestDto } from './helper/dto-mapper/payment-request/xendit-create-payment-response-dto-mapper.helper';
+import {
+  mapGenericToXenditCreateSimulatePaymentDto,
+  mapXenditToGenericSimulatePaymentDto,
+} from './helper/dto-mapper/payment-request/xendit-simulate-payment-dto-mapper.helper';
 
 @Injectable()
 export class XenditStrategy implements IPaymentStrategy {
   private xenditBaseUrl: string;
+  private xenditApiVersion: string;
   private xenditAuth: AxiosBasicCredentials;
   private axiosConfig: AxiosRequestConfig;
 
   constructor(private configService: ConfigService) {
     this.xenditBaseUrl = this.configService.get<string>(
       'payment.gateway.provider.baseUrl',
+    );
+
+    this.xenditApiVersion = this.configService.get<string>(
+      'payment.gateway.provider.xendit.apiVersion',
     );
 
     const xenditConfig = this.configService.get(
@@ -47,7 +66,7 @@ export class XenditStrategy implements IPaymentStrategy {
     this.axiosConfig = {
       auth: this.xenditAuth,
       headers: {
-        'api-version': '2024-11-11',
+        'api-version': this.xenditApiVersion,
         'Content-Type': 'application/json',
       },
     };
@@ -55,58 +74,99 @@ export class XenditStrategy implements IPaymentStrategy {
 
   // Invoice
   async createInvoice(
-    payload: CreateInvoiceRequestDto,
-  ): Promise<CreateInvoiceResponseDto> {
-    const xenditPayload = mapGenericToXenditCreateInvoiceRequestDto(payload);
-    const response: AxiosResponse<XenditCreateInvoiceResponseDto> =
-      await axios.post(
-        `${this.xenditBaseUrl}/v2/invoices`,
-        xenditPayload,
-        this.axiosConfig,
-      );
-
-    return mapXenditToGenericCreateInvoiceResponseDto(response.data);
-  }
-
-  // Payment Request
-  async createPaymentRequest(payload: any): Promise<any> {
-    const response: AxiosResponse<any> = await axios.post(
-      `${this.xenditBaseUrl}/v3/payment_requests`,
-      payload,
+    payload: CreatePaymentInvoiceDto,
+  ): Promise<PaymentInvoiceDto> {
+    const xenditPayload = mapGenericToXenditCreatePaymentInvoiceDto(payload);
+    const response: AxiosResponse<XenditPaymentInvoiceDto> = await axios.post(
+      `${this.xenditBaseUrl}/v2/invoices`,
+      xenditPayload,
       this.axiosConfig,
     );
 
-    return response.data;
+    return mapXenditToGenericPaymentInvoiceDto(response.data);
+  }
+
+  // Payment Request
+  async createPaymentRequest(
+    payload: CreatePaymentRequestDto,
+  ): Promise<PaymentRequestDto> {
+    const xenditPayload = mapGenericToXenditCreatePaymentRequestDto(payload);
+    const response: AxiosResponse<XenditPaymentRequestDto> = await axios.post(
+      `${this.xenditBaseUrl}/v3/payment_requests`,
+      xenditPayload,
+      this.axiosConfig,
+    );
+
+    return mapXenditToGenericPaymentRequestDto(response.data);
+  }
+
+  async getPaymentRequestDetail(
+    paymentRequestId: string,
+  ): Promise<PaymentRequestDto> {
+    const response: AxiosResponse<XenditPaymentRequestDto> = await axios.get(
+      `${this.xenditBaseUrl}/v3/payment_requests/${paymentRequestId}`,
+      this.axiosConfig,
+    );
+
+    return mapXenditToGenericPaymentRequestDto(response.data);
+  }
+
+  async cancelPaymentRequest(
+    paymentRequestId: string,
+  ): Promise<PaymentRequestDto> {
+    const response: AxiosResponse<XenditPaymentRequestDto> = await axios.post(
+      `${this.xenditBaseUrl}/v3/payment_requests/${paymentRequestId}/cancel`,
+      {}, // empty payload (request body)
+      this.axiosConfig,
+    );
+
+    return mapXenditToGenericPaymentRequestDto(response.data);
   }
 
   // Card Payment
   async createPaymentSession(
-    payload: CreatePaymentSessionRequestDto,
-  ): Promise<CreatePaymentSessionResponseDto> {
-    const xenditPayload =
-      mapGenericToCreateXenditCreatePaymentSessionRequest(payload);
+    payload: CreatePaymentSessionDto,
+  ): Promise<PaymentSessionDto> {
+    const xenditPayload = mapGenericToXenditCreatePaymentSessionDto(payload);
 
-    console.log('transformed request :', xenditPayload);
-    const response: AxiosResponse<XenditCreatePaymentSessionResponseDto> =
-      await axios.post(
-        `${this.xenditBaseUrl}/sessions`,
-        xenditPayload,
-        this.axiosConfig,
-      );
-
-    console.log('original response :', response);
-
-    return mapXenditToGenericCreateXenditCreatePaymentSessionResponse(
-      response.data,
+    console.log('transformed request :', JSON.stringify(xenditPayload));
+    const response: AxiosResponse<XenditPaymentSessionDto> = await axios.post(
+      `${this.xenditBaseUrl}/sessions`,
+      xenditPayload,
+      this.axiosConfig,
     );
+
+    return mapXenditToGenericCreatePaymentSessionResponse(response.data);
   }
 
-  // Invoice related methods
+  // callbacks
   async receiveInvoiceCallback(
     payload: InvoiceCallbackDto,
   ): Promise<InvoiceCallbackDto> {
     console.log(payload);
 
     return payload;
+  }
+
+  // simulations
+  async simulatePayment(paymentRequestId: string): Promise<SimulatePaymentDto> {
+    const paymentDetail = await this.getPaymentRequestDetail(paymentRequestId);
+
+    if (!paymentDetail.requestAmount) {
+      throw new NotFoundException('payment request not found');
+    }
+
+    const payload: CreateSimulatePaymentDto = {
+      amount: paymentDetail.requestAmount,
+    };
+
+    const xenditPayload = mapGenericToXenditCreateSimulatePaymentDto(payload);
+    const response: AxiosResponse<XenditSimulatePaymentDto> = await axios.post(
+      `${this.xenditBaseUrl}/v3/payment_requests/${paymentRequestId}/simulate`,
+      xenditPayload,
+      this.axiosConfig,
+    );
+
+    return mapXenditToGenericSimulatePaymentDto(response.data);
   }
 }

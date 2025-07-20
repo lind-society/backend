@@ -1,15 +1,15 @@
-export class IXenditCreateItemRequestDto {
+export class IXenditPaymentItemDto {
   name: string;
-  quantity: string;
+  quantity: number;
   price: number;
   category?: string;
   url?: string;
   [key: string]: any;
 }
 
-export class XenditCreateItemRequestDto implements IXenditCreateItemRequestDto {
+export class XenditPaymentItemDto implements IXenditPaymentItemDto {
   name: string;
-  quantity: string;
+  quantity: number;
   price: number;
   category?: string;
   url?: string;

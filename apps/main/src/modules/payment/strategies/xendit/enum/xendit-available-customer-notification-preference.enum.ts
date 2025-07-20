@@ -1,4 +1,4 @@
-export enum XenditInvoiceCustomerNotificationPreference {
+export enum XenditPaymentAvailableCustomerNotificationPreference {
   Whatsapp = 'whatsapp',
   Email = 'email',
   Fiber = 'fiber',

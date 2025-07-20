@@ -1,2 +1,4 @@
 export * from './create-payment-request.dto';
-export * from './create-payment-response.dto';
+export * from './payment-request.dto';
+export * from './shared-payment-request-field.dto';
+export * from './simulate-payment.dto';

@@ -1,6 +1,6 @@
 import {
   BookingPayment,
-  BookingPaymentStatus,
+  BookingPaymentAvailableStatus,
 } from '@apps/main/database/entities';
 import { CurrencyDto } from '@apps/main/modules/currency/dto';
 import { BookingDto } from '../../booking/dto';
@@ -18,7 +18,7 @@ export class BookingPaymentDto implements IBookingPaymentDto {
   readonly paymentMethod!: string | null;
   readonly paymentChannel!: string | null;
   readonly amount!: number | null;
-  readonly status!: BookingPaymentStatus | null;
+  readonly status!: BookingPaymentAvailableStatus | null;
   readonly paymentReferenceId!: string | null;
   readonly currencyId!: string;
   readonly bookingId!: string | null;

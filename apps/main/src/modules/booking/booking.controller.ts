@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { GetMultipleBookingPaymentSuccessResponse } from '../booking-payment/dto';
-import { CreateInvoiceResponseSuccessResponse } from '../payment/dto';
+import { CreatePaymentInvoiceSuccessResponse } from '../payment/dto';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import { BookingService } from './booking.service';
 import { GetBookingCustomerSuccessResponse } from './customer/dto';
@@ -98,6 +98,6 @@ export class BookingController {
   async createPaymentInvoice(@Param('id', ParseUUIDPipe) id: string) {
     const invoice = await this.bookingService.createPaymentInvoice(id);
 
-    return new CreateInvoiceResponseSuccessResponse(invoice);
+    return new CreatePaymentInvoiceSuccessResponse(invoice);
   }
 }

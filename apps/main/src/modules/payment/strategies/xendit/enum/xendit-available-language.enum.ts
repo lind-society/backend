@@ -1,4 +1,4 @@
-export enum XenditAvailableLanguage {
+export enum XenditPaymentAvailableLanguage {
   Id = 'id',
   En = 'en',
 }

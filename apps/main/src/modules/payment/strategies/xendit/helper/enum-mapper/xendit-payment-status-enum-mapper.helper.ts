@@ -1,32 +1,32 @@
-import { PaymentStatus } from '@apps/main/modules/payment/enum';
+import { PaymentAvailableInvoiceStatus } from '@apps/main/modules/payment/enum';
 import { InternalServerErrorException } from '@nestjs/common';
-import { XenditPaymentStatus } from '../../enum';
+import { XenditPaymentAvailableStatus } from '../../enum';
 
-export function mapXenditToGenericPaymentStatus(
-  status: XenditPaymentStatus,
-): PaymentStatus {
+export function mapXenditToGenericPaymentAvailableStatus(
+  status: XenditPaymentAvailableStatus,
+): PaymentAvailableInvoiceStatus {
   switch (status) {
-    case XenditPaymentStatus.Pending:
-      return PaymentStatus.Pending;
-    case XenditPaymentStatus.Paid:
-      return PaymentStatus.Paid;
-    case XenditPaymentStatus.Expired:
-      return PaymentStatus.Expired;
+    case XenditPaymentAvailableStatus.Pending:
+      return PaymentAvailableInvoiceStatus.Pending;
+    case XenditPaymentAvailableStatus.Paid:
+      return PaymentAvailableInvoiceStatus.Paid;
+    case XenditPaymentAvailableStatus.Expired:
+      return PaymentAvailableInvoiceStatus.Expired;
     default:
       throw new InternalServerErrorException(`invalid xendit payment statuws`);
   }
 }
 
-export function mapGenericToXenditPaymentStatus(
-  status: PaymentStatus,
-): XenditPaymentStatus {
+export function mapGenericToXenditPaymentAvailableStatus(
+  status: PaymentAvailableInvoiceStatus,
+): XenditPaymentAvailableStatus {
   switch (status) {
-    case PaymentStatus.Pending:
-      return XenditPaymentStatus.Pending;
-    case PaymentStatus.Paid:
-      return XenditPaymentStatus.Paid;
-    case PaymentStatus.Expired:
-      return XenditPaymentStatus.Expired;
+    case PaymentAvailableInvoiceStatus.Pending:
+      return XenditPaymentAvailableStatus.Pending;
+    case PaymentAvailableInvoiceStatus.Paid:
+      return XenditPaymentAvailableStatus.Paid;
+    case PaymentAvailableInvoiceStatus.Expired:
+      return XenditPaymentAvailableStatus.Expired;
     default:
       throw new InternalServerErrorException(`invalid payment statuws`);
   }

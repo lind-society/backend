@@ -1,3 +1,4 @@
+export * from './create-payment-invoice.dto';
+export * from './payment-invoice.dto';
 export * from './invoice-callback.dto';
-export * from './create-invoice-request.dto';
-export * from './create-invoice-response.dto';
+export * from './shared-invoice-field.dto';

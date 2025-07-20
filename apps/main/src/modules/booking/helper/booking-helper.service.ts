@@ -7,7 +7,12 @@ import { Booking, BookingType } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { CreateInvoiceRequestDto } from '../../payment/dto';
+import { CreatePaymentInvoiceDto } from '../../payment/dto';
+import {
+  PaymentAvailableCurrency,
+  PaymentAvailableCustomerType,
+  PaymentAvailableItemType,
+} from '../../payment/enum';
 import { BookingDto, BookingWithRelationsDto } from '../dto';
 
 @Injectable()
@@ -56,7 +61,7 @@ export class BookingHelperService {
 
   mapBookingToInvoiceRequestDto(
     bookingDto: BookingWithRelationsDto,
-  ): CreateInvoiceRequestDto {
+  ): CreatePaymentInvoiceDto {
     const bookingName =
       bookingDto.type === BookingType.Activity
         ? bookingDto.activity.name
@@ -74,18 +79,25 @@ export class BookingHelperService {
     return {
       externalId: `${bookingDto.id}_${Date.now()}`,
       amount: bookingDto.totalAmount,
-      currency: bookingDto.currency.code.toUpperCase(),
+      currency:
+        bookingDto.currency.code.toUpperCase() as PaymentAvailableCurrency,
       description: bookingDescription,
       customer: {
-        email: bookingDto.customer.email,
-        givenName: bookingDto.customer.name,
-        mobileNumber: phoneNumber,
+        referenceId: crypto.randomUUID(),
+        type: PaymentAvailableCustomerType.Individual,
+        individualDetail: {
+          givenNames: bookingDto.customer.name,
+        },
       },
       items: [
         {
           name: bookingName,
-          quantity: String(bookingDto.totalGuest),
-          price: bookingDto.totalAmount,
+          type:
+            bookingDto.type === BookingType.Activity
+              ? PaymentAvailableItemType.PhysicalService
+              : PaymentAvailableItemType.PhysicalProduct,
+          quantity: bookingDto.totalGuest,
+          netUnitAmount: bookingDto.totalAmount,
           category: bookingDto.type,
         },
       ],

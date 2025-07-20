@@ -15,7 +15,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
-import { CreateInvoiceResponseSuccessResponse } from '../payment/dto';
+import { CreatePaymentInvoiceSuccessResponse } from '../payment/dto';
 import { BookingPaymentService } from './booking-payment.service';
 import {
   CreateBookingPaymentDto,
@@ -92,7 +92,7 @@ export class BookingPaymentController {
       payload,
     );
 
-    return new CreateInvoiceResponseSuccessResponse(result);
+    return new CreatePaymentInvoiceSuccessResponse(result);
   }
 
   @SkipHal()

@@ -11,13 +11,24 @@ export class XenditExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    this.logger.error(exception.response.data);
+    this.logger.error(exception.response?.data);
+
+    // Conditional error messages
+    let responseMessage = `${exception.response.data.error_code} : ${exception.response.data.message}`;
+
+    if (
+      exception.response?.data?.message?.includes(
+        'Payment request is only cancellable in REQUIRES_ACTION,ACCEPTING_PAYMENTS status',
+      )
+    ) {
+      responseMessage = 'payment have been cancelled';
+    }
 
     // Transform Xendit Error into `HttpResponse` format
     return response.status(exception.status).json(
       new HttpResponse({
         code: exception.status,
-        message: `${exception.response.data.error_code} : ${exception.response.data.message}`,
+        message: responseMessage,
         status: DefaultHttpStatus.Fail,
         data: exception.response.data.errors ?? null,
       }),

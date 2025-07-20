@@ -6,7 +6,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { BookingHelperService } from '../booking/helper/booking-helper.service';
-import { CreateInvoiceResponseDto } from '../payment/dto';
+import { PaymentInvoiceDto } from '../payment/dto';
 import { PaymentService } from '../payment/payment.service';
 import {
   BookingPaymentWithRelationsDto,
@@ -146,13 +146,19 @@ export class BookingPaymentService {
   async createInvoice(
     bookingId: string,
     payload: CreateBookingPaymentWithInvoiceDto,
-  ): Promise<CreateInvoiceResponseDto> {
+  ): Promise<PaymentInvoiceDto> {
     const bookingDetail =
       await this.bookingHelperService.getBookingDetailById(bookingId);
 
     return await this.datasource.transaction(async (manager: EntityManager) => {
       const bookingPayment = await this.create(
-        { currencyId: bookingDetail.currencyId, ...payload },
+        {
+          ...payload,
+          currencyId: bookingDetail.currencyId,
+          paymentReferenceId: '',
+          bookingId: '',
+          paidAt: '',
+        },
         bookingId,
         manager,
       );
@@ -161,7 +167,7 @@ export class BookingPaymentService {
         ...payload,
         externalId: bookingPayment.id,
         metadata: {
-          ...payload.metadata,
+          ...payload,
           bookingId,
           bookingPaymentId: bookingPayment.id,
         },

@@ -48,5 +48,6 @@ export const envValues: EnvironmentVariables = {
   PAYMENT_GATEWAY_PROVIDER_NAME:
     process.env.PAYMENT_GATEWAY_PROVIDER_NAME || '',
   PAYMENT_GATEWAY_PROVIDER_URL: process.env.PAYMENT_GATEWAY_PROVIDER_URL || '',
+  XENDIT_API_VERSION: process.env.XENDIT_API_VERSION || '',
   XENDIT_USERNAME: process.env.XENDIT_USERNAME || '',
 };

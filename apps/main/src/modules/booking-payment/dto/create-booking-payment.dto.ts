@@ -1,5 +1,5 @@
 import { DefaultHttpStatus } from '@apps/main/common/enums';
-import { BookingPaymentStatus } from '@apps/main/database/entities';
+import { BookingPaymentAvailableStatus } from '@apps/main/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -17,7 +17,7 @@ import {
   IsUUID,
   Min,
 } from 'class-validator';
-import { CreateInvoiceRequestDto } from '../../payment/dto';
+import { CreatePaymentInvoiceDto } from '../../payment/dto';
 import { BookingPaymentWithRelationsDto } from './booking-payment.dto';
 
 export class CreateBookingPaymentDto {
@@ -35,11 +35,11 @@ export class CreateBookingPaymentDto {
   @IsOptional()
   readonly amount?: number;
 
-  @IsEnum(BookingPaymentStatus, {
-    message: `booking payment status must be one of: ${Object.values(BookingPaymentStatus).join(', ')}`,
+  @IsEnum(BookingPaymentAvailableStatus, {
+    message: `booking payment status must be one of: ${Object.values(BookingPaymentAvailableStatus).join(', ')}`,
   })
   @IsOptional()
-  readonly status?: BookingPaymentStatus;
+  readonly status?: BookingPaymentAvailableStatus;
 
   @IsString()
   @IsOptional()
@@ -61,7 +61,7 @@ export class CreateBookingPaymentDto {
 
 export class CreateBookingPaymentWithInvoiceDto extends IntersectionType(
   CreateBookingPaymentDto,
-  CreateInvoiceRequestDto,
+  CreatePaymentInvoiceDto,
 ) {}
 
 export class CreateBookingPaymentSuccessResponse

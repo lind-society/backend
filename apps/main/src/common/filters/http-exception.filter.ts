@@ -42,14 +42,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof QueryFailedError) {
       this.logger.error('Typeorm / Database error');
-      this.logger.error('========================\n');
 
       return this.typeOrmExceptionFilter.catch(exception, host);
     }
 
     if (exception?.config?.url.includes('xendit')) {
       this.logger.error('Xendit API error');
-      this.logger.error('================\n');
 
       return this.xenditExceptionFilter.catch(exception, host);
     }
@@ -67,8 +65,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : exception instanceof PayloadTooLargeException
           ? this.logger.error('Nest payload max size error')
           : this.logger.error('Nest payload max limit error');
-
-      this.logger.error('================\n');
 
       const normalizedException =
         exception instanceof PayloadTooLargeException
@@ -88,13 +84,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       exception.response.statusCode
     ) {
       this.logger.error('GCP error');
-      this.logger.error('========================\n');
 
       return this.gcpExceptionFilter.catch(exception, host);
     }
 
     this.logger.error('HTTP Exception');
-    this.logger.error('================\n');
     this.logger.error(exception);
 
     const status =
