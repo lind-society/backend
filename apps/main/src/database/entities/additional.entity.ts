@@ -22,7 +22,7 @@ export class Additional {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ type: 'enum', enum: AdditionalType })
   type!: AdditionalType;
 
   @Column()

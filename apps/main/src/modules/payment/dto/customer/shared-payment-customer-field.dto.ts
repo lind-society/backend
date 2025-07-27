@@ -216,7 +216,7 @@ export class PaymentCustomerKYCDocumentDto
   holderName?: string;
 
   @IsArray()
-  @ValidateNested({ each: true })
+  @IsString({ each: true })
   @IsOptional()
   documentImages?: string[];
 }

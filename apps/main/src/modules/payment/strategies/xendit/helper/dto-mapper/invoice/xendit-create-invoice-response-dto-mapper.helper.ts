@@ -1,6 +1,6 @@
 import { PaymentInvoiceDto } from '@apps/main/modules/payment/dto';
 import { XenditPaymentInvoiceDto } from '../../../dto/invoice';
-import { mapXenditToGenericPaymentAvailableStatus } from '../../enum-mapper';
+import { mapXenditToGenericInvoicePaymentAvailableStatus } from '../../enum-mapper';
 import { mapXenditToGenericPaymentCustomerDto } from '../customer/xendit-payment-customer-dto-mapper.dto';
 import { mapXenditToGenericPaymentItemsDto } from '../item';
 import {
@@ -18,7 +18,7 @@ export function mapXenditToGenericPaymentInvoiceDto(
     amount: payload.amount,
     currency: payload.currency,
     description: payload.description,
-    status: mapXenditToGenericPaymentAvailableStatus(payload.status),
+    status: mapXenditToGenericInvoicePaymentAvailableStatus(payload.status),
     invoiceUrl: payload.invoice_url,
     expiryDate: payload.expiry_date,
     customer: mapXenditToGenericPaymentCustomerDto(payload.customer),

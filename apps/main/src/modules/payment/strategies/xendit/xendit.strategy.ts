@@ -10,7 +10,6 @@ import {
   CreatePaymentInvoiceDto,
   CreatePaymentRequestDto,
   CreateSimulatePaymentDto,
-  InvoiceCallbackDto,
   PaymentInvoiceDto,
   PaymentRequestDto,
   SimulatePaymentDto,
@@ -20,8 +19,12 @@ import { PaymentSessionDto } from '../../dto/card-payment/payment-session.dto';
 import { IPaymentStrategy } from '../../interfaces';
 import { XenditPaymentSessionDto } from './dto/card-payment/xendit-payment-session.dto';
 
+import { PAYMENT_REQUEST_CALLBACK } from '@apps/main/common/constants';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { XenditInvoiceCallbackDto } from './dto';
 import { XenditPaymentInvoiceDto } from './dto/invoice';
 import {
+  XenditPaymentRequestCallbackDto,
   XenditPaymentRequestDto,
   XenditSimulatePaymentDto,
 } from './dto/payment-request';
@@ -31,6 +34,7 @@ import {
   mapXenditToGenericCreatePaymentSessionResponse,
 } from './helper/dto-mapper/card-payment/xendit-card-payment-dto-mapper.dto';
 import { mapXenditToGenericPaymentInvoiceDto } from './helper/dto-mapper/invoice';
+import { mapXenditToGenericPaymentRequestCallbackDto } from './helper/dto-mapper/payment-request';
 import { mapGenericToXenditCreatePaymentRequestDto } from './helper/dto-mapper/payment-request/xendit-create-payment-request-dto-mapper.helper';
 import { mapXenditToGenericPaymentRequestDto } from './helper/dto-mapper/payment-request/xendit-create-payment-response-dto-mapper.helper';
 import {
@@ -45,7 +49,10 @@ export class XenditStrategy implements IPaymentStrategy {
   private xenditAuth: AxiosBasicCredentials;
   private axiosConfig: AxiosRequestConfig;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private eventEmitter: EventEmitter2,
+  ) {
     this.xenditBaseUrl = this.configService.get<string>(
       'payment.gateway.provider.baseUrl',
     );
@@ -91,6 +98,7 @@ export class XenditStrategy implements IPaymentStrategy {
     payload: CreatePaymentRequestDto,
   ): Promise<PaymentRequestDto> {
     const xenditPayload = mapGenericToXenditCreatePaymentRequestDto(payload);
+    console.log('xenditPayload :', xenditPayload)
     const response: AxiosResponse<XenditPaymentRequestDto> = await axios.post(
       `${this.xenditBaseUrl}/v3/payment_requests`,
       xenditPayload,
@@ -128,8 +136,6 @@ export class XenditStrategy implements IPaymentStrategy {
     payload: CreatePaymentSessionDto,
   ): Promise<PaymentSessionDto> {
     const xenditPayload = mapGenericToXenditCreatePaymentSessionDto(payload);
-
-    console.log('transformed request :', JSON.stringify(xenditPayload));
     const response: AxiosResponse<XenditPaymentSessionDto> = await axios.post(
       `${this.xenditBaseUrl}/sessions`,
       xenditPayload,
@@ -141,11 +147,19 @@ export class XenditStrategy implements IPaymentStrategy {
 
   // callbacks
   async receiveInvoiceCallback(
-    payload: InvoiceCallbackDto,
-  ): Promise<InvoiceCallbackDto> {
-    console.log(payload);
+    payload: XenditInvoiceCallbackDto,
+  ): Promise<void> {}
 
-    return payload;
+  async receivePaymentRequestCallback(
+    payload: XenditPaymentRequestCallbackDto,
+  ): Promise<void> {
+    const paymentRequestCallback =
+      mapXenditToGenericPaymentRequestCallbackDto(payload);
+
+    await this.eventEmitter.emitAsync(
+      PAYMENT_REQUEST_CALLBACK,
+      paymentRequestCallback,
+    );
   }
 
   // simulations

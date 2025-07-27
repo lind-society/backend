@@ -1,5 +1,6 @@
 import { CreatePaymentInvoiceDto } from '@apps/main/modules/payment/dto';
 import { XenditCreatePaymentInvoiceDto } from '../../../dto/invoice';
+import { mapGenericToXenditPaymentItemsDto } from '../item';
 
 export function mapGenericToXenditCreatePaymentInvoiceDto(
   payload: CreatePaymentInvoiceDto,
@@ -10,17 +11,10 @@ export function mapGenericToXenditCreatePaymentInvoiceDto(
     currency: payload.currency,
     description: payload.description,
     invoice_duration: payload.invoiceDuration,
-    customer: null,
-    items: payload.items?.map((item) => ({
-      name: item.name,
-      quantity: item.quantity,
-      price: item.netUnitAmount,
-      category: item.category,
-      url: item.url,
-      ...item,
-    })),
-    success_redirect_url: `${payload.successRedirectUrl}/${payload.externalId.split('_')[0]}`,
-    failure_redirect_url: `${payload.failureRedirectUrl}/${payload.externalId.split('_')[0]}`,
+    customer: payload.customer,
+    items: mapGenericToXenditPaymentItemsDto(payload.items),
+    success_redirect_url: `${payload?.successRedirectUrl}/${payload?.externalId.split('_')[0]}`,
+    failure_redirect_url: `${payload?.failureRedirectUrl}/${payload?.externalId.split('_')[0]}`,
     metadata: payload.metadata,
   };
 }

@@ -83,6 +83,19 @@ export class WhatsappService {
     }
   }
 
+  async forceRestart() {
+    try {
+      await this.whatsappProvider.forceRestart();
+      return { status: 'restarting' };
+    } catch (error) {
+      this.logger.error(`Failed to force restart: ${error.message}`);
+      return {
+        status: 'error',
+        error: error.message,
+      };
+    }
+  }
+
   private _convertPhoneNumberToChatId(phoneNumber: string): string {
     return `${phoneNumber}@c.us`;
   }

@@ -21,21 +21,21 @@ export class VillaPriceRuleEventHandlerService {
     private villaPriceService: VillaPriceService,
   ) {}
 
-  @OnEvent(CREATED_PRICE_RULE)
+  @OnEvent(CREATED_PRICE_RULE, { async: true })
   async handleCreatedPriceRule(id: string) {
     await this.datasource.transaction(async (entityManager) => {
       await this.villaPriceService.updateVillaPrices(id, entityManager);
     });
   }
 
-  @OnEvent(UPDATED_PRICE_RULE)
+  @OnEvent(UPDATED_PRICE_RULE, { async: true })
   async handleUpdatedPriceRule(id: string) {
     await this.datasource.transaction(async (entityManager) => {
       await this.villaPriceService.updateVillaPrices(id, entityManager);
     });
   }
 
-  @OnEvent(DELETED_PRICE_RULE)
+  @OnEvent(DELETED_PRICE_RULE, { async: true })
   async handleDeletedPriceRule(villaIds: string[]) {
     await this.datasource.transaction(async (entityManager) => {
       for (const villaId of villaIds) {

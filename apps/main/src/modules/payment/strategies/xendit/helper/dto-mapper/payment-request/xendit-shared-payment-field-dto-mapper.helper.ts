@@ -6,6 +6,7 @@ import {
   RecurringConfigurationDto,
   ShippingInformationDto,
 } from '@apps/main/modules/payment/dto';
+import { XenditRecurringConfigurationDto } from '../../../dto';
 import {
   XenditBillingInformationDto,
   XenditCardDetailsDto,
@@ -13,7 +14,6 @@ import {
   XenditInstallmentConfigurationDto,
   XenditShippingInformationDto,
 } from '../../../dto/payment-request';
-import { XenditRecurringConfigurationDto } from '../../../dto';
 
 // Generic to Xendit
 export function mapGenericToXenditCardDetailsDto(
@@ -28,9 +28,10 @@ export function mapGenericToXenditCardDetailsDto(
     card_number: payload.cardNumber,
     expiry_year: payload.expiryYear,
     expiry_month: payload.expiryMonth,
-    card_holder_name: payload.cardHolderName,
-    card_holder_email: payload.cardHolderEmail,
-    card_holder_phone_number: payload.cardHolderPhoneNumber,
+    cardholder_first_name: payload.cardHolderFirstName,
+    cardholder_last_name: payload.cardHolderLastName,
+    cardholder_email: payload.cardHolderEmail,
+    cardholder_phone_number: payload.cardHolderPhoneNumber,
   };
 }
 
@@ -155,9 +156,10 @@ export function mapXenditToGenericCardDetailsDto(
     cardNumber: payload.card_number,
     expiryYear: payload.expiry_year,
     expiryMonth: payload.expiry_month,
-    cardHolderName: payload.card_holder_name,
-    cardHolderEmail: payload.card_holder_email,
-    cardHolderPhoneNumber: payload.card_holder_phone_number,
+    cardHolderFirstName: payload.cardholder_first_name,
+    cardHolderLastName: payload.cardholder_last_name,
+    cardHolderEmail: payload.cardholder_email,
+    cardHolderPhoneNumber: payload.cardholder_phone_number,
   };
 }
 

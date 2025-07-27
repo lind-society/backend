@@ -11,10 +11,11 @@ export class XenditExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    this.logger.error(exception.response?.data);
+    this.logger.error(exception.response);
+    // this.logger.error(exception.response?.data);
 
     // Conditional error messages
-    let responseMessage = `${exception.response.data.error_code} : ${exception.response.data.message}`;
+    let responseMessage = `${exception.response.data?.error_code} : ${exception.response.data?.message}`;
 
     if (
       exception.response?.data?.message?.includes(

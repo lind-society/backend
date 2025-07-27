@@ -12,7 +12,21 @@ export async function publishToQueue<T extends object>(
     const connection = await amqp.connect(rabbitMqUrl);
     const channel = await connection.createChannel();
 
-    await channel.assertQueue(queue, { durable: true });
+    // Check if this is a retry queue and handle it accordingly
+    if (queue.endsWith('_retry')) {
+      const originalQueue = queue.replace('_retry', '');
+      await channel.assertQueue(queue, {
+        durable: true,
+        arguments: {
+          'x-dead-letter-exchange': '',
+          'x-dead-letter-routing-key': originalQueue,
+          'x-message-ttl': 3000, // 3 seconds delay
+        },
+      });
+    } else {
+      await channel.assertQueue(queue, { durable: true });
+    }
+
     channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)), {
       persistent: true,
     });

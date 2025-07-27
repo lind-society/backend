@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BookingPaymentModule } from '../booking-payment/booking-payment.module';
 import { CurrencyModule } from '../currency/currency.module';
 import { PaymentModule } from '../payment/payment.module';
+import { BookingEventListenerService } from './booking-event-listener.service';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
 import { BookingCustomerModule } from './customer/booking-customer.module';
@@ -21,7 +22,11 @@ import { BookingStatisticModule } from './statistic/booking-statistic.module';
     PaymentModule,
     WhatsappClientModule,
   ],
-  providers: [BookingService, BookingHelperService],
+  providers: [
+    BookingService,
+    BookingHelperService,
+    BookingEventListenerService,
+  ],
   controllers: [BookingController],
   exports: [BookingService, BookingHelperService],
 })

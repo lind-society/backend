@@ -97,7 +97,7 @@ export class CreatePaymentSessionDto implements ICreatePaymentSessionDto {
   channelProperties?: SessionChannelPropertiesDto;
 
   @IsArray()
-  @ValidateNested({ each: true })
+  @IsString({ each: true })
   @IsOptional()
   allowedPaymentChannels?: string[];
 

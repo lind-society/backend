@@ -3,6 +3,7 @@ import { PaymentGatewayProvider } from '@apps/main/common/enums';
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { CreatePaymentSessionDto, CreateSimulatePaymentDto } from './dto';
 import { PaymentService } from './payment.service';
+import { XenditPaymentRequestCallbackDto } from './strategies/xendit/dto';
 
 @SkipHal()
 @Controller()
@@ -58,15 +59,11 @@ export class PaymentController {
   }
 
   @Post('payment/callback/payment-request')
-  async paymentRequestCallback(@Body() payload: any) {
-    try {
-      console.log('callback payload received :', payload);
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response.data,
-      };
-    }
+  async paymentRequestCallback(
+    @Body() payload: XenditPaymentRequestCallbackDto,
+  ) {
+    await this.paymentService.receivePaymentRequestCallback(payload);
+    // console.dir(payload, { depth: null, colors: true });
   }
 
   @Post('payment/session')

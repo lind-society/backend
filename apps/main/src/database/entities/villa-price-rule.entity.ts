@@ -40,7 +40,6 @@ export class VillaPriceRule {
   @Column({
     type: 'enum',
     enum: VillaPriceRuleSeason,
-    enumName: 'villa_price_rule_season_enum',
   })
   season!: VillaPriceRuleSeason;
 

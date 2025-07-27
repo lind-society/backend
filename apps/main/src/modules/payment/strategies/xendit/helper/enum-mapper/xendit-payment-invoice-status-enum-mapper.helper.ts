@@ -2,7 +2,7 @@ import { PaymentAvailableInvoiceStatus } from '@apps/main/modules/payment/enum';
 import { InternalServerErrorException } from '@nestjs/common';
 import { XenditPaymentAvailableStatus } from '../../enum';
 
-export function mapXenditToGenericPaymentAvailableStatus(
+export function mapXenditToGenericInvoicePaymentAvailableStatus(
   status: XenditPaymentAvailableStatus,
 ): PaymentAvailableInvoiceStatus {
   switch (status) {

@@ -26,6 +26,10 @@ export class BookingHelperService {
     bookingId: string,
     entityManager?: EntityManager,
   ): Promise<void> {
+    if (!bookingId) {
+      return;
+    }
+
     const condition = {
       where: { id: bookingId },
     };
@@ -39,7 +43,43 @@ export class BookingHelperService {
     }
   }
 
-  async getBookingDetailById(
+  async getBookingDetail(
+    bookingId: string,
+    entityManager?: EntityManager,
+  ): Promise<BookingWithRelationsDto> {
+    const repository = entityManager
+      ? entityManager.getRepository(Booking)
+      : this.bookingRepository;
+
+    const booking = await repository.findOne({
+      where: {
+        id: bookingId,
+      },
+      relations: {
+        customer: true,
+        currency: true,
+        activity: {
+          category: true,
+          currency: true,
+          owner: true,
+        },
+        villa: {
+          owner: true,
+          currency: true,
+        },
+        review: true,
+        payments: { currency: true },
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException(`booking payment not found`);
+    }
+
+    return booking;
+  }
+
+  async getBookingCurrencyId(
     bookingId: string,
     entityManager?: EntityManager,
   ): Promise<BookingDto> {

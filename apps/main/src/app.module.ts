@@ -41,6 +41,7 @@ import { AxiosModule } from './modules/shared/axios/axios.module';
 import { RegionModule } from './modules/shared/region/region.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
 import { VillaModule } from './modules/villa/villa.module';
+import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { VillaModule } from './modules/villa/villa.module';
     PackageModule,
     SearchModule,
     PaymentModule,
+    PaymentChannelModule,
   ],
   controllers: [AppController],
   providers: [

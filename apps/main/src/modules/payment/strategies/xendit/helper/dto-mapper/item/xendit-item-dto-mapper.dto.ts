@@ -1,20 +1,20 @@
 import { PaymentItemDto } from '@apps/main/modules/payment/dto/item';
-import { PaymentAvailableItemType } from '@apps/main/modules/payment/enum';
 import { XenditPaymentItemDto } from '../../../dto';
 
 export function mapXenditToGenericPaymentItemsDto(
   payload: XenditPaymentItemDto[],
 ): PaymentItemDto[] {
   if (!payload || !payload.length) {
-    return
+    return;
   }
-  
+
   return payload.map((item) => ({
-    ...item,
-    type: PaymentAvailableItemType.PhysicalProduct, // to do : adjust
+    referenceId: item.reference_id,
+    currency: item.currency,
+    type: item.type,
     name: item.name,
     quantity: item.quantity,
-    netUnitAmount: item.price,
+    netUnitAmount: item.net_unit_amount,
     category: item.category,
     url: item.url,
     imageUrl: item?.image_url,
@@ -28,20 +28,21 @@ export function mapGenericToXenditPaymentItemsDto(
   payload: PaymentItemDto[],
 ): XenditPaymentItemDto[] {
   if (!payload || !payload.length) {
-    return
+    return;
   }
 
   return payload.map((item) => ({
-    ...item,
-    type: PaymentAvailableItemType.PhysicalProduct, // to do : adjust
+    reference_id: item.referenceId,
+    currency: item.currency,
+    type: item.type,
     name: item.name,
+    net_unit_amount: item.netUnitAmount,
     quantity: item.quantity,
-    price: item.netUnitAmount,
-    category: item.category,
     url: item.url,
-    image_url: item?.imageUrl,
-    sub_category: item?.subCategory,
-    description: item?.description,
-    metadata: item?.metadata,
+    image_url: item.imageUrl,
+    category: item.category,
+    sub_category: item.subCategory,
+    description: item.description,
+    metadata: item.metadata,
   }));
 }

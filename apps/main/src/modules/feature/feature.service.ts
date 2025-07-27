@@ -87,7 +87,7 @@ export class FeatureService {
     const convertedBasePriceFeature =
       await this._convertToBaseCurrency(payload);
 
-    await this.update(id, convertedBasePriceFeature);
+    await this.featureRepository.update(id, convertedBasePriceFeature);
 
     return await this.findOne(id);
   }
@@ -95,7 +95,7 @@ export class FeatureService {
   async remove(id: string): Promise<void> {
     await this.findOne(id);
 
-    await this.remove(id);
+    await this.featureRepository.delete(id);
   }
 
   private async _convertToBaseCurrency(

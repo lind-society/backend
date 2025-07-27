@@ -15,6 +15,7 @@ export * from './owner.entity';
 export * from './package-benefit-pivot.entity';
 export * from './package-benefit.entity';
 export * from './package.entity';
+export * from './payment-channel.entity';
 export * from './property-additional-pivot.entity';
 export * from './property-facility-pivot.entity';
 export * from './property-feature-pivot.entity';

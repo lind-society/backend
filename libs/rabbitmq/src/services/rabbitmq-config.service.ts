@@ -30,7 +30,7 @@ export function getClientConfig(
 
 export function getRabbitMqRetryQueueConfig(
   originalQueueName: string,
-  ttl: number = 30000,
+  ttl: number = 3000,
 ): QueueConfig {
   return {
     name: `${originalQueueName}_retry`,

@@ -34,7 +34,7 @@ export async function setupDeadLetterQueue(
     await channel.close();
     await connection.close();
   } catch (error) {
-    this.logger.error(
+    logger.error(
       `❌ Failed to setup DLX/DLQ for "${queueName}": ${error.message}`,
     );
   }

@@ -44,7 +44,7 @@ export class SessionCardDto implements ISessionCardDto {
   midLabel?: string;
 
   @IsArray()
-  @ValidateNested({ each: true })
+  @IsString({ each: true })
   @IsOptional()
   allowedBins?: string[];
 

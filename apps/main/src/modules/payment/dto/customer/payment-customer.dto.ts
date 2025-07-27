@@ -97,3 +97,11 @@ export class PaymentCustomerDto implements IPaymentCustomerDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
+
+export interface IPaymentInvoiceCustomerDto {
+  givenNames?: string;
+  surname?: string;
+  email?: string;
+  phoneNumber?: string;
+  addresses?: PaymentCustomerAddressDto;
+}

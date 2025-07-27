@@ -1,6 +1,5 @@
-import { HalEmbedded, Public, SkipHal } from '@apps/main/common/decorators';
+import { HalEmbedded, SkipHal } from '@apps/main/common/decorators';
 import { PriceConverterInterceptor } from '@apps/main/common/interceptors';
-import { JwtAuthGuard } from '@apps/main/modules/auth/guards';
 import { DeleteResponse } from '@apps/main/modules/shared/dto/custom-responses';
 import {
   Body,
@@ -11,22 +10,21 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { Paginate, PaginateQuery } from 'nestjs-paginate';
-import { CreatePaymentInvoiceSuccessResponse } from '../payment/dto';
+import {
+  CreatePaymentInvoiceSuccessResponse,
+  CreatePaymentRequestDto,
+} from '../payment/dto';
 import { BookingPaymentService } from './booking-payment.service';
 import {
   CreateBookingPaymentDto,
   CreateBookingPaymentSuccessResponse,
-  GetBookingPaymentsSuccessResponse,
   GetBookingPaymentSuccessResponse,
   UpdateBookingPaymentDto,
   UpdateBookingPaymentSuccessResponse,
 } from './dto';
 
-@UseGuards(JwtAuthGuard)
 @UseInterceptors(PriceConverterInterceptor)
 @HalEmbedded(
   { name: 'customer', path: 'booking-customers' },
@@ -38,52 +36,64 @@ export class BookingPaymentController {
   constructor(private readonly bookingPaymentService: BookingPaymentService) {}
 
   // Booking Payment (Entity) Dashboard Related Endpoints
-  @Post('booking-payments')
-  async create(@Body() payload: CreateBookingPaymentDto) {
-    const bookingPayment = await this.bookingPaymentService.create(payload);
+  @Post('bookings/:bookingId/payments')
+  async create(
+    @Param('bookingId', ParseUUIDPipe) bookingId: string,
+    @Body() payload: CreateBookingPaymentDto,
+  ) {
+    const bookingPayment = await this.bookingPaymentService.create(
+      payload,
+      false,
+      bookingId,
+    );
 
     return new CreateBookingPaymentSuccessResponse(bookingPayment);
   }
 
-  @Public()
-  @Get('booking-payments')
-  async findAll(@Paginate() query: PaginateQuery) {
-    const bookingPayments = await this.bookingPaymentService.findAll(query);
-
-    return new GetBookingPaymentsSuccessResponse(bookingPayments);
-  }
-
-  @Public()
-  @Get('booking-payments/:id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const bookingPayment = await this.bookingPaymentService.findOne(id);
+  @Get('bookings/:bookingId/payments/:id')
+  async findOne(
+    @Param('bookingId', ParseUUIDPipe) bookingId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const bookingPayment = await this.bookingPaymentService.findOne(
+      id,
+      true,
+      false,
+      bookingId,
+    );
 
     return new GetBookingPaymentSuccessResponse(bookingPayment);
   }
 
-  @Patch('booking-payments/:id')
+  @Patch('bookings/:bookingId/payments/:id')
   async update(
+    @Param('bookingId', ParseUUIDPipe) bookingId: string,
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateBookingPaymentDto: UpdateBookingPaymentDto,
+    @Body() payload: UpdateBookingPaymentDto,
   ) {
     const bookingPayment = await this.bookingPaymentService.update(
       id,
-      updateBookingPaymentDto,
+      payload,
+      false,
+      bookingId,
     );
 
     return new UpdateBookingPaymentSuccessResponse(bookingPayment);
   }
 
-  @Delete('booking-payments/:id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
-    await this.bookingPaymentService.remove(id);
+  @Delete('bookings/:bookingId/payments/:id')
+  async remove(
+    @Param('bookingId', ParseUUIDPipe) bookingId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    await this.bookingPaymentService.remove(id, false, bookingId);
 
     return new DeleteResponse('delete booking payment success');
   }
 
-  // Booking and Payment related methods
-  @Post('bookings/:bookingId/payment/create-payment-invoice')
-  async createInvoice(
+  // Payment Gateway related methods
+  @Post('bookings/:bookingId/payments/:id/pay/invoice')
+  async payInvoice(
     @Param('bookingId', ParseUUIDPipe) bookingId: string,
     @Body() payload: any,
   ) {
@@ -96,13 +106,30 @@ export class BookingPaymentController {
   }
 
   @SkipHal()
-  @Post('bookings/:bookingId/payment/create-payment-request')
+  @Post('bookings/:bookingId/payments/:id/pay/card')
   async createPaymentRequest(
     @Param('bookingId', ParseUUIDPipe) bookingId: string,
-    @Body() payload: any,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: CreatePaymentRequestDto,
   ) {
     const result = await this.bookingPaymentService.createPaymentRequest(
       bookingId,
+      id,
+      payload,
+    );
+
+    return result;
+  }
+
+  @Post('bookings/:bookingId/payments/:id/pay')
+  async pay(
+    @Param('bookingId', ParseUUIDPipe) bookingId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: CreatePaymentRequestDto,
+  ) {
+    const result = await this.bookingPaymentService.createPaymentRequest(
+      bookingId,
+      id,
       payload,
     );
 

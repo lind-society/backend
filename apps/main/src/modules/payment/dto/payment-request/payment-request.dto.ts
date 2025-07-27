@@ -1,3 +1,9 @@
+import { DefaultHttpStatus } from '@apps/main/common/enums';
+import {
+  HttpResponseDefaultProps,
+  HttpResponseOptions,
+} from '@apps/main/modules/shared/dto';
+import { HttpStatus } from '@nestjs/common';
 import {
   PaymentAvailableCaptureMethod,
   PaymentAvailableCountry,
@@ -90,4 +96,21 @@ export class PaymentRequestWebhookDto
   implements IPaymentRequestWebhookDto
 {
   data: PaymentRequestDto;
+}
+
+export class CreatePaymentRequestSuccessResponse
+  extends HttpResponseDefaultProps
+  implements HttpResponseOptions<PaymentRequestDto>
+{
+  readonly data: PaymentRequestDto;
+
+  constructor(data: PaymentRequestDto) {
+    super({
+      code: HttpStatus.OK,
+      message: 'create payment request success',
+      status: DefaultHttpStatus.Success,
+    });
+
+    this.data = data;
+  }
 }

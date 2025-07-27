@@ -29,3 +29,22 @@ export function mapGenericToXenditInvoiceCallbackDto(
     payment_destination: metadata.paymentDestination || '',
   };
 }
+
+export function mapXenditToGenericInvoiceCallbackDto(
+  payload: XenditInvoiceCallbackDto,
+): InvoiceCallbackDto {
+  return {
+    id: payload.id,
+    externalId: payload.external_id,
+    status: payload.status,
+    amount: payload.amount,
+    currency: payload.currency,
+    paidAt: payload.paid_at || '',
+    paidAmount: payload.paid_amount || 0,
+    payerEmail: payload.payer_email || '',
+    paymentMethod: payload.payment_method || '',
+    description: payload.description || '',
+    createdAt: payload.created || '',
+    updatedAt: payload.updated || '',
+  };
+}

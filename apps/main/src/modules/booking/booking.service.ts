@@ -1,5 +1,5 @@
+import { CREATED_BOOKING } from '@apps/main/common/constants';
 import {
-  constructPhoneNumber,
   generateTodayDateRange,
   paginateResponseMapper,
 } from '@apps/main/common/helpers';
@@ -10,35 +10,30 @@ import {
   BookingType,
   VillaBookingStatus,
 } from '@apps/main/database/entities';
-import { WhatsappClientService } from '@libs/whatsapp-client';
 import {
   BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Between, DataSource, EntityManager, Repository } from 'typeorm';
-import { BookingPaymentService } from '../booking-payment/booking-payment.service';
-import { BookingPaymentWithRelationsDto } from '../booking-payment/dto';
-import { PaymentInvoiceDto } from '../payment/dto';
-import { PaymentService } from '../payment/payment.service';
 import { PaginateResponseDataProps } from './../shared/dto';
 import { BookingCustomerService } from './customer/booking-customer.service';
-import { BookingCustomerWithRelationsDto } from './customer/dto';
 import {
   BookingWithRelationsDto,
   CreateBookingDto,
   UpdateBookingDto,
 } from './dto';
-import { BookingHelperService } from './helper/booking-helper.service';
 
 @Injectable()
 export class BookingService {
   private readonly logger = new Logger(BookingService.name);
 
   constructor(
+    private eventEmitter: EventEmitter2,
     @InjectDataSource()
     private datasource: DataSource,
     @InjectRepository(Activity)
@@ -46,10 +41,6 @@ export class BookingService {
     @InjectRepository(Booking)
     private bookingRepository: Repository<Booking>,
     private bookingCustomerService: BookingCustomerService,
-    private bookingHelperService: BookingHelperService,
-    private bookingPaymentService: BookingPaymentService,
-    private paymentService: PaymentService,
-    private whatsappClientService: WhatsappClientService,
   ) {}
 
   async create(payload: CreateBookingDto): Promise<BookingWithRelationsDto> {
@@ -62,23 +53,21 @@ export class BookingService {
 
       const createdBookingCustomer = await this.bookingCustomerService.create(
         payload.customer,
+        false,
+        null,
         manager,
       );
 
+      const { customer, ...bookingPayload } = payload;
+
       const createdBooking = await manager.save(Booking, {
-        ...payload,
+        ...bookingPayload,
         customerId: createdBookingCustomer.id,
       });
 
-      const bookingDetail = await this.findOne(createdBooking.id, manager);
+      await this.eventEmitter.emitAsync(CREATED_BOOKING, createdBooking.id);
 
-      await this._sendWhatsappActivityBookingHelper(
-        payload.customer.phoneCountryCode,
-        payload.customer.phoneNumber,
-        bookingDetail,
-      );
-
-      return bookingDetail;
+      return createdBooking;
     });
   }
 
@@ -191,12 +180,13 @@ export class BookingService {
   async update(
     id: string,
     payload: UpdateBookingDto,
+    entityManager?: EntityManager,
   ): Promise<BookingWithRelationsDto> {
-    const initialBooking = await this.findOne(id);
+    const initialBooking = await this.findOne(id, entityManager);
 
-    const { customer: customerData, ...bookingData } = payload;
+    const transactionTask = async (manager: EntityManager) => {
+      const { customer: customerData, ...bookingData } = payload;
 
-    await this.datasource.transaction(async (manager: EntityManager) => {
       if (
         initialBooking.type === BookingType.Activity &&
         bookingData.status === ActivityBookingStatus.Completed
@@ -211,14 +201,22 @@ export class BookingService {
         await this.bookingCustomerService.update(
           initialBooking.customerId,
           customerData,
+          true,
+          id,
           manager,
         );
       }
 
       await manager.update(Booking, id, bookingData);
-    });
+    };
 
-    return await this.findOne(id);
+    if (entityManager) {
+      await transactionTask(entityManager);
+    } else {
+      await this.datasource.transaction(transactionTask);
+    }
+
+    return await this.findOne(id, entityManager);
   }
 
   async remove(id: string): Promise<BookingWithRelationsDto> {
@@ -331,101 +329,6 @@ export class BookingService {
     }
   }
 
-  private _formatActivityBookingMessage(
-    booking: BookingWithRelationsDto,
-  ): string {
-    const bookingDate = new Date(booking.bookingDate).toLocaleString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Jakarta',
-    });
-
-    return `Thank you ${booking.customer.name} for booking with us at ${booking.activity?.name}!
-      
-    🏡 *Activity*: ${booking.activity?.name} (${booking.activity?.secondaryName || '-'})
-    📍 *Address*: ${booking.activity?.address}, ${booking.activity?.city}, ${booking.activity?.state}, ${booking.activity?.country}
-    🗓️ *Booking Date*: ${bookingDate} WIB
-    👥 *Total Guests*: ${booking.totalGuest}
-    💵 *Total Amount*: ${booking.currency?.symbol || ''} ${Number(booking.totalAmount).toLocaleString('id-ID')}
-    🗺️ *Map*: ${booking.activity?.mapLink || '-'}
-      
-    We look forward to welcoming you!`;
-  }
-
-  // Villa
-  private _formatVillaBookingMessage(booking: BookingWithRelationsDto): string {
-    const checkInDate = new Date(booking.checkInDate).toLocaleString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Jakarta',
-    });
-    const checkOutDate = new Date(booking.checkOutDate).toLocaleString(
-      'en-GB',
-      {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Asia/Jakarta',
-      },
-    );
-
-    return `Thank you ${booking.customer.name} for booking with us at ${booking.villa?.name}!
-  
-🏡 *Villa*: ${booking.villa?.name} (${booking.villa?.secondaryName || '-'})
-📍 *Address*: ${booking.villa?.address}, ${booking.villa?.city}, ${booking.villa?.state}, ${booking.villa?.country}
-🗓️ *Check-in*: ${checkInDate} WIB
-🗓️ *Check-out*: ${checkOutDate} WIB
-👥 *Total Guests*: ${booking.totalGuest}
-💵 *Total Amount*: ${booking.currency?.symbol || ''} ${Number(booking.totalAmount).toLocaleString('id-ID')}
-🗺️ *Map*: ${booking.villa?.mapLink || '-'}
-  
-We look forward to welcoming you!`;
-  }
-
-  // Both
-  private _formatBookingMessage(
-    bookingDetail: BookingWithRelationsDto,
-  ): string {
-    switch (bookingDetail.type) {
-      case BookingType.Activity:
-        return this._formatActivityBookingMessage(bookingDetail);
-
-      case BookingType.Villa:
-        return this._formatVillaBookingMessage(bookingDetail);
-
-      default:
-        return '';
-    }
-  }
-
-  private async _sendWhatsappActivityBookingHelper(
-    phoneCountryCode: string,
-    phoneNumber: string,
-    bookingDetail: BookingWithRelationsDto,
-  ) {
-    const constructedPhoneNumber = constructPhoneNumber(
-      phoneCountryCode,
-      phoneNumber,
-    );
-
-    try {
-      await this.whatsappClientService.sendMessage({
-        phoneNumber: constructedPhoneNumber,
-        message: this._formatBookingMessage(bookingDetail),
-      });
-    } catch (error) {
-      this.logger.error('Failed to send WhatsApp message:', error.message);
-    }
-  }
-
   private _setInitialBookingStatus(payload: CreateBookingDto): void {
     if (payload.type === BookingType.Activity) {
       payload.status = ActivityBookingStatus.Pending;
@@ -444,38 +347,5 @@ We look forward to welcoming you!`;
     } else {
       return undefined;
     }
-  }
-
-  // Other module related to module wrapper
-
-  // Booking Customer wrapper
-  async getCustomerDetail(
-    bookingId: string,
-    entityManager?: EntityManager,
-  ): Promise<BookingCustomerWithRelationsDto> {
-    return await this.bookingCustomerService.findOneByBookingId(
-      bookingId,
-      entityManager,
-    );
-  }
-
-  // Booking Payment wrapper
-  async getPaymentsDetail(
-    bookingId: string,
-    entityManager?: EntityManager,
-  ): Promise<BookingPaymentWithRelationsDto[]> {
-    return await this.bookingPaymentService.findAllByBookingId(
-      bookingId,
-      entityManager,
-    );
-  }
-
-  // Payment Gateway wrapper (real payment initiation)
-  async createPaymentInvoice(bookingId: string): Promise<PaymentInvoiceDto> {
-    const bookingPayload = await this.findOne(bookingId);
-    const formattedPayload =
-      this.bookingHelperService.mapBookingToInvoiceRequestDto(bookingPayload);
-
-    return await this.paymentService.createInvoice(formattedPayload);
   }
 }

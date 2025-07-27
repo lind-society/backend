@@ -20,6 +20,7 @@ export class BookingPaymentDto implements IBookingPaymentDto {
   readonly amount!: number | null;
   readonly status!: BookingPaymentAvailableStatus | null;
   readonly paymentReferenceId!: string | null;
+  readonly failureReason: string | null;
   readonly currencyId!: string;
   readonly bookingId!: string | null;
   readonly paidAt!: Date | null;

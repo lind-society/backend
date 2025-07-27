@@ -115,12 +115,36 @@ export class WhatsappClientProvider implements IWhatsappClient {
   async initialize() {
     try {
       this.logger.log('Initializing WhatsApp connection...');
+
+      // Check if client is already initialized
+      if (this.client.pupPage) {
+        this.logger.log('Client already has a page, destroying first...');
+        try {
+          await this.client.destroy();
+        } catch (destroyError) {
+          this.logger.warn(
+            `Error destroying existing client: ${destroyError.message}`,
+          );
+        }
+      }
+
       await this.client.initialize();
     } catch (error) {
       this.isReady = false;
       this.logger.error(
         `Failed to initialize WhatsApp client: ${error.message}`,
       );
+
+      // If it's a browser launch error, we need to handle it differently
+      if (error.message.includes('Failed to launch the browser process')) {
+        this.logger.error(
+          'Browser process failed to launch. This may require manual intervention.',
+        );
+        // Try to force restart the client
+        await this.forceRestart();
+        return;
+      }
+
       this.scheduleReconnect();
     }
   }
@@ -143,18 +167,73 @@ export class WhatsappClientProvider implements IWhatsappClient {
       throw new Error('WhatsApp client is not ready');
     }
 
+    // Additional check for client state
+    if (!this.client) {
+      this.logger.error('WhatsApp client is null or undefined');
+      this.isReady = false;
+      throw new Error('WhatsApp client is null or undefined');
+    }
+
+    // Check if the client has a valid page
+    if (!this.client.pupPage) {
+      this.logger.error(
+        'WhatsApp client is not properly initialized (no page)',
+      );
+      this.isReady = false;
+      this.scheduleReconnect();
+      throw new Error('WhatsApp client is not properly initialized (no page)');
+    }
+
+    // Validate inputs
+    if (!chatId || typeof chatId !== 'string') {
+      throw new Error(`Invalid chatId: ${chatId}`);
+    }
+
+    if (!message || typeof message !== 'string') {
+      throw new Error(`Invalid message: ${message}`);
+    }
+
     try {
-      await this.client.sendMessage(chatId, message);
+      this.logger.log(`Attempting to send message to ${chatId}`);
+
+      // Check browser health before sending
+      const isHealthy = await this.isBrowserHealthy();
+      if (!isHealthy) {
+        throw new Error('Browser is not healthy, cannot send message');
+      }
+
+      // Check if the chat exists and is valid
+      const chat = await this.client.getChatById(chatId);
+      if (!chat) {
+        throw new Error(`Chat not found for ID: ${chatId}`);
+      }
+
+      // Send the message
+      const result = await this.client.sendMessage(chatId, message);
+
+      if (!result) {
+        throw new Error('Message send returned undefined result');
+      }
+
+      this.logger.log(`Message sent successfully to ${chatId}`);
     } catch (error) {
       this.logger.error(`Failed to send WhatsApp message: ${error.message}`);
+      this.logger.error(
+        `ChatId: ${chatId}, Message length: ${message?.length || 0}`,
+      );
 
       // Check if we need to reconnect based on specific errors
       if (
         error.message.includes('not connected') ||
         error.message.includes('browser') ||
         error.message.includes('session') ||
-        error.message.includes('WidFactory')
+        error.message.includes('WidFactory') ||
+        error.message.includes('serialize') ||
+        error.message.includes('getMessageModel')
       ) {
+        this.logger.warn(
+          'Detected connection-related error, scheduling reconnect',
+        );
         this.isReady = false;
         this.scheduleReconnect();
       }
@@ -164,7 +243,22 @@ export class WhatsappClientProvider implements IWhatsappClient {
   }
 
   isConnected(): boolean {
-    return this.isReady;
+    return this.isReady && !!this.client && !!this.client.pupPage;
+  }
+
+  private async isBrowserHealthy(): Promise<boolean> {
+    try {
+      if (!this.client || !this.client.pupPage) {
+        return false;
+      }
+
+      // Try to get page title to check if browser is responsive
+      const title = await this.client.pupPage.title();
+      return !!title;
+    } catch (error) {
+      this.logger.warn(`Browser health check failed: ${error.message}`);
+      return false;
+    }
   }
 
   async forceReconnect(): Promise<void> {
@@ -183,5 +277,28 @@ export class WhatsappClientProvider implements IWhatsappClient {
     setTimeout(() => {
       this.initialize();
     }, 1000);
+  }
+
+  async forceRestart(): Promise<void> {
+    this.logger.log(
+      'Force restart requested - this will create a new client instance',
+    );
+    this.connectionRetries = 0;
+    this.isReady = false;
+
+    try {
+      // Destroy the current client
+      if (this.client) {
+        await this.client.destroy();
+      }
+    } catch (e) {
+      this.logger.error(
+        `Error destroying client during force restart: ${e.message}`,
+      );
+    }
+
+    // Note: In a real implementation, you might want to emit an event
+    // to the module to recreate the client instance
+    this.logger.warn('Client destroyed. Manual restart may be required.');
   }
 }

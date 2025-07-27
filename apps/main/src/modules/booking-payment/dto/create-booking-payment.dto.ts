@@ -10,7 +10,6 @@ import { Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -43,14 +42,18 @@ export class CreateBookingPaymentDto {
 
   @IsString()
   @IsOptional()
-  readonly paymentReferenceId: string;
+  readonly paymentReferenceId?: string;
+  
+  @IsString()
+  @IsOptional()
+  readonly failureReason?: string;
 
   @IsUUID()
-  @IsNotEmpty()
+  @IsOptional()
   readonly currencyId: string;
 
   @IsUUID()
-  @IsNotEmpty()
+  @IsOptional()
   readonly bookingId: string;
 
   @Type(() => Date)

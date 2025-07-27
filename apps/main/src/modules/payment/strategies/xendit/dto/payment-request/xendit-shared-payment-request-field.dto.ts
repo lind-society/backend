@@ -15,9 +15,10 @@ export interface IXenditCardDetailsDto {
   card_number?: string;
   expiry_year?: string;
   expiry_month?: string;
-  card_holder_name?: string;
-  card_holder_email?: string;
-  card_holder_phone_number?: string;
+  cardholder_first_name?: string;
+  cardholder_last_name?: string;
+  cardholder_email?: string;
+  cardholder_phone_number?: string;
 }
 
 export interface IXenditInstallmentConfigurationDto {
@@ -82,9 +83,10 @@ export class XenditCardDetailsDto implements IXenditCardDetailsDto {
   card_number?: string;
   expiry_year?: string;
   expiry_month?: string;
-  card_holder_name?: string;
-  card_holder_email?: string;
-  card_holder_phone_number?: string;
+  cardholder_first_name?: string;
+  cardholder_last_name?: string;
+  cardholder_email?: string;
+  cardholder_phone_number?: string;
 }
 
 export class XenditInstallmentConfigurationDto

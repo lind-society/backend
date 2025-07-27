@@ -57,7 +57,7 @@ export class WhatsappClientService implements OnModuleInit {
       } catch (error) {
         this.logger.error('Health check failed:', error.message);
       }
-    }, 30000);
+    }, 3000);
   }
 
   async sendMessage(data: SendMessageDto) {

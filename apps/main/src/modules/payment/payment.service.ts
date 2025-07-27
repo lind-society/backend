@@ -7,7 +7,6 @@ import {
   CreatePaymentInvoiceDto,
   CreatePaymentRequestDto,
   CreateSimulatePaymentDto,
-  InvoiceCallbackDto,
   PaymentInvoiceDto,
   PaymentRequestDto,
   SimulatePaymentDto,
@@ -16,6 +15,10 @@ import { CreatePaymentSessionDto } from './dto/card-payment/create-payment-sessi
 import { PaymentSessionDto } from './dto/card-payment/payment-session.dto';
 import { IPaymentStrategy } from './interfaces';
 import { PaymentStrategyFactory } from './strategies';
+import {
+  XenditInvoiceCallbackDto,
+  XenditPaymentRequestCallbackDto,
+} from './strategies/xendit/dto';
 
 @Injectable()
 export class PaymentService implements IPaymentStrategy {
@@ -34,12 +37,22 @@ export class PaymentService implements IPaymentStrategy {
       this.paymentStrategyFactory.createStrategy(currentProvider);
   }
 
+  // Invoice
   async createInvoice(
     payload: CreatePaymentInvoiceDto,
   ): Promise<PaymentInvoiceDto> {
     return await this.paymentStrategy.createInvoice(payload);
   }
 
+  async receiveInvoiceCallback(
+    payload: XenditInvoiceCallbackDto,
+  ): Promise<void> {
+    this.eventEmitter.emit(UPDATED_BOOKING_PAYMENT, payload); // to do : set the event listener in booking payment service
+
+    await this.paymentStrategy.receiveInvoiceCallback(payload);
+  }
+
+  // Payment Request
   async createPaymentRequest(
     payload: CreatePaymentRequestDto,
   ): Promise<PaymentRequestDto> {
@@ -68,18 +81,18 @@ export class PaymentService implements IPaymentStrategy {
     );
   }
 
+  async receivePaymentRequestCallback(
+    payload: XenditPaymentRequestCallbackDto,
+  ): Promise<void> {
+    console.log('raw callback :', payload);
+    await this.paymentStrategy.receivePaymentRequestCallback(payload);
+  }
+
   // validate booking id from param passed by controller
   async createPaymentSession(
     payload: CreatePaymentSessionDto,
   ): Promise<PaymentSessionDto> {
     return await this.paymentStrategy.createPaymentSession(payload);
-  }
-
-  // callback related methods
-  async receiveInvoiceCallback(payload: InvoiceCallbackDto): Promise<any> {
-    this.eventEmitter.emit(UPDATED_BOOKING_PAYMENT, payload); // to do : set the event listener in booking payment service
-
-    return await this.paymentStrategy.receiveInvoiceCallback(payload);
   }
 
   // helper methods
@@ -93,9 +106,5 @@ export class PaymentService implements IPaymentStrategy {
   ): Promise<PaymentInvoiceDto> {
     const strategy = this.paymentStrategyFactory.createStrategy(provider);
     return await strategy.createInvoice(payload);
-  }
-
-  async invoiceCallback(payload: any) {
-    console.log(payload);
   }
 }
