@@ -1,8 +1,19 @@
+import { GlobalHttpExceptionFilter } from '@libs/common/filters/http-exception.filter';
+// import { NestFactory } from '@nestjs/core';
+// import { ExternalGatewayModule } from './external-gateway.module';
+
+// async function bootstrap() {
+//   const app = await NestFactory.create(ExternalGatewayModule);
+//   await app.listen(process.env.port ?? 3000);
+// }
+// bootstrap();
+
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 import { Environment } from '@libs/common/enums';
+import { validationExceptionFactory } from '@libs/common/factories';
 import {
   Logger,
   UnprocessableEntityException,
@@ -11,12 +22,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import * as compression from 'compression';
-import { validationExceptionFactory } from '../../../libs/common/factories';
-import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters';
+import { ExternalGatewayModule } from './external-gateway.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(ExternalGatewayModule);
 
   const logger = new Logger('Main - Bootstrap');
   const configService: ConfigService = app.get<ConfigService>(ConfigService);
@@ -27,7 +36,7 @@ async function bootstrap() {
   const host = configService.get<string>('app.host');
   const env = configService.get<string>('app.env');
 
-  app.setGlobalPrefix(`api/${apiVersion}`);
+  app.setGlobalPrefix(`external-gateway/${apiVersion}`);
 
   app.enableCors({
     origin: [
@@ -38,7 +47,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useGlobalFilters(new HttpExceptionFilter(httpAdapterHost));
+  app.useGlobalFilters(new GlobalHttpExceptionFilter(httpAdapterHost));
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -2,6 +2,7 @@ import {
   HttpResponse,
   ValidationExceptionResponse,
 } from '@apps/main/modules/shared/dto';
+import { extractChildrenErrors } from '@libs/common/factories';
 import {
   ArgumentsHost,
   BadRequestException,
@@ -18,7 +19,6 @@ import { Response } from 'express';
 import { MulterError } from 'multer';
 import { QueryFailedError } from 'typeorm';
 import { DefaultHttpStatus } from '../enums';
-import { extractChildrenErrors } from '../factories';
 import { GCPExceptionFilter } from './gcp-exception.filter';
 import { MulterExceptionFilter } from './multer-exception.filter';
 import { TypeOrmExceptionFilter } from './typeorm-exception.filter';

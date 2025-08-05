@@ -11,10 +11,14 @@ export class SendMailDto implements ISendMailOptions {
   subject!: string;
 
   @IsString()
-  @IsOptional()
-  template?: string;
+  @IsNotEmpty()
+  template: string;
 
   @IsObject()
   @IsOptional()
   context?: Record<string, any>;
+
+  @IsString()
+  @IsOptional()
+  source?: string;
 }

@@ -1,9 +1,9 @@
 import { WHATSAPP_QUEUE } from '@libs/common/constants';
+import { MainProvider } from '@libs/common/enums';
 import { retryFailedMessage } from '@libs/rabbitmq/services';
 import { SendMessageDto } from '@libs/whatsapp-client/dto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IWhatsappClient } from './interfaces';
-import { MainProvider } from '@libs/common/enums';
 
 @Injectable()
 export class WhatsappService {

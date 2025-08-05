@@ -1,7 +1,7 @@
-import { SEND_MAIL } from '@libs/mail-client';
+import { MAIL_HEALTH_CHECK, SEND_MAIL } from '@libs/mail-client/constant';
 import { SendMailDto } from '@libs/mail-client/dto';
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import { MailService } from './mail.service';
 
 @Controller()
@@ -13,5 +13,15 @@ export class MailController {
     @Payload() payload: SendMailDto & { retry_count?: number },
   ) {
     return this.mailService.sendMailWithRetryMechanism(payload);
+  }
+
+  @MessagePattern('mail_queue_retry')
+  handleRetry(@Payload() payload: SendMailDto & { retry_count?: number }) {
+    return this.mailService.sendMailWithRetryMechanism(payload);
+  }
+
+  @MessagePattern(MAIL_HEALTH_CHECK)
+  async healthCheck() {
+    return { status: 'ok' };
   }
 }

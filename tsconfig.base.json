@@ -30,6 +30,8 @@
       "@libs/mail-client/*": ["libs/mail-client/src/*"],
       "@apps/main": ["apps/main/src"],
       "@apps/main/*": ["apps/main/src/*"],
+      "@apps/external-gateway": ["apps/external-gateway/src"],
+      "@apps/external-gateway/*": ["apps/external-gateway/src/*"],
       "@apps/whatsapp": ["apps/whatsapp/src"],
       "@apps/whatsapp/*": ["apps/whatsapp/src/*"],
       "@apps/mail": ["apps/mail/src"],

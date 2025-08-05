@@ -27,8 +27,21 @@ export async function publishToQueue<T extends object>(
       await channel.assertQueue(queue, { durable: true });
     }
 
-    channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)), {
+    const nestjsMessage = {
+      pattern: queue,
+      data: message,
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      // Add correlation ID if needed
+      correlationId: Math.random().toString(36).substr(2, 9),
+    };
+
+    const messageBuffer = Buffer.from(JSON.stringify(nestjsMessage));
+
+    channel.sendToQueue(queue, messageBuffer, {
       persistent: true,
+      messageId: nestjsMessage.id,
+      timestamp: nestjsMessage.timestamp,
     });
 
     logger.log(`published message to queue ${queue}`);

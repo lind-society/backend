@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class SendMessageDto {
   @IsString()
@@ -8,4 +8,8 @@ export class SendMessageDto {
   @IsString()
   @IsNotEmpty()
   message!: string;
+
+  @IsString()
+  @IsOptional()
+  source?: string;
 }

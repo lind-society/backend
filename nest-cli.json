@@ -28,6 +28,15 @@
         "tsConfigPath": "libs/config/tsconfig.lib.json"
       }
     },
+    "external-gateway": {
+      "type": "application",
+      "root": "apps/external-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/external-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/external-gateway/tsconfig.app.json"
+      }
+    },
     "mail": {
       "type": "application",
       "root": "apps/mail",

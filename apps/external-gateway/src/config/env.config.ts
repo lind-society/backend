@@ -1,36 +1,41 @@
-import { envPaths } from '@libs/common/constants';
+import { envPaths } from '@libs/common/constants/env-path.constant';
+import { Environment } from '@libs/common/enums/environment.enum';
 import { plainToInstance } from 'class-transformer';
-import { IsNotEmpty, IsString, validateSync } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  validateSync,
+} from 'class-validator';
 import { config, DotenvConfigOptions } from 'dotenv';
 
 export class EnvironmentVariables {
+  @IsEnum(Environment, {
+    message: `NODE_ENV environment variable must be one of: ${Object.values(Environment).join(', ')}`,
+  })
+  @IsOptional()
+  NODE_ENV?: Environment | null;
+
   @IsString()
-  @IsNotEmpty()
-  MAIL_HOST!: string;
+  @IsOptional()
+  API_VERSION?: string | null;
+
+  @IsString()
+  @IsOptional()
+  HOST?: string | null;
 
   @IsString()
   @IsNotEmpty()
-  MAIL_PORT!: string;
+  EXTERNAL_GATEWAY_PORT!: string;
 
   @IsString()
   @IsNotEmpty()
-  MAIL_SECURE!: string;
+  LINDWAY_CLIENT!: string;
 
   @IsString()
   @IsNotEmpty()
-  MAIL_USER!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  MAIL_PASSWORD!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  MAIL_SENDER_EMAIL!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  MAIL_SENDER_NAME!: string;
+  LIND_SOCIETY_CLIENT!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {

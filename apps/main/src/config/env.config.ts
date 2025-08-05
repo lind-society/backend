@@ -33,7 +33,7 @@ export class EnvironmentVariables {
   @Min(0)
   @Max(65535)
   @IsOptional()
-  PORT?: number | null;
+  MAIN_PORT?: number | null;
 
   @IsString()
   @IsNotEmpty()

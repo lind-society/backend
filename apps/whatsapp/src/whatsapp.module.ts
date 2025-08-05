@@ -27,6 +27,5 @@ import { WhatsappService } from './whatsapp.service';
     WhatsAppClientFactory,
     MainWhatsappClientProvider,
   ],
-  exports: [WhatsappService],
 })
 export class WhatsappModule {}

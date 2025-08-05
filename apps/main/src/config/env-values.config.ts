@@ -8,7 +8,7 @@ export const envValues: EnvironmentVariables = {
   NODE_ENV: (process.env.NODE_ENV as Environment) || Environment.Development,
   API_VERSION: process.env.API_VERSION || 'v1',
   HOST: process.env.HOST || '',
-  PORT: parseInt(process.env.PORT || '3000', 10) || 3000,
+  MAIN_PORT: parseInt(process.env.MAIN_PORT || '3000', 10) || 3000,
   XENDIT_SECRET_KEY: process.env.XENDIT_SECRET_KEY || '',
   DB_TYPE: process.env.DB_TYPE || '',
   DB_PORT: process.env.DB_PORT || '',

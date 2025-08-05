@@ -11,10 +11,12 @@ import { SendMessageDto } from './dto';
 
 @Injectable()
 export class WhatsappClientService implements OnModuleInit {
+  private readonly logger = new Logger(WhatsappClientService.name);
+
   private firstConnectAttempt = true;
   private isConnected = false;
-  private readonly logger = new Logger(WhatsappClientService.name);
   private healthCheckInterval: NodeJS.Timeout | null = null;
+  private acknowledgeNotConnected = false;
 
   constructor(@Inject(WHATSAPP_SERVICE) private readonly client: ClientProxy) {}
 
@@ -27,8 +29,6 @@ export class WhatsappClientService implements OnModuleInit {
       if (connected) {
         this.isConnected = true;
         this.logger.log('Successfully connected to whatsapp microservice');
-      } else {
-        this.logger.log('Failed connecting to whatsapp microservice');
       }
 
       this.firstConnectAttempt = false;
@@ -44,19 +44,54 @@ export class WhatsappClientService implements OnModuleInit {
     }
   }
 
+  async checkConnection(): Promise<boolean> {
+    try {
+      const healthResult = await firstValueFrom(
+        this.client.send(WHATSAPP_HEALTH_CHECK, {}).pipe(
+          timeout(100),
+          catchError((error) => {
+            if (!this.isConnected && !this.acknowledgeNotConnected) {
+              this.logger.error(
+                'Health check failed, failed connecting to whatsapp microservice :',
+                error.message,
+              );
+            }
+
+            if (this.isConnected && !this.acknowledgeNotConnected) {
+              this.logger.error(
+                'Health check failed, disconnected from whatsapp microservice :',
+                error.message,
+              );
+            }
+
+            throw error;
+          }),
+        ),
+      );
+
+      this.isConnected = healthResult.status === 'ok';
+
+      if (this.isConnected && this.acknowledgeNotConnected) {
+        this.logger.log('Successfully reconnected to whatsapp microservice');
+        this.acknowledgeNotConnected = false;
+      }
+
+      return this.isConnected;
+    } catch (error) {
+      this.isConnected = false;
+      this.acknowledgeNotConnected = true;
+
+      return this.isConnected;
+    }
+  }
+
   private startHealthChecks() {
-    // Clear any existing interval
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
     }
 
-    // Check health every 30 seconds
     this.healthCheckInterval = setInterval(async () => {
-      try {
-        await this.checkConnection();
-      } catch (error) {
-        this.logger.error('Health check failed:', error.message);
-      }
+      await this.checkConnection();
     }, 3000);
   }
 
@@ -111,31 +146,6 @@ export class WhatsappClientService implements OnModuleInit {
       errorMessage.includes('not ready') ||
       errorMessage.includes('not connected')
     );
-  }
-
-  // Helper method to check service status
-  async checkConnection(): Promise<boolean> {
-    try {
-      const healthResult = await firstValueFrom(
-        this.client.send(WHATSAPP_HEALTH_CHECK, {}).pipe(
-          timeout(100),
-          catchError((error) => {
-            this.logger.error('Health check failed:', error.message);
-            throw error;
-          }),
-        ),
-      );
-
-      if (!this.isConnected && !this.firstConnectAttempt) {
-        this.logger.log('Successfully reconnected to whatsapp microservice');
-      }
-
-      this.isConnected = healthResult.status === 'ok';
-      return this.isConnected;
-    } catch (error) {
-      this.isConnected = false;
-      return false;
-    }
   }
 
   // Method to force reconnect of WhatsApp service

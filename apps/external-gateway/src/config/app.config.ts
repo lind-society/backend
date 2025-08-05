@@ -1,11 +1,11 @@
 import { registerAs } from '@nestjs/config';
 import { envValues } from './env-values.config';
 
-const { NODE_ENV, API_VERSION, MAIN_PORT, HOST } = envValues;
+const { API_VERSION, HOST, NODE_ENV, EXTERNAL_GATEWAY_PORT } = envValues;
 
 export const appConfig = registerAs('app', () => ({
   env: NODE_ENV,
-  port: MAIN_PORT,
+  port: EXTERNAL_GATEWAY_PORT,
   host: HOST,
   apiVersion: API_VERSION,
 }));

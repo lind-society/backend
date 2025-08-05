@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: #4f46e5;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .content {
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    .order-summary {
+      background: white;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 5px;
+    }
+
+    .item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+
+    .item:last-child {
+      border-bottom: none;
+    }
+
+    .total {
+      font-weight: bold;
+      font-size: 18px;
+      color: #4f46e5;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .member-button {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      margin: 15px 0;
+      border: none;
+      cursor: pointer;
+    }
+
+    .join-member-button {
+      background: #f59e0b;
+    }
+
+    .member-button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Order Confirmation</h1>
+      <p>Thank you for your purchase!</p>
+    </div>
+
+    <div class="content">
+      <h2>Hello, <%= locals.fullname || 'full name' %>!</h2>
+      <p>We've received your order and it's being processed. Here are the details:</p>
+
+      <div class="order-summary">
+        <h3>Order Information</h3>
+        <p><strong>Order ID:</strong>
+          <%= locals.guestId || 'guest id' %>
+        </p>
+        <% let createdDate=new Date(locals.createdAt); if (isNaN(createdDate)) { createdDate=new Date(Date.now()); } %>
+          <p><strong>Date:</strong>
+            <%= new Date(locals.createdAt || Date.now()).toLocaleDateString('id-ID') %>
+          </p>
+          <p><strong>Payment Method:</strong>
+            <%= (locals.paymentMethod || 'Payment Method' ).replace('_', ' ' ) %>
+          </p>
+      </div>
+
+      <div class="order-summary">
+        <h3>Shipping Information</h3>
+        <p><strong>Name:</strong>
+          <%= locals.fullname || 'full name' %>
+        </p>
+        <p><strong>Address:</strong>
+          <%= locals.address || 'address' %>
+        </p>
+        <p><strong>Postal Code:</strong>
+          <%= locals.postalCode || 'postal code' %>
+        </p>
+        <p><strong>WhatsApp:</strong>
+          <%= locals.whatsappNumber || 'whatsapp number' %>
+        </p>
+      </div>
+
+      <div class="order-summary">
+        <h3>Order Items</h3>
+        <% if (Array.isArray(locals.cartItems)) { %>
+          <% locals.cartItems.forEach(function(item) { %>
+            <p><strong>
+                <%= item?.product?.name || 'product name' %>
+              </strong></p>
+            <p>
+              Size: <%= item?.selectedSize || 'item size' %> |
+                Quantity: <%= item?.quantity || 'item quantity' %>
+            </p>
+            <p>
+              Price: Rp <%= typeof item?.product?.price==='number' && typeof item?.quantity==='number' ?
+                (item.product.price * item.quantity).toLocaleString('id-ID') : 'price' %>
+            </p>
+            <% }); %>
+              <% } else { %>
+                <p>No items in the cart.</p>
+                <% } %>
+
+                  <div class="total">
+                    <p>Total Items: <%= locals.totalItemsSold || 'total item' %>
+                    </p>
+                    <p>Total Amount: Rp <%= typeof locals.totalPurchased==='number' ?
+                        locals.totalPurchased.toLocaleString('id-ID') : 'total amount' %>
+                    </p>
+
+                    </p>
+                  </div>
+      </div>
+
+      <p>We'll send you another email once your order ships. If you have any questions, please don't hesitate to contact
+        us.</p>
+
+      <div style="text-align: center; margin: 20px 0">
+        <% if (typeof isMember !=='undefined' && isMember) { %>
+          <a href="#" class="member-button"> ✅ You are a Member - Enjoy Your Benefits! </a>
+          <p style="font-size: 14px; color: #666">As a member, you enjoy exclusive discounts and early access to new
+            products.</p>
+          <% } else { %>
+            <a href="#" class="member-button join-member-button"> 🌟 Join Our Membership Program </a>
+            <p style="font-size: 14px; color: #666">Become a member to get exclusive discounts, early access, and
+              special offers!</p>
+            <% } %>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Thank you for shopping with us!</p>
+      <p>&copy; 2025 Your Store Name. All rights reserved.</p>
+    </div>
+  </div>
+
+</body>
+
+</html>
