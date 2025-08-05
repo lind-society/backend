@@ -1,11 +1,13 @@
 import { DefaultHttpStatus } from '@apps/main/common/enums';
-import { BookingPaymentAvailableStatus } from '@apps/main/database/entities';
+import {
+  BookingPaymentAvailableStatus,
+  BookingPaymentFailureStage,
+} from '@apps/main/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { IntersectionType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import {
   IsDate,
@@ -16,7 +18,6 @@ import {
   IsUUID,
   Min,
 } from 'class-validator';
-import { CreatePaymentInvoiceDto } from '../../payment/dto';
 import { BookingPaymentWithRelationsDto } from './booking-payment.dto';
 
 export class CreateBookingPaymentDto {
@@ -40,13 +41,49 @@ export class CreateBookingPaymentDto {
   @IsOptional()
   readonly status?: BookingPaymentAvailableStatus;
 
-  @IsString()
+  @IsEnum(BookingPaymentFailureStage, {
+    message: `booking payment failure stage must be one of: ${Object.values(BookingPaymentFailureStage).join(', ')}`,
+  })
   @IsOptional()
-  readonly paymentReferenceId?: string;
-  
+  readonly failureStage?: BookingPaymentFailureStage;
+
   @IsString()
   @IsOptional()
   readonly failureReason?: string;
+
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0, { message: 'minimum refunded amount is 0' })
+  @IsOptional()
+  readonly refundedAmount?: number;
+
+  @IsString()
+  @IsOptional()
+  readonly refundedReason?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly cancelledReason?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly paymentReferenceId?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly paymentRequestReferenceId?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly paymentSessionReferenceId?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly paymentTokenReferenceId?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly paymentRefundReferenceId?: string;
 
   @IsUUID()
   @IsOptional()
@@ -59,13 +96,18 @@ export class CreateBookingPaymentDto {
   @Type(() => Date)
   @IsDate({ message: 'paid at must be a valid date' })
   @IsOptional()
-  readonly paidAt: string;
-}
+  readonly paidAt: Date;
 
-export class CreateBookingPaymentWithInvoiceDto extends IntersectionType(
-  CreateBookingPaymentDto,
-  CreatePaymentInvoiceDto,
-) {}
+  @Type(() => Date)
+  @IsDate({ message: 'refunded at must be a valid date' })
+  @IsOptional()
+  readonly refundedAt: Date;
+
+  @Type(() => Date)
+  @IsDate({ message: 'cancelled at must be a valid date' })
+  @IsOptional()
+  readonly cancelledAt: Date;
+}
 
 export class CreateBookingPaymentSuccessResponse
   extends HttpResponseDefaultProps
@@ -76,7 +118,7 @@ export class CreateBookingPaymentSuccessResponse
   constructor(data: BookingPaymentWithRelationsDto) {
     super({
       code: HttpStatus.CREATED,
-      message: 'create booking customer success',
+      message: 'create booking payment success',
       status: DefaultHttpStatus.Success,
     });
 

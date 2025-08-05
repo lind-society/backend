@@ -1,4 +1,3 @@
-import { Environment } from '@libs/common/enums';
 import { registerAs } from '@nestjs/config';
 import { join } from 'path';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
@@ -19,7 +18,7 @@ export const databaseConfig = registerAs('database', () => ({
     join(__dirname, '../../../../libs/common/entities/*.entity.js'),
   ],
   synchronize: false,
-  logging: NODE_ENV === Environment.Development,
+  logging: ['error'],
   migrations: [__dirname + '/migrations/*-migration.js'],
   migrationsTableName: 'migrations',
   cache: false,

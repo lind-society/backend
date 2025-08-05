@@ -5,12 +5,8 @@ import {
   PaymentAvailableRefundReason,
   PaymentAvailableRefundStatus,
 } from '../../../../enum';
-import {
-  IXenditPaymentBaseWebhookDto,
-  XenditPaymentBaseWebhookDto,
-} from '../xendit-payment-base-webhook.dto';
 
-export interface IPaymentRefundDto {
+export interface IXenditPaymentRefundDto {
   id: string;
   payment_request_id: string;
   payment_id: string;
@@ -20,19 +16,16 @@ export interface IPaymentRefundDto {
   channel_code: string;
   currency: PaymentAvailableCurrency;
   amount: number;
+  refund_fee_amount: number;
   status: PaymentAvailableRefundStatus;
   reason: PaymentAvailableRefundReason;
-  failure: PaymentAvailableFailureCode;
+  failure_code: PaymentAvailableFailureCode;
   created: string;
   updated: string;
+  metadata: Record<string, any>;
 }
 
-export interface IPaymentRefundWebhookDto
-  extends IXenditPaymentBaseWebhookDto<IPaymentRefundDto> {
-  data: IPaymentRefundDto;
-}
-
-export class PaymentRefundDto implements IPaymentRefundDto {
+export class XenditPaymentRefundDto implements IXenditPaymentRefundDto {
   id: string;
   payment_request_id: string;
   payment_id: string;
@@ -42,16 +35,11 @@ export class PaymentRefundDto implements IPaymentRefundDto {
   channel_code: string;
   currency: PaymentAvailableCurrency;
   amount: number;
+  refund_fee_amount: number;
   status: PaymentAvailableRefundStatus;
   reason: PaymentAvailableRefundReason;
-  failure: PaymentAvailableFailureCode;
+  failure_code: PaymentAvailableFailureCode;
   created: string;
   updated: string;
-}
-
-export class PaymentRefundWebhookDto
-  extends XenditPaymentBaseWebhookDto<PaymentRefundDto>
-  implements IPaymentRefundWebhookDto
-{
-  data: PaymentRefundDto;
+  metadata: Record<string, any>;
 }

@@ -14,12 +14,14 @@ import {
 } from '../../enum';
 import { IPaymentItemDto, PaymentItemDto } from '../item';
 import {
-  IPaymentBaseWebhookDto,
-  PaymentBaseWebhookDto,
-} from '../payment-base-webhook.dto';
+  IPaymentBaseCallbackDto,
+  PaymentBaseCallbackDto,
+} from '../payment-base-callback.dto';
 import {
   ChannelPropertiesDto,
   IChannelPropertiesDto,
+} from '../payment-shared-field.dto';
+import {
   IShippingInformationDto,
   ShippingInformationDto,
 } from './shared-payment-request-field.dto';
@@ -56,7 +58,7 @@ export interface IPaymentRequestDto {
 }
 
 export interface IPaymentRequestWebhookDto
-  extends IPaymentBaseWebhookDto<IPaymentRequestDto> {
+  extends IPaymentBaseCallbackDto<IPaymentRequestDto> {
   data: IPaymentRequestDto;
 }
 
@@ -92,7 +94,7 @@ export class PaymentRequestDto implements IPaymentRequestDto {
 }
 
 export class PaymentRequestWebhookDto
-  extends PaymentBaseWebhookDto<PaymentRequestDto>
+  extends PaymentBaseCallbackDto<PaymentRequestDto>
   implements IPaymentRequestWebhookDto
 {
   data: PaymentRequestDto;
@@ -108,6 +110,23 @@ export class CreatePaymentRequestSuccessResponse
     super({
       code: HttpStatus.OK,
       message: 'create payment request success',
+      status: DefaultHttpStatus.Success,
+    });
+
+    this.data = data;
+  }
+}
+
+export class CancelPaymentRequestSuccessResponse
+  extends HttpResponseDefaultProps
+  implements HttpResponseOptions<PaymentRequestDto>
+{
+  readonly data: PaymentRequestDto;
+
+  constructor(data: PaymentRequestDto) {
+    super({
+      code: HttpStatus.OK,
+      message: 'cancel payment request success',
       status: DefaultHttpStatus.Success,
     });
 

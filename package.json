@@ -28,7 +28,8 @@
     "migration:create": "pnpm typeorm migration:create @apps/main/database/migrations/migration",
     "migration:revert": "pnpm typeorm migration:revert -d dist/apps/main/apps/main/src/database/data-source.js",
     "migration:show": "pnpm typeorm migration:show -d dist/apps/main/apps/main/src/database/data-source.js",
-    "migration:reset": "pnpm typeorm schema:drop -d dist/apps/main/apps/main/src/database/data-source.js"
+    "migration:reset": "pnpm typeorm schema:drop -d dist/apps/main/apps/main/src/database/data-source.js",
+    "migration:init-seed": "node dist/apps/main/apps/main/src/database/seeders/init.seeder.js"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.15.2",

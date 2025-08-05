@@ -1,30 +1,19 @@
-import {
-  PaymentActionDto,
-  PaymentRequestDto,
-} from '@apps/main/modules/payment/dto';
-import {
-  XenditPaymentActionDto,
-  XenditPaymentRequestDto,
-} from '../../../dto/payment-request';
+import { PaymentRequestDto } from '@apps/main/modules/payment/dto';
+import { XenditPaymentRequestDto } from '../../../dto/payment-request';
 import { mapXenditToGenericPaymentItemsDto } from '../item';
 import {
   mapXenditToGenericChannelPropertiesDto,
-  mapXenditToGenericShippingConfiguration,
-} from './xendit-shared-payment-field-dto-mapper.helper';
+  mapXenditToGenericPaymentActionDto,
+} from '../xendit-payment-shared-field-dto-mapper.helper';
+import { mapXenditToGenericShippingConfiguration } from './xendit-shared-payment-field-dto-mapper.helper';
 
-export function mapXenditToGenericPaymentPaymentActionDto(
-  payload: XenditPaymentActionDto[],
-): PaymentActionDto[] {
-  return payload.map((item) => ({
-    type: item.type,
-    value: item.value,
-    descriptor: item.descriptor,
-  }));
-}
-// Generic to Xendit
 export function mapXenditToGenericPaymentRequestDto(
   payload: XenditPaymentRequestDto,
 ): PaymentRequestDto {
+  if (!payload) {
+    return;
+  }
+
   return {
     businessId: payload.business_id,
     referenceId: payload.reference_id,
@@ -41,7 +30,7 @@ export function mapXenditToGenericPaymentRequestDto(
     channelProperties: mapXenditToGenericChannelPropertiesDto(
       payload.channel_properties,
     ),
-    actions: mapXenditToGenericPaymentPaymentActionDto(payload.actions),
+    actions: mapXenditToGenericPaymentActionDto(payload.actions),
     status: payload.status,
     failureCode: payload.failure_code,
     description: payload.description,

@@ -1,15 +1,31 @@
 import { SkipHal } from '@apps/main/common/decorators';
-import { PaymentGatewayProvider } from '@apps/main/common/enums';
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { CreatePaymentSessionDto, CreateSimulatePaymentDto } from './dto';
+import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
+import {
+  CreatePaymentRefundDto,
+  CreatePaymentRequestDto,
+  CreatePaymentSessionDto,
+  CreatePaymentTokenDto,
+  CreateSimulatePaymentDto,
+} from './dto';
 import { PaymentService } from './payment.service';
-import { XenditPaymentRequestCallbackDto } from './strategies/xendit/dto';
+import {
+  XenditPaymentRequestCallbackDto,
+  XenditPaymentTokenCallbackDto,
+} from './strategies/xendit/dto';
+import { XenditPaymentRefundCallbackDto } from './strategies/xendit/dto/refund';
 
 @SkipHal()
-@Controller()
+@Controller('payments')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
-  @Get('payment/:paymentRequestId')
+
+  // Payment Request
+  @Post('request')
+  async createPaymentRequest(@Body() payload: CreatePaymentRequestDto) {
+    return await this.paymentService.createPaymentRequest(payload);
+  }
+
+  @Get('/request/:paymentRequestId')
   async getPaymetRequestDetail(
     @Param('paymentRequestId') paymentRequestId: string,
   ) {
@@ -19,7 +35,7 @@ export class PaymentController {
     return result;
   }
 
-  @Post('payment/:paymentRequestId/cancel')
+  @Post('request/:paymentRequestId/cancel')
   async cancelPaymetRequest(
     @Param('paymentRequestId') paymentRequestId: string,
   ) {
@@ -29,7 +45,7 @@ export class PaymentController {
     return result;
   }
 
-  @Post('payment/:paymentRequestId/simulate')
+  @Post('request/:paymentRequestId/simulate')
   async simulatePayment(
     @Param('paymentRequestId') paymentRequestId: string,
     @Body() payload: CreateSimulatePaymentDto,
@@ -42,8 +58,110 @@ export class PaymentController {
     return result;
   }
 
-  @Post('payments/invoice/callback')
-  async invoiceCallback(@Body() payload: any) {
+  @Post('request/callback')
+  async paymentRequestCallback(
+    @Headers('x-callback-token') webhookVerificationToken: string,
+    @Body() payload: XenditPaymentRequestCallbackDto,
+  ) {
+    await this.paymentService.receivePaymentRequestCallback(
+      webhookVerificationToken,
+      payload,
+    );
+  }
+
+  // Payment Refund
+  @Post('refund')
+  async createPaymentRefund(@Body() payload: CreatePaymentRefundDto) {
+    return await this.paymentService.createPaymentRefund(payload);
+  }
+
+  @Post('refund/callback')
+  async paymentRefundCallback(
+    @Headers('x-callback-token') webhookVerificationToken: string,
+    @Body() payload: XenditPaymentRefundCallbackDto,
+  ) {
+    await this.paymentService.receivePaymentRefundCallback(
+      webhookVerificationToken,
+      payload,
+    );
+  }
+
+  // Payment Session
+  @Post('session')
+  async createPaymentSession(@Body() payload: CreatePaymentSessionDto) {
+    return await this.paymentService.createPaymentSession(payload);
+  }
+
+  @Get('session/:paymentSessionId')
+  async getPaymentSessionDetail(@Param('paymentSessionId') paymentSessionId: string) {
+    return await this.paymentService.getPaymentSessionDetail(paymentSessionId);
+  }
+
+  @Post('session/:paymentSessionId/cancel')
+  async cancelPaymentSession(@Param('paymentSessionId') paymentSessionId: string) {
+    return await this.paymentService.cancelPaymentSession(paymentSessionId);
+  }
+
+  @Post('session/callback')
+  async paymentSessionCallback(
+    @Headers('x-callback-token') webhookVerificationToken: string,
+    @Body() payload: XenditPaymentRequestCallbackDto,
+  ) {
+    await this.paymentService.receivePaymentRequestCallback(
+      webhookVerificationToken,
+      payload,
+    );
+  }
+
+  // Payment
+  @Get(':paymentId')
+  async getPaymentDetail(@Param('paymentId') paymentId: string) {
+    return await this.paymentService.getPaymentDetail(paymentId);
+  }
+
+  @Post(':paymentId/cancel')
+  async cancelPayment(@Param('paymentId') paymentId: string) {
+    return await this.paymentService.cancelPayment(paymentId);
+  }
+
+  @Post(':paymentId/capture')
+  async capturePayment(@Param('paymentId') paymentId: string) {
+    return await this.paymentService.capturePayment(paymentId);
+  }
+
+  // Payment Token
+  @Post('token')
+  async createPaymentToken(@Body() payload: CreatePaymentTokenDto) {
+    return await this.paymentService.createPaymentToken(payload);
+  }
+
+  @Get('token/:paymentTokenId')
+  async getPaymentTokenDetail(@Param('paymentTokenId') paymentTokenId: string) {
+    return await this.paymentService.getPaymentTokenDetail(paymentTokenId);
+  }
+
+  @Post('token/:paymentTokenId/cancel')
+  async cancelPaymentToken(@Param('paymentTokenId') paymentTokenId: string) {
+    return await this.paymentService.cancelPaymentToken(paymentTokenId);
+  }
+
+  @Post('token/callback')
+  async paymentTokenCallback(
+    @Headers('x-callback-token') webhookVerificationToken: string,
+    @Body() payload: XenditPaymentTokenCallbackDto,
+  ) {
+    await this.paymentService.receivePaymentTokenCallback(
+      webhookVerificationToken,
+      payload,
+    );
+  }
+}
+
+// deprecated
+
+/* Invoice
+  @Post('payments/payment-invoice/callback')
+  async paymentInvoiceCallback(@Body() payload: any) {
     try {
       await this.paymentService.receiveInvoiceCallback(payload);
       return {
@@ -56,23 +174,6 @@ export class PaymentController {
         error: error.response.data,
       };
     }
-  }
-
-  @Post('payment/callback/payment-request')
-  async paymentRequestCallback(
-    @Body() payload: XenditPaymentRequestCallbackDto,
-  ) {
-    await this.paymentService.receivePaymentRequestCallback(payload);
-    // console.dir(payload, { depth: null, colors: true });
-  }
-
-  @Post('payment/session')
-  async createPaymentSession(@Body() payload: CreatePaymentSessionDto) {
-    const result = await this.paymentService.createPaymentSession(payload);
-    return {
-      success: true,
-      data: result,
-    };
   }
 
   @Post('invoice/:provider')
@@ -96,4 +197,4 @@ export class PaymentController {
       };
     }
   }
-}
+  */

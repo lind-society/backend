@@ -1,5 +1,5 @@
 import { PaymentGatewayProvider } from '@apps/main/common/enums';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { IPaymentStrategy } from '../interfaces';
 import { XenditStrategy } from './xendit/xendit.strategy';
 
@@ -14,7 +14,9 @@ export class PaymentStrategyFactory {
       case PaymentGatewayProvider.Xendit:
         return this.xenditStrategy;
       default:
-        throw new Error(`Unsupported payment provider: ${provider}`);
+        throw new InternalServerErrorException(
+          `unsupported payment provider: ${provider}`,
+        );
     }
   }
 }

@@ -1,4 +1,4 @@
-export enum PaymentAvailableCallbackVerificationResult {
+export enum PaymentAvailableVerificationResult {
   M = 'M',
   N = 'N',
 }

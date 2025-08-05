@@ -13,7 +13,7 @@ import { VillaPriceService } from './villa-price.service';
 
 @Injectable()
 export class VillaPriceRuleEventHandlerService {
-  private logger = new Logger(VillaPriceRuleEventHandlerService.name);
+  private readonly logger = new Logger(VillaPriceRuleEventHandlerService.name);
 
   constructor(
     @InjectDataSource()

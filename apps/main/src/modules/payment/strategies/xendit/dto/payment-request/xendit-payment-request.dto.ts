@@ -9,8 +9,10 @@ import {
 import { IXenditPaymentItemDto, XenditPaymentItemDto } from '../item';
 import {
   IXenditChannelPropertiesDto,
-  IXenditShippingInformationDto,
   XenditChannelPropertiesDto,
+} from '../xendit-payment-shared-field.dto';
+import {
+  IXenditShippingInformationDto,
   XenditShippingInformationDto,
 } from './xendit-shared-payment-request-field.dto';
 

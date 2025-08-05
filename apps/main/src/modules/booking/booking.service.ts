@@ -53,7 +53,7 @@ export class BookingService {
 
       const createdBookingCustomer = await this.bookingCustomerService.create(
         payload.customer,
-        false,
+        true,
         null,
         manager,
       );
@@ -171,7 +171,7 @@ export class BookingService {
     });
 
     if (!booking) {
-      throw new NotFoundException(`booking payment not found`);
+      throw new NotFoundException(`booking not found`);
     }
 
     return booking;

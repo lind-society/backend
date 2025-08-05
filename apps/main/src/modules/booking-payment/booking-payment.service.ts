@@ -15,17 +15,28 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { BookingHelperService } from '../booking/helper/booking-helper.service';
 import {
   CreatePaymentRequestDto,
-  PaymentInvoiceDto,
+  CreatePaymentSessionDto,
+  PaymentDto,
   PaymentRequestDto,
+  PaymentSessionDto,
+  PaymentTokenDto,
 } from '../payment/dto';
+import {
+  CreatePaymentRefundDto,
+  PaymentRefundDto,
+} from '../payment/dto/refund';
 import { PaymentService } from '../payment/payment.service';
 import {
+  BookingPaymentDto,
   BookingPaymentWithRelationsDto,
   CreateBookingPaymentDto,
-  CreateBookingPaymentWithInvoiceDto,
   UpdateBookingPaymentDto,
 } from './dto';
-import { constructPaymentPayload } from './helper';
+import {
+  constructPaymentRefundPayload,
+  constructPaymentRequestPayload,
+  constructPaymentSessionPayload,
+} from './helper';
 
 @Injectable()
 export class BookingPaymentService {
@@ -38,21 +49,28 @@ export class BookingPaymentService {
     private paymentService: PaymentService,
   ) {}
 
+  // Basic Admin CRUD Actions
   async create(
     payload: CreateBookingPaymentDto,
     isDashboardRequest: boolean,
     bookingId?: string,
     entityManager?: EntityManager,
   ): Promise<BookingPaymentWithRelationsDto> {
-    const booking =
-      await this.bookingHelperService.getBookingCurrencyId(bookingId);
+    const booking = await this.bookingHelperService.getBookingDetail(bookingId);
+
+    this._validateBookingPaymentsStatusAndAmount(
+      booking.totalAmount,
+      booking.payments,
+    );
 
     const repository = entityManager
       ? entityManager.getRepository(BookingPayment)
       : this.bookingPaymentRepository;
 
     const createdBookingPayment = repository.create({
-      status: payload.status ?? BookingPaymentAvailableStatus.Pending,
+      status: isDashboardRequest
+        ? (payload.status ?? BookingPaymentAvailableStatus.Pending)
+        : BookingPaymentAvailableStatus.Pending,
       bookingId: isDashboardRequest ? payload.bookingId : bookingId,
       currencyId: booking.currencyId,
     });
@@ -81,6 +99,7 @@ export class BookingPaymentService {
         relations: {
           booking: { customer: true },
           currency: true,
+          refundHistories: true,
         },
       },
     );
@@ -117,6 +136,7 @@ export class BookingPaymentService {
       relations: {
         booking: { customer: true },
         currency: true,
+        refundHistories: true,
       },
     };
 
@@ -134,143 +154,285 @@ export class BookingPaymentService {
   async update(
     id: string,
     payload: UpdateBookingPaymentDto,
-    isDashboardRequest: boolean,
-    bookingId?: string,
     entityManager?: EntityManager,
   ): Promise<BookingPaymentWithRelationsDto> {
-    if (!isDashboardRequest) {
-      await this._validateIdsExist(bookingId, id, entityManager);
-    } else {
-      await this._validateBookingPaymentExist(id, entityManager);
-    }
+    const [sanitizedId] = id.split('_');
+
+    await this._validateBookingPaymentExist(sanitizedId, entityManager);
 
     const repository = entityManager
       ? entityManager.getRepository(BookingPayment)
       : this.bookingPaymentRepository;
 
-    await repository.update(id, payload);
+    await repository.update(sanitizedId, payload);
 
-    return await this.findOne(id, false, true, null, entityManager);
+    return await this.findOne(sanitizedId, false, true, null, entityManager);
   }
 
-  async remove(id: string, isDashboardRequest: boolean, bookingId?: string) {
-    if (!isDashboardRequest) {
-      await this._validateIdsExist(bookingId, id);
-    } else {
-      await this._validateBookingPaymentExist(id);
-    }
+  async remove(id: string) {
+    await this._validateBookingPaymentExist(id);
 
     await this.bookingPaymentRepository.delete(id);
   }
 
-  // private methods
-  async _validateBookingPaymentExist(
-    id: string,
-    entityManager?: EntityManager,
-  ) {
-    if (!id) {
-      throw new BadRequestException('id is required');
-    }
+  // Payment Gateway Related Methods
 
-    const bookingPaymentExist = entityManager
-      ? await entityManager.exists(BookingPayment, { where: { id } })
-      : await this.bookingPaymentRepository.exists({
-          where: { id },
-        });
-
-    if (!bookingPaymentExist) {
-      throw new NotFoundException('booking payment not found');
-    }
-  }
-
-  async _validateIdsExist(
-    bookingId: string,
-    id: string,
-    entityManager?: EntityManager,
-  ) {
-    if (!bookingId) {
-      throw new BadRequestException('booking id is required');
-    }
-
-    if (!id) {
-      throw new BadRequestException('id is required');
-    }
-
-    await this.bookingHelperService.validateBookingExist(
-      bookingId,
-      entityManager,
-    );
-
-    const bookingPaymentExist = entityManager
-      ? await entityManager.exists(BookingPayment, { where: { id } })
-      : await this.bookingPaymentRepository.exists({
-          where: { id },
-        });
-
-    if (!bookingPaymentExist) {
-      throw new NotFoundException('booking payment not found');
-    }
-  }
-
-  // Payment Gateway related methods
-  async createInvoice(
-    bookingId: string,
-    payload: CreateBookingPaymentWithInvoiceDto,
-  ): Promise<PaymentInvoiceDto> {
-    const bookingDetail =
-      await this.bookingHelperService.getBookingCurrencyId(bookingId);
-
-    return await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.create(
-        {
-          ...payload,
-          currencyId: bookingDetail.currencyId,
-        },
-        false,
-        bookingId,
-        manager,
-      );
-
-      const invoice = await this.paymentService.createInvoice({
-        ...payload,
-        metadata: {
-          bookingId,
-          bookingPaymentId: bookingPayment.id,
-        },
-      });
-
-      await this.update(
-        bookingId,
-        { paymentReferenceId: invoice.id },
-        false,
-        bookingPayment.id,
-        manager,
-      );
-
-      return invoice;
-    });
-  }
-
+  // Payment Request
   async createPaymentRequest(
     bookingId: string,
     id: string,
     payload: CreatePaymentRequestDto,
     entityManager?: EntityManager,
   ): Promise<PaymentRequestDto> {
+    await this._validateIdsExist(bookingId, id, entityManager);
+
     const booking = await this.bookingHelperService.getBookingDetail(
       bookingId,
       entityManager,
     );
 
-    const paymentPayload = constructPaymentPayload(id, payload, booking);
+    const paymentRequestPayload = constructPaymentRequestPayload(
+      id,
+      payload,
+      booking,
+    );
 
-    const paymentRequest =
-      await this.paymentService.createPaymentRequest(paymentPayload);
+    const paymentRequest = await this.paymentService.createPaymentRequest(
+      paymentRequestPayload,
+    );
 
     return paymentRequest;
   }
 
-  // other helper methodss
+  async cancelPaymentRequest(
+    bookingId: string,
+    id: string,
+    entityManager?: EntityManager,
+  ): Promise<PaymentRequestDto> {
+    const bookingPayment = await this.findOne(
+      id,
+      true,
+      false,
+      bookingId,
+      entityManager,
+    );
+
+    if (!bookingPayment.paymentRequestReferenceId) {
+      throw new BadRequestException(
+        'cancel payment request failed, payment request not found',
+      );
+    }
+    const cancelPaymentRequest = await this.paymentService.cancelPaymentRequest(
+      bookingPayment.paymentRequestReferenceId,
+    );
+
+    return cancelPaymentRequest;
+  }
+
+  // Payment Session (Currently used as card payment)
+  async createPaymentSession(
+    bookingId: string,
+    id: string,
+    payload: CreatePaymentSessionDto,
+    entityManager?: EntityManager,
+  ): Promise<PaymentSessionDto> {
+    await this._validateIdsExist(bookingId, id, entityManager);
+
+    const booking = await this.bookingHelperService.getBookingDetail(
+      bookingId,
+      entityManager,
+    );
+
+    const paymentRequestPayload = constructPaymentSessionPayload(
+      id,
+      payload,
+      booking,
+    );
+
+    const paymentRequest = await this.paymentService.createPaymentSession(
+      paymentRequestPayload,
+    );
+
+    return paymentRequest;
+  }
+
+  async cancelPaymentSession(
+    bookingId: string,
+    id: string,
+    entityManager?: EntityManager,
+  ): Promise<PaymentSessionDto> {
+    const bookingPayment = await this.findOne(
+      id,
+      true,
+      false,
+      bookingId,
+      entityManager,
+    );
+
+    if (!bookingPayment.paymentSessionReferenceId) {
+      throw new BadRequestException(
+        'cancel payment session failed, payment session not found',
+      );
+    }
+
+    const cancelPaymentSession = await this.paymentService.cancelPaymentSession(
+      bookingPayment.paymentSessionReferenceId,
+    );
+
+    return cancelPaymentSession;
+  }
+
+  // Payment
+  async captureAuthorizedPayment(
+    bookingId: string,
+    id: string,
+    entityManager?: EntityManager,
+  ) {
+    await this._validateIdsExist(bookingId, id, entityManager);
+
+    const bookingPayment = await this.findOne(
+      id,
+      true,
+      false,
+      bookingId,
+      entityManager,
+    );
+
+    if (!bookingPayment.paymentReferenceId) {
+      throw new BadRequestException(
+        'capture payment failed, payment is not unauthorized',
+      );
+    }
+
+    const capturePayment = await this.paymentService.capturePayment(
+      bookingPayment.paymentReferenceId,
+    );
+
+    return capturePayment;
+  }
+
+  // Refund
+  async createPaymentRefund(
+    bookingId: string,
+    id: string,
+    payload: CreatePaymentRefundDto,
+    entityManager?: EntityManager,
+  ): Promise<PaymentRefundDto> {
+    await this._validateIdsExist(bookingId, id, entityManager);
+
+    const bookingPayment = await this.findOne(
+      id,
+      true,
+      false,
+      bookingId,
+      entityManager,
+    );
+
+    const paymentRefundPayload = constructPaymentRefundPayload(
+      payload,
+      bookingPayment,
+    );
+
+    const paymentRefund =
+      await this.paymentService.createPaymentRefund(paymentRefundPayload);
+
+    return paymentRefund;
+  }
+
+  // Admin Only Payment Gateway Related Actions
+  async getPaymentRequestDetail(
+    bookingPaymentId: string,
+    entityManager?: EntityManager,
+  ): Promise<PaymentRequestDto> {
+    const bookingPayment = await this.findOne(
+      bookingPaymentId,
+      true,
+      true,
+      null,
+      entityManager,
+    );
+
+    if (!bookingPayment.paymentRefundReferenceId) {
+      throw new BadRequestException(
+        'get payment request detail failed, payment request not found',
+      );
+    }
+
+    return await this.paymentService.getPaymentRequestDetail(
+      bookingPayment.paymentRequestReferenceId,
+    );
+  }
+
+  async getPaymentSessionDetail(
+    bookingPaymentId: string,
+    entityManager?: EntityManager,
+  ): Promise<PaymentSessionDto> {
+    const bookingPayment = await this.findOne(
+      bookingPaymentId,
+      true,
+      true,
+      null,
+      entityManager,
+    );
+
+    if (!bookingPayment.paymentSessionReferenceId) {
+      throw new BadRequestException(
+        'get payment session detail failed, payment session not found',
+      );
+    }
+
+    return await this.paymentService.getPaymentSessionDetail(
+      bookingPayment.paymentSessionReferenceId,
+    );
+  }
+
+  async getPaymentDetail(
+    bookingPaymentId: string,
+    entityManager?: EntityManager,
+  ): Promise<PaymentDto> {
+    const bookingPayment = await this.findOne(
+      bookingPaymentId,
+      true,
+      true,
+      null,
+      entityManager,
+    );
+
+    if (!bookingPayment.paymentReferenceId) {
+      throw new BadRequestException(
+        'get payment detail failed, payment reference not found',
+      );
+    }
+
+    return await this.paymentService.getPaymentDetail(
+      bookingPayment.paymentReferenceId,
+    );
+  }
+
+  async getPaymentTokenDetail(
+    bookingPaymentId: string,
+    entityManager?: EntityManager,
+  ): Promise<PaymentTokenDto> {
+    const bookingPayment = await this.findOne(
+      bookingPaymentId,
+      true,
+      true,
+      null,
+      entityManager,
+    );
+
+    if (!bookingPayment.paymentTokenReferenceId) {
+      throw new BadRequestException(
+        'get payment token detail failed, payment token reference not found',
+      );
+    }
+
+    return await this.paymentService.getPaymentTokenDetail(
+      bookingPayment.paymentTokenReferenceId,
+    );
+  }
+
+  // other helper and private methods
   async findAllByBookingId(
     bookingId: string,
     entityManager?: EntityManager,
@@ -299,5 +461,90 @@ export class BookingPaymentService {
     }
 
     return bookingPaymentRepository;
+  }
+
+  // private methods
+  async _validateBookingPaymentExist(
+    id: string,
+    entityManager?: EntityManager,
+  ) {
+    if (!id) {
+      throw new BadRequestException('booking payment id is required');
+    }
+
+    const bookingPaymentExist = entityManager
+      ? await entityManager.exists(BookingPayment, { where: { id } })
+      : await this.bookingPaymentRepository.exists({
+          where: { id },
+        });
+
+    if (!bookingPaymentExist) {
+      throw new NotFoundException('booking payment not found');
+    }
+  }
+
+  async _validateIdsExist(
+    bookingId: string,
+    id: string,
+    entityManager?: EntityManager,
+  ) {
+    if (!bookingId) {
+      throw new BadRequestException('booking id is required');
+    }
+
+    if (!id) {
+      throw new BadRequestException('booking payment id is required');
+    }
+
+    await this.bookingHelperService.validateBookingExist(
+      bookingId,
+      entityManager,
+    );
+
+    const bookingPaymentExist = entityManager
+      ? await entityManager.exists(BookingPayment, { where: { id } })
+      : await this.bookingPaymentRepository.exists({
+          where: { id },
+        });
+
+    if (!bookingPaymentExist) {
+      throw new NotFoundException('booking payment not found');
+    }
+  }
+
+  _validateBookingPaymentsStatusAndAmount(
+    currentBookingTotalAmount: number,
+    bookingPayments: BookingPaymentDto[],
+  ): Promise<void> {
+    if (!bookingPayments.length) {
+      return;
+    }
+
+    const totalPaid = bookingPayments
+      .filter(
+        (payment) =>
+          payment.status === BookingPaymentAvailableStatus.Paid ||
+          payment.status === BookingPaymentAvailableStatus.Authorized,
+      )
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    if (totalPaid >= currentBookingTotalAmount) {
+      throw new BadRequestException(
+        'failed to create payment, booking has been paid.',
+      );
+    }
+
+    const hasPendingOrAuthorized = bookingPayments.some((payment) =>
+      [
+        BookingPaymentAvailableStatus.Pending,
+        BookingPaymentAvailableStatus.Authorized,
+      ].includes(payment.status),
+    );
+
+    if (hasPendingOrAuthorized) {
+      throw new BadRequestException(
+        'Failed to create payment, previous payment is still in process.',
+      );
+    }
   }
 }

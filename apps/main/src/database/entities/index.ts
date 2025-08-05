@@ -5,6 +5,7 @@ export * from './admin.entity';
 export * from './blog-category.entity';
 export * from './blog.entity';
 export * from './booking-customer.entity';
+export * from './booking-payment-refund.entity';
 export * from './booking-payment.entity';
 export * from './booking.entity';
 export * from './currency-converter.entity';

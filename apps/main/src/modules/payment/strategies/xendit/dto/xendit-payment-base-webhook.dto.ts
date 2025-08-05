@@ -1,15 +1,31 @@
-export interface IXenditPaymentBaseWebhookDto<Data> {
+import { IsOptional, IsString } from 'class-validator';
+
+export interface IXenditPaymentBaseCallbackDto<Data> {
   event: string;
-  businessId: string;
+  business_id: string;
   created: string;
   data: Data;
 }
 
-export class XenditPaymentBaseWebhookDto<Data>
-  implements IXenditPaymentBaseWebhookDto<Data>
+export class XenditPaymentBaseCallbackDto<Data>
+  implements IXenditPaymentBaseCallbackDto<Data>
 {
+  @IsString()
+  @IsOptional()
   event: string;
-  businessId: string;
+
+  @IsString()
+  @IsOptional()
+  business_id: string;
+
+  @IsString()
+  @IsOptional()
   created: string;
+
+  @IsOptional()
   data: Data;
+
+  @IsString()
+  @IsOptional()
+  api_version?: string;
 }

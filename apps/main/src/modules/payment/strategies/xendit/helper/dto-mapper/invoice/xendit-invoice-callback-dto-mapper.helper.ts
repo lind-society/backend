@@ -1,9 +1,9 @@
 import { InvoiceCallbackDto } from '@apps/main/modules/payment/dto';
-import { XenditInvoiceCallbackDto } from '../../../dto';
+import { XenditPaymentInvoiceCallbackDto } from '../../../dto';
 
-export function mapGenericToXenditInvoiceCallbackDto(
+export function mapGenericToXenditPaymentInvoiceCallbackDto(
   payload: InvoiceCallbackDto,
-): XenditInvoiceCallbackDto {
+): XenditPaymentInvoiceCallbackDto {
   const metadata = payload.metadata || {};
 
   return {
@@ -31,7 +31,7 @@ export function mapGenericToXenditInvoiceCallbackDto(
 }
 
 export function mapXenditToGenericInvoiceCallbackDto(
-  payload: XenditInvoiceCallbackDto,
+  payload: XenditPaymentInvoiceCallbackDto,
 ): InvoiceCallbackDto {
   return {
     id: payload.id,

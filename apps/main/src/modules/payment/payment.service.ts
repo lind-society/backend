@@ -1,32 +1,35 @@
-import { UPDATED_BOOKING_PAYMENT } from '@apps/main/common/constants';
 import { PaymentGatewayProvider } from '@apps/main/common/enums';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  CreatePaymentInvoiceDto,
   CreatePaymentRequestDto,
+  CreatePaymentTokenDto,
   CreateSimulatePaymentDto,
-  PaymentInvoiceDto,
+  PaymentDto,
   PaymentRequestDto,
+  PaymentTokenDto,
   SimulatePaymentDto,
 } from './dto';
-import { CreatePaymentSessionDto } from './dto/card-payment/create-payment-session-request.dto';
-import { PaymentSessionDto } from './dto/card-payment/payment-session.dto';
+import { CreatePaymentSessionDto } from './dto/payment-session/create-payment-session-request.dto';
+import { PaymentSessionDto } from './dto/payment-session/payment-session.dto';
+import { CreatePaymentRefundDto, PaymentRefundDto } from './dto/refund';
 import { IPaymentStrategy } from './interfaces';
 import { PaymentStrategyFactory } from './strategies';
 import {
-  XenditInvoiceCallbackDto,
   XenditPaymentRequestCallbackDto,
+  XenditPaymentSessionCallbackDto,
+  XenditPaymentTokenCallbackDto,
 } from './strategies/xendit/dto';
+import { XenditPaymentRefundCallbackDto } from './strategies/xendit/dto/refund';
 
 @Injectable()
 export class PaymentService implements IPaymentStrategy {
+  private readonly logger = new Logger(PaymentService.name);
+
   private paymentStrategy: IPaymentStrategy;
 
   constructor(
     private configService: ConfigService,
-    private eventEmitter: EventEmitter2,
     private paymentStrategyFactory: PaymentStrategyFactory,
   ) {
     const currentProvider = this.configService.get<string>(
@@ -35,21 +38,6 @@ export class PaymentService implements IPaymentStrategy {
 
     this.paymentStrategy =
       this.paymentStrategyFactory.createStrategy(currentProvider);
-  }
-
-  // Invoice
-  async createInvoice(
-    payload: CreatePaymentInvoiceDto,
-  ): Promise<PaymentInvoiceDto> {
-    return await this.paymentStrategy.createInvoice(payload);
-  }
-
-  async receiveInvoiceCallback(
-    payload: XenditInvoiceCallbackDto,
-  ): Promise<void> {
-    this.eventEmitter.emit(UPDATED_BOOKING_PAYMENT, payload); // to do : set the event listener in booking payment service
-
-    await this.paymentStrategy.receiveInvoiceCallback(payload);
   }
 
   // Payment Request
@@ -82,29 +70,139 @@ export class PaymentService implements IPaymentStrategy {
   }
 
   async receivePaymentRequestCallback(
+    webhookVerificationToken: string,
     payload: XenditPaymentRequestCallbackDto,
   ): Promise<void> {
-    console.log('raw callback :', payload);
-    await this.paymentStrategy.receivePaymentRequestCallback(payload);
+    this.logger.log('received payment request callback');
+    this.logger.log('event name :', payload.event);
+
+    await this.paymentStrategy.receivePaymentRequestCallback(
+      webhookVerificationToken,
+      payload,
+    );
   }
 
-  // validate booking id from param passed by controller
+  // Payment Refund
+  async createPaymentRefund(
+    payload: CreatePaymentRefundDto,
+  ): Promise<PaymentRefundDto> {
+    return await this.paymentStrategy.createPaymentRefund(payload);
+  }
+
+  async receivePaymentRefundCallback(
+    webhookVerificationToken: string,
+    payload: XenditPaymentRefundCallbackDto,
+  ): Promise<void> {
+    this.logger.log('received payment refund callback');
+    this.logger.log('event name :', payload.event);
+
+    await this.paymentStrategy.receivePaymentRefundCallback(
+      webhookVerificationToken,
+      payload,
+    );
+  }
+
+  // Payment Session
   async createPaymentSession(
     payload: CreatePaymentSessionDto,
   ): Promise<PaymentSessionDto> {
     return await this.paymentStrategy.createPaymentSession(payload);
   }
 
-  // helper methods
+  async getPaymentSessionDetail(
+    paymentSessionId: string,
+  ): Promise<PaymentSessionDto> {
+    return await this.paymentStrategy.getPaymentSessionDetail(paymentSessionId);
+  }
+
+  async cancelPaymentSession(
+    paymentSessionId: string,
+  ): Promise<PaymentSessionDto> {
+    return await this.paymentStrategy.cancelPaymentSession(paymentSessionId);
+  }
+
+  async receivePaymentSessionCallback(
+    webhookVerificationToken: string,
+    payload: XenditPaymentSessionCallbackDto,
+  ): Promise<void> {
+    this.logger.log('received payment session callback');
+    this.logger.log('event name :', payload.event);
+
+    await this.paymentStrategy.receivePaymentSessionCallback(
+      webhookVerificationToken,
+      payload,
+    );
+  }
+
+  // Payment
+  async getPaymentDetail(paymentId: string): Promise<PaymentDto> {
+    return await this.paymentStrategy.getPaymentDetail(paymentId);
+  }
+
+  async cancelPayment(paymentId: string): Promise<PaymentDto> {
+    return await this.paymentStrategy.cancelPayment(paymentId);
+  }
+
+  async capturePayment(paymentId: string): Promise<PaymentDto> {
+    return await this.paymentStrategy.capturePayment(paymentId);
+  }
+
+  // Payment Token
+  async createPaymentToken(
+    payload: CreatePaymentTokenDto,
+  ): Promise<PaymentTokenDto> {
+    return await this.paymentStrategy.createPaymentToken(payload);
+  }
+
+  async getPaymentTokenDetail(
+    paymentTokenId: string,
+  ): Promise<PaymentTokenDto> {
+    return await this.paymentStrategy.getPaymentTokenDetail(paymentTokenId);
+  }
+
+  async cancelPaymentToken(paymentTokenId: string): Promise<PaymentTokenDto> {
+    return await this.paymentStrategy.cancelPaymentToken(paymentTokenId);
+  }
+
+  async receivePaymentTokenCallback(
+    webhookVerificationToken: string,
+    payload: XenditPaymentTokenCallbackDto,
+  ): Promise<void> {
+    this.logger.log('received payment token callback');
+    this.logger.log('event name :', payload.event);
+
+    await this.paymentStrategy.receivePaymentTokenCallback(
+      webhookVerificationToken,
+      payload,
+    );
+  }
+
+  // Helper Methods
   switchProvider(provider: PaymentGatewayProvider): void {
     this.paymentStrategy = this.paymentStrategyFactory.createStrategy(provider);
   }
 
-  async createInvoiceWithProvider(
-    provider: PaymentGatewayProvider,
+  // deprecated
+
+  // async createInvoiceWithProvider(
+  //   provider: PaymentGatewayProvider,
+  //   payload: CreatePaymentInvoiceDto,
+  // ): Promise<PaymentInvoiceDto> {
+  //   const strategy = this.paymentStrategyFactory.createStrategy(provider);
+  //   return await strategy.createInvoice(payload);
+  // }
+
+  /* Invoice
+  async createInvoice(
     payload: CreatePaymentInvoiceDto,
   ): Promise<PaymentInvoiceDto> {
-    const strategy = this.paymentStrategyFactory.createStrategy(provider);
-    return await strategy.createInvoice(payload);
+    return await this.paymentStrategy.createInvoice(payload);
   }
+
+  async receiveInvoiceCallback(
+    payload: XenditPaymentInvoiceCallbackDto,
+  ): Promise<void> {
+    await this.paymentStrategy.receiveInvoiceCallback(payload);
+  }
+  */
 }

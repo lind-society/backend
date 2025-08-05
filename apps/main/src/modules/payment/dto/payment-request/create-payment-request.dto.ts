@@ -19,6 +19,8 @@ import { IPaymentItemDto, PaymentItemDto } from '../item';
 import {
   ChannelPropertiesDto,
   IChannelPropertiesDto,
+} from '../payment-shared-field.dto';
+import {
   IShippingInformationDto,
   ShippingInformationDto,
 } from './shared-payment-request-field.dto';

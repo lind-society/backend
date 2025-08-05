@@ -154,7 +154,7 @@ export class BookingCustomerService {
     entityManager?: EntityManager,
   ) {
     if (!id) {
-      throw new BadRequestException('id is required');
+      throw new BadRequestException('booking customer id is required');
     }
 
     const bookingCustomerExist = entityManager
@@ -178,7 +178,7 @@ export class BookingCustomerService {
     }
 
     if (!id) {
-      throw new BadRequestException('id is required');
+      throw new BadRequestException('booking customer id is required');
     }
 
     await this.bookingHelperService.validateBookingExist(

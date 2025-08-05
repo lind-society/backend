@@ -6,9 +6,9 @@ import {
   PaymentAvailableRefundStatus,
 } from '../../enum';
 import {
-  IPaymentBaseWebhookDto,
-  PaymentBaseWebhookDto,
-} from '../payment-base-webhook.dto';
+  IPaymentBaseCallbackDto,
+  PaymentBaseCallbackDto,
+} from '../payment-base-callback.dto';
 
 export interface IPaymentRefundDto {
   id: string;
@@ -22,13 +22,15 @@ export interface IPaymentRefundDto {
   amount: number;
   status: PaymentAvailableRefundStatus;
   reason: PaymentAvailableRefundReason;
-  failure: PaymentAvailableFailureCode;
+  failureCode: PaymentAvailableFailureCode;
+  refundFeeAmount: number;
+  metadata: Record<string, any>;
   created: string;
   updated: string;
 }
 
 export interface IPaymentRefundWebhookDto
-  extends IPaymentBaseWebhookDto<IPaymentRefundDto> {
+  extends IPaymentBaseCallbackDto<IPaymentRefundDto> {
   data: IPaymentRefundDto;
 }
 
@@ -44,13 +46,15 @@ export class PaymentRefundDto implements IPaymentRefundDto {
   amount: number;
   status: PaymentAvailableRefundStatus;
   reason: PaymentAvailableRefundReason;
-  failure: PaymentAvailableFailureCode;
+  failureCode: PaymentAvailableFailureCode;
+  refundFeeAmount: number;
+  metadata: Record<string, any>;
   created: string;
   updated: string;
 }
 
 export class PaymentRefundWebhookDto
-  extends PaymentBaseWebhookDto<PaymentRefundDto>
+  extends PaymentBaseCallbackDto<PaymentRefundDto>
   implements IPaymentRefundWebhookDto
 {
   data: PaymentRefundDto;

@@ -16,8 +16,12 @@ import { BookingPaymentService } from './booking-payment.service';
 import {
   CreateBookingPaymentDto,
   CreateBookingPaymentSuccessResponse,
+  GetBookingPaymentDetailSuccessResponse,
+  GetBookingPaymentRequestDetailSuccessResponse,
+  GetBookingPaymentSessionDetailSuccessResponse,
   GetBookingPaymentsSuccessResponse,
   GetBookingPaymentSuccessResponse,
+  GetBookingPaymentTokenDetailSuccessResponse,
   UpdateBookingPaymentDto,
   UpdateBookingPaymentSuccessResponse,
 } from './dto';
@@ -63,7 +67,6 @@ export class BookingPaymentDashboardController {
     const bookingPayment = await this.bookingPaymentService.update(
       id,
       updateBookingPaymentDto,
-      true,
     );
 
     return new UpdateBookingPaymentSuccessResponse(bookingPayment);
@@ -71,8 +74,47 @@ export class BookingPaymentDashboardController {
 
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    await this.bookingPaymentService.remove(id, true);
+    await this.bookingPaymentService.remove(id);
 
     return new DeleteResponse('delete booking customer success');
+  }
+
+  // Payment Gateway Related Action
+  @Get(':id/payment-request')
+  async getPaymentRequestDetail(@Param('id', ParseUUIDPipe) id: string) {
+    const bookingPaymentRequestDetail =
+      await this.bookingPaymentService.getPaymentRequestDetail(id);
+
+    return new GetBookingPaymentRequestDetailSuccessResponse(
+      bookingPaymentRequestDetail,
+    );
+  }
+
+  @Get(':id/payment-session')
+  async getPaymentRefundDetail(@Param('id', ParseUUIDPipe) id: string) {
+    const bookingPaymentSessionDetail =
+      await this.bookingPaymentService.getPaymentSessionDetail(id);
+
+    return new GetBookingPaymentSessionDetailSuccessResponse(
+      bookingPaymentSessionDetail,
+    );
+  }
+
+  @Get(':id/payment')
+  async getPaymentDetail(@Param('id', ParseUUIDPipe) id: string) {
+    const bookingPaymentDetail =
+      await this.bookingPaymentService.getPaymentDetail(id);
+
+    return new GetBookingPaymentDetailSuccessResponse(bookingPaymentDetail);
+  }
+
+  @Get(':id/payment-token')
+  async getPaymentTokenDetail(@Param('id', ParseUUIDPipe) id: string) {
+    const bookingPaymentTokenDetail =
+      await this.bookingPaymentService.getPaymentTokenDetail(id);
+
+    return new GetBookingPaymentTokenDetailSuccessResponse(
+      bookingPaymentTokenDetail,
+    );
   }
 }

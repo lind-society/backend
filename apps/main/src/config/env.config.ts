@@ -186,6 +186,10 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   XENDIT_API_VERSION!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  XENDIT_WEBHOOK_VERIFICATION_TOKEN!: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {

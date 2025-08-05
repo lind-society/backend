@@ -1,7 +1,4 @@
 import {
-  PaymentAvailableCallbackAuthenticationFlow,
-  PaymentAvailableCallbackEvent,
-  PaymentAvailableCallbackVerificationResult,
   PaymentAvailableCaptureMethod,
   PaymentAvailableCountry,
   PaymentAvailableCurrency,
@@ -9,48 +6,17 @@ import {
   PaymentAvailableRequestStatus,
   PaymentAvailableType,
 } from '@apps/main/modules/payment/enum';
-
-export interface IPaymentRequestCallbackPaymentDetailAuthenticationDataAResDto {
-  eci?: string;
-  messageVersion?: string;
-  authenticationValue?: string;
-  dsTransId?: string;
-}
-
-export interface IPaymentRequestCallbackPaymentDetailAuthorizationDataDto {
-  authorizationCode?: string;
-  cvnVerificationResult?: PaymentAvailableCallbackVerificationResult;
-  addressVerificationResult?: PaymentAvailableCallbackVerificationResult;
-  retrievalReferenceNumber?: string;
-  networkResponseCode?: string;
-  networkResponseCodeDescriptor?: string;
-  networkTransactionId?: string;
-  acquirerMerchantId?: string;
-  reconciliationId?: string;
-}
-
-export interface IPaymentRequestCallbackPaymentDetailAuthenticationDataDto {
-  flow?: PaymentAvailableCallbackAuthenticationFlow;
-  aRes?: IPaymentRequestCallbackPaymentDetailAuthenticationDataAResDto;
-}
-
-export interface IPaymentRequestCallbackPaymentDetailDto {
-  authorizationData?: IPaymentRequestCallbackPaymentDetailAuthorizationDataDto;
-  authenticationData?: IPaymentRequestCallbackPaymentDetailAuthenticationDataDto;
-  issuerName?: string;
-  senderAccountNumber?: string;
-  senderName?: number;
-  receiptId?: number;
-  remark?: number;
-  network?: number;
-  fundSource?: number;
-}
-
-export interface IPaymentRequestCallbackCaptureDto {
-  captureTimestamp?: string;
-  captureId?: string;
-  captureAmount?: number;
-}
+import { IsOptional } from 'class-validator';
+import {
+  IPaymentBaseCallbackDto,
+  PaymentBaseCallbackDto,
+} from '../payment-base-callback.dto';
+import {
+  IPaymentCaptureDto,
+  IPaymentDetailDto,
+  PaymentCaptureDto,
+  PaymentDetailDto,
+} from '../payment-shared-field.dto';
 
 export interface IPaymentRequestCallbackDataDto {
   paymentId?: string;
@@ -65,72 +31,18 @@ export interface IPaymentRequestCallbackDataDto {
   requestedAmount?: number;
   captureMethod?: PaymentAvailableCaptureMethod;
   channelCode?: string;
-  captures?: IPaymentRequestCallbackCaptureDto[];
+  captures?: IPaymentCaptureDto[];
   status?: PaymentAvailableRequestStatus;
-  paymentDetails?: IPaymentRequestCallbackPaymentDetailDto;
+  paymentDetails?: IPaymentDetailDto;
   failureCode?: PaymentAvailableFailureCode;
   metadata?: Record<string, any>;
   created?: string;
   updated?: string;
 }
 
-export interface IPaymentRequestCallbackDto {
-  event?: PaymentAvailableCallbackEvent;
-  businessId?: string;
-  created?: string;
-  data?: IPaymentRequestCallbackDataDto;
-}
-
-export class PaymentRequestCallbackPaymentDetailAuthenticationDataAResDto
-  implements IPaymentRequestCallbackPaymentDetailAuthenticationDataAResDto
-{
-  eci?: string;
-  messageVersion?: string;
-  authenticationValue?: string;
-  dsTransId?: string;
-}
-
-export class PaymentRequestCallbackPaymentDetailAuthorizationDataDto
-  implements IPaymentRequestCallbackPaymentDetailAuthorizationDataDto
-{
-  authorizationCode?: string;
-  cvnVerificationResult?: PaymentAvailableCallbackVerificationResult;
-  addressVerificationResult?: PaymentAvailableCallbackVerificationResult;
-  retrievalReferenceNumber?: string;
-  networkResponseCode?: string;
-  networkResponseCodeDescriptor?: string;
-  networkTransactionId?: string;
-  acquirerMerchantId?: string;
-  reconciliationId?: string;
-}
-
-export class PaymentRequestCallbackPaymentDetailAuthenticationDataDto
-  implements IPaymentRequestCallbackPaymentDetailAuthenticationDataDto
-{
-  flow?: PaymentAvailableCallbackAuthenticationFlow;
-  aRes?: PaymentRequestCallbackPaymentDetailAuthenticationDataAResDto;
-}
-
-export class PaymentRequestCallbackPaymentDetailDto
-  implements IPaymentRequestCallbackPaymentDetailDto
-{
-  authorizationData?: PaymentRequestCallbackPaymentDetailAuthorizationDataDto;
-  authenticationData?: PaymentRequestCallbackPaymentDetailAuthenticationDataDto;
-  issuerName?: string;
-  senderAccountNumber?: string;
-  senderName?: number;
-  receiptId?: number;
-  remark?: number;
-  network?: number;
-  fundSource?: number;
-}
-
-export class PaymentRequestCallbackCaptureDto
-  implements IPaymentRequestCallbackCaptureDto
-{
-  captureTimestamp?: string;
-  captureId?: string;
-  captureAmount?: number;
+export interface IPaymentRequestCallbackDto
+  extends IPaymentBaseCallbackDto<IPaymentRequestCallbackDataDto> {
+  data: IPaymentRequestCallbackDataDto;
 }
 
 export class PaymentRequestCallbackDataDto
@@ -148,19 +60,19 @@ export class PaymentRequestCallbackDataDto
   requestAmount?: number;
   captureMethod?: PaymentAvailableCaptureMethod;
   channelCode?: string;
-  captures?: PaymentRequestCallbackCaptureDto[];
+  captures?: PaymentCaptureDto[];
   status?: PaymentAvailableRequestStatus;
-  paymentDetails?: PaymentRequestCallbackPaymentDetailDto;
+  paymentDetails?: PaymentDetailDto;
   failureCode?: PaymentAvailableFailureCode;
   metadata?: Record<string, any>;
   created?: string;
   updated?: string;
 }
 
-export class PaymentRequestCallbackDto implements IPaymentRequestCallbackDto {
-  event?: PaymentAvailableCallbackEvent;
-  businessId?: string;
-  created?: string;
-  data?: PaymentRequestCallbackDataDto;
-  apiVersion?: string;
+export class PaymentRequestCallbackDto
+  extends PaymentBaseCallbackDto<PaymentRequestCallbackDataDto>
+  implements IPaymentRequestCallbackDto
+{
+  @IsOptional()
+  data: PaymentRequestCallbackDataDto;
 }

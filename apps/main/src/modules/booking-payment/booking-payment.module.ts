@@ -7,16 +7,19 @@ import { PaymentModule } from '../payment/payment.module';
 import { BookingPaymentDashboardController } from './booking-payment-dashboard.controller';
 import { BookingPaymentController } from './booking-payment.controller';
 import { BookingPaymentService } from './booking-payment.service';
+import { BookingPaymentRefundModule } from './refund/booking-payment-refund.module';
 
 @Module({
   controllers: [BookingPaymentController, BookingPaymentDashboardController],
   providers: [BookingPaymentService],
   imports: [
     TypeOrmModule.forFeature([BookingPayment, Booking]),
+    BookingPaymentRefundModule,
     CurrencyModule,
     BookingHelperModule,
     PaymentModule,
+    BookingPaymentRefundModule,
   ],
-  exports: [BookingPaymentService],
+  exports: [BookingPaymentService, BookingPaymentRefundModule],
 })
 export class BookingPaymentModule {}

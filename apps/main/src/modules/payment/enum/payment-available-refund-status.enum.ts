@@ -1,5 +1,5 @@
 export enum PaymentAvailableRefundStatus {
-  Suceeded = 'SUCCEEDED',
+  Succeeded = 'SUCCEEDED',
   Failed = 'FAILED',
   Pending = 'PENDING',
   Cancelled = 'CANCELLED',

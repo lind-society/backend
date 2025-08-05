@@ -4,7 +4,11 @@ import {
   constructReadableDate,
 } from '@apps/main/common/helpers';
 import { Booking, BookingType } from '@apps/main/database/entities';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { CreatePaymentInvoiceDto } from '../../payment/dto';
@@ -27,7 +31,7 @@ export class BookingHelperService {
     entityManager?: EntityManager,
   ): Promise<void> {
     if (!bookingId) {
-      return;
+      throw new BadRequestException('booking id is required');
     }
 
     const condition = {
@@ -73,7 +77,7 @@ export class BookingHelperService {
     });
 
     if (!booking) {
-      throw new NotFoundException(`booking payment not found`);
+      throw new NotFoundException(`booking not found`);
     }
 
     return booking;

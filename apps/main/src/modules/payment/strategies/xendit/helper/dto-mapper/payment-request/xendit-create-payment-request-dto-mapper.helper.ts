@@ -1,10 +1,8 @@
 import { CreatePaymentRequestDto } from '@apps/main/modules/payment/dto';
 import { XenditCreatePaymentRequestDto } from '../../../dto/payment-request';
 import { mapGenericToXenditPaymentItemsDto } from '../item';
-import {
-  mapGenericToXenditChannelPropertiesDto,
-  mapGenericToXenditShippingConfiguration,
-} from './xendit-shared-payment-field-dto-mapper.helper';
+import { mapGenericToXenditChannelPropertiesDto } from '../xendit-payment-shared-field-dto-mapper.helper';
+import { mapGenericToXenditShippingConfiguration } from './xendit-shared-payment-field-dto-mapper.helper';
 
 export function mapGenericToXenditCreatePaymentRequestDto(
   payload: CreatePaymentRequestDto,
