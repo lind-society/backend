@@ -19,7 +19,7 @@
     }
 
     .header {
-      background: #4f46e5;
+      background: #2563eb;
       color: white;
       padding: 20px;
       text-align: center;
@@ -49,7 +49,7 @@
     .total {
       font-weight: bold;
       font-size: 18px;
-      color: #4f46e5;
+      color: #2563eb;
     }
 
     .footer {
@@ -68,7 +68,6 @@
       font-weight: bold;
       margin: 15px 0;
       border: none;
-      cursor: pointer;
     }
 
     .join-member-button {
@@ -95,7 +94,7 @@
       <div class="order-summary">
         <h3>Order Information</h3>
         <p><strong>Order ID:</strong>
-          <%= locals.guestId || 'guest id' %>
+          <%= locals.guestId || 'guest_id' %>
         </p>
         <% let createdDate=new Date(locals.createdAt); if (isNaN(createdDate)) { createdDate=new Date(Date.now()); } %>
           <p><strong>Date:</strong>
@@ -158,20 +157,20 @@
 
       <div style="text-align: center; margin: 20px 0">
         <% if (typeof isMember !=='undefined' && isMember) { %>
-          <a href="#" class="member-button"> ✅ You are a Member - Enjoy Your Benefits! </a>
-          <p style="font-size: 14px; color: #666">As a member, you enjoy exclusive discounts and early access to new
+          <p class="member-button"> ✅ You are a Member - Enjoy Your Benefits! </p>
+          <p style="font-size: 14px; color: #666">As a member, you enjoy exclusive discounts
             products.</p>
           <% } else { %>
-            <a href="#" class="member-button join-member-button"> 🌟 Join Our Membership Program </a>
-            <p style="font-size: 14px; color: #666">Become a member to get exclusive discounts, early access, and
-              special offers!</p>
+            <a href="http://lindwayhome.com/order/payment/success/<%= locals.guestId || 'guest_id' %>"
+              class="member-button join-member-button"> 🌟 Join Our Membership </a>
+            <p style="font-size: 14px; color: #666">Become a member to get exclusive discounts!</p>
             <% } %>
       </div>
     </div>
 
     <div class="footer">
       <p>Thank you for shopping with us!</p>
-      <p>&copy; 2025 Your Store Name. All rights reserved.</p>
+      <p>&copy; 2025 Lindway. All rights reserved.</p>
     </div>
   </div>
 
