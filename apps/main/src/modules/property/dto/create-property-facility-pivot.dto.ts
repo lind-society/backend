@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreatePropertyFacililtyPivotDto {
   @IsUUID()
@@ -7,9 +13,13 @@ export class CreatePropertyFacililtyPivotDto {
 
   @IsUUID()
   @IsNotEmpty()
-  readonly id!: string;
+  readonly facilityId!: string;
 
   @IsString()
   @IsOptional()
   readonly description?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  readonly includeDescription?: boolean;
 }

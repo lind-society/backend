@@ -18,8 +18,8 @@ import { DiscountType } from './shared-enum.entity';
 import { PlaceNearby } from './shared-interface.entity';
 
 export enum PropertyOwnershipType {
-  Leasehold = 'Leasehold',
-  Freehold = 'Freehold',
+  Leasehold = 'leasehold',
+  Freehold = 'freehold',
 }
 
 @Entity({ name: 'properties' })
@@ -40,7 +40,6 @@ export class Property {
     name: 'discount_type',
     type: 'enum',
     enum: DiscountType,
-    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountType!: DiscountType | null;
@@ -117,15 +116,6 @@ export class Property {
   soldStatus!: boolean;
 
   @Column({
-    name: 'average_rating',
-    type: 'decimal',
-    precision: 5,
-    scale: 2,
-    nullable: true,
-  })
-  averageRating!: number | null;
-
-  @Column({
     name: 'is_favorite',
     type: 'boolean',
     default: false,
@@ -177,8 +167,8 @@ export class Property {
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',

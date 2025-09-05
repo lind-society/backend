@@ -6,12 +6,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { EntityManager, FindOneOptions, Repository } from 'typeorm';
 import { BookingHelperService } from '../../booking/helper/booking-helper.service';
 import {
   BookingPaymentRefundDto,
+  BookingPaymentRefundPaginationDto,
   BookingPaymentRefundWithRelationsDto,
   CreateBookingPaymentRefundDto,
   UpdateBookingPaymentRefundDto,
@@ -20,8 +21,6 @@ import {
 @Injectable()
 export class BookingPaymentRefundService {
   constructor(
-    @InjectDataSource()
-    private datasource: DataSource,
     @InjectRepository(BookingPaymentRefund)
     private bookingPaymentRefundRepository: Repository<BookingPaymentRefund>,
     private bookingHelperService: BookingHelperService,
@@ -44,20 +43,54 @@ export class BookingPaymentRefundService {
       ? entityManager.getRepository(BookingPaymentRefund)
       : this.bookingPaymentRefundRepository;
 
-    const createdBookingPaymentRefund = repository.create(payload);
+    const bookingPaymentRefundEntity = repository.create(payload);
+    const createdBookingPaymentRefund = await repository.save(
+      bookingPaymentRefundEntity,
+    );
 
-    return await repository.save(createdBookingPaymentRefund);
+    return BookingPaymentRefundWithRelationsDto.fromEntity(
+      createdBookingPaymentRefund,
+    );
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<
-    PaginateResponseDataProps<BookingPaymentRefundWithRelationsDto[]>
-  > {
-    const paginatedBookingPaymentRefund = await paginate(
+  ): Promise<PaginateResponseDataProps<BookingPaymentRefundPaginationDto[]>> {
+    const paginatedBookingPaymentRefunds = await paginate(
       query,
       this.bookingPaymentRefundRepository,
       {
+        select: [
+          'id',
+          'amount',
+          'reason',
+          'status',
+          'createdAt',
+
+          'currency.id',
+          'currency.name',
+          'currency.code',
+          'currency.symbol',
+
+          'payments.id',
+          'payments.paymentMethod',
+          'payments.paymentChannel',
+          'payments.failureStage',
+          'payments.failureReason',
+          'payments.refundedAmount',
+          'payments.refundedReason',
+          'payments.refundedAt',
+          'payments.cancelledReason',
+          'payments.cancelledAt',
+          'payments.amount',
+          'payments.paidAt',
+          'payments.status',
+
+          'payments.currency.id',
+          'payments.currency.name',
+          'payments.currency.code',
+          'payments.currency.symbol',
+        ],
         sortableColumns: ['createdAt', 'status'],
         defaultSortBy: [['createdAt', 'DESC']],
         nullSort: 'last',
@@ -74,7 +107,15 @@ export class BookingPaymentRefundService {
       },
     );
 
-    return paginateResponseMapper(paginatedBookingPaymentRefund);
+    const bookingPaymentRefunds =
+      BookingPaymentRefundPaginationDto.fromEntities(
+        paginatedBookingPaymentRefunds.data,
+      );
+
+    return paginateResponseMapper(
+      paginatedBookingPaymentRefunds,
+      bookingPaymentRefunds,
+    );
   }
 
   async findOne(
@@ -99,7 +140,41 @@ export class BookingPaymentRefundService {
       }
     }
 
-    const query = {
+    const query: FindOneOptions<BookingPaymentRefund> = {
+      select: {
+        id: true,
+        amount: true,
+        reason: true,
+        status: true,
+        failureReason: true,
+        currency: {
+          id: true,
+          name: true,
+          code: true,
+          symbol: true,
+        },
+        bookingPayment: {
+          id: true,
+          paymentMethod: true,
+          paymentChannel: true,
+          failureStage: true,
+          failureReason: true,
+          refundedAmount: true,
+          refundedReason: true,
+          refundedAt: true,
+          cancelledReason: true,
+          cancelledAt: true,
+          amount: true,
+          paidAt: true,
+          status: true,
+          currency: {
+            id: true,
+            name: true,
+            code: true,
+            symbol: true,
+          },
+        },
+      },
       where: {
         id,
       },
@@ -116,7 +191,9 @@ export class BookingPaymentRefundService {
       throw new NotFoundException(`booking payment refund not found`);
     }
 
-    return bookingPaymentRefund;
+    return BookingPaymentRefundWithRelationsDto.fromEntity(
+      bookingPaymentRefund,
+    );
   }
 
   async update(
@@ -221,14 +298,16 @@ export class BookingPaymentRefundService {
       },
     };
 
-    const bookingPaymentRefundRepositoryRepository = entityManager
+    const bookingPaymentRefund = entityManager
       ? await entityManager.findOne(BookingPaymentRefund, query)
       : await this.bookingPaymentRefundRepository.findOne(query);
 
-    if (!bookingPaymentRefundRepositoryRepository) {
+    if (!bookingPaymentRefund) {
       throw new NotFoundException(`booking payment refund not found`);
     }
 
-    return bookingPaymentRefundRepositoryRepository;
+    return BookingPaymentRefundWithRelationsDto.fromEntity(
+      bookingPaymentRefund,
+    );
   }
 }

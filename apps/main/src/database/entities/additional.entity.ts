@@ -12,9 +12,9 @@ import { VillaAdditionalPivot } from './villa-additional-pivot.entity';
 
 export enum AdditionalType {
   Bedrooms = 'bedrooms',
-  IndoorAreas = 'indoor areas',
-  OutdoorAreas = 'outdoor areas',
-  MorePictures = 'more pictures',
+  IndoorAreas = 'indoor_areas',
+  OutdoorAreas = 'outdoor_areas',
+  MorePictures = 'more_pictures',
 }
 
 @Entity({ name: 'additionals' })
@@ -52,8 +52,8 @@ export class Additional {
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',

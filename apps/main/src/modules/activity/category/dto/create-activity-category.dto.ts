@@ -5,7 +5,7 @@ import {
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { ActivityCategoryDto } from './activity-category.dto';
+import { ActivityCategoryWithRelationsDto } from './activity-category.dto';
 
 export class CreateActivityCategoryDto {
   @IsString()
@@ -15,11 +15,11 @@ export class CreateActivityCategoryDto {
 
 export class CreateActivityCategorySuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<ActivityCategoryDto>
+  implements HttpResponseOptions<ActivityCategoryWithRelationsDto>
 {
-  readonly data: ActivityCategoryDto;
+  readonly data: ActivityCategoryWithRelationsDto;
 
-  constructor(data: ActivityCategoryDto) {
+  constructor(data: ActivityCategoryWithRelationsDto) {
     super({
       code: HttpStatus.CREATED,
       message: 'create activity category success',

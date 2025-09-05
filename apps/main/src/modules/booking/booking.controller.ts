@@ -1,6 +1,4 @@
 import { Public } from '@apps/main/common/decorators';
-import { getFilterValue } from '@apps/main/common/helpers';
-import { BookingType } from '@apps/main/database/entities';
 import {
   Body,
   Controller,
@@ -37,19 +35,17 @@ export class BookingController {
   @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
-    const bookingType = getFilterValue<BookingType>(query, 'type');
     const bookings = await this.bookingService.findAll(query);
 
-    return new GetBookingsSuccessResponse(bookings, bookingType);
+    return new GetBookingsSuccessResponse(bookings);
   }
 
   @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const booking = await this.bookingService.findOne(id);
-    const bookingType = this.bookingService.determineBookingType(booking);
 
-    return new GetBookingSuccessResponse(booking, bookingType);
+    return new GetBookingSuccessResponse(booking);
   }
 
   @Patch(':id')
@@ -58,16 +54,14 @@ export class BookingController {
     @Body() updateBookingDto: UpdateBookingDto,
   ) {
     const booking = await this.bookingService.update(id, updateBookingDto);
-    const bookingType = this.bookingService.determineBookingType(booking);
 
-    return new UpdateBookingSuccessResponse(booking, bookingType);
+    return new UpdateBookingSuccessResponse(booking);
   }
 
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    const booking = await this.bookingService.remove(id);
-    const bookingType = this.bookingService.determineBookingType(booking);
+    await this.bookingService.remove(id);
 
-    return new DeleteResponse(`delete ${bookingType ?? ''} booking success`);
+    return new DeleteResponse('delete booking success');
   }
 }

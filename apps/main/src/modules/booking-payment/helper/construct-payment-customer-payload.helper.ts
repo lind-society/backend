@@ -1,14 +1,14 @@
-import { BookingCustomerDto } from '../../booking/customer/dto';
 import { PaymentCustomerDto } from '../../payment/dto';
 import { PaymentAvailableCustomerType } from '../../payment/enum';
 
 export function constructPaymentCustomer(
-  bookingCustomer: BookingCustomerDto,
+  customerId: string,
+  customerName: string,
 ): PaymentCustomerDto {
-  const splittedName = bookingCustomer.name.trim().split(/\s+/);
+  const splittedName = customerName.trim().split(/\s+/);
 
   return {
-    referenceId: `${bookingCustomer.id}_${new Date()}`,
+    referenceId: `${customerId}_${new Date()}`,
     type: PaymentAvailableCustomerType.Individual,
     individualDetail: {
       givenNames: splittedName[0],

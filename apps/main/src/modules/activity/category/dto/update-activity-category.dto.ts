@@ -5,7 +5,7 @@ import {
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { PartialType } from '@nestjs/mapped-types';
-import { ActivityCategoryDto } from './activity-category.dto';
+import { ActivityCategoryWithRelationsDto } from './activity-category.dto';
 import { CreateActivityCategoryDto } from './create-activity-category.dto';
 
 export class UpdateActivityCategoryDto extends PartialType(
@@ -14,11 +14,11 @@ export class UpdateActivityCategoryDto extends PartialType(
 
 export class UpdateActivityCategorySuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<ActivityCategoryDto>
+  implements HttpResponseOptions<ActivityCategoryWithRelationsDto>
 {
-  readonly data: ActivityCategoryDto;
+  readonly data: ActivityCategoryWithRelationsDto;
 
-  constructor(data: ActivityCategoryDto) {
+  constructor(data: ActivityCategoryWithRelationsDto) {
     super({
       code: HttpStatus.OK,
       message: 'update activity category success',

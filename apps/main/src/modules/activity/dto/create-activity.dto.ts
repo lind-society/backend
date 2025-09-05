@@ -10,7 +10,7 @@ import {
   PlaceNearbyDto,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -49,6 +49,18 @@ export class CreateActivityDto {
 
   @IsEnum(DiscountType, {
     message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
+  @Transform(({ obj }) => {
+    // Set default discountType to Percentage only if
+    if (
+      obj.discount !== undefined &&
+      obj.discount !== null &&
+      !obj.discountType
+    ) {
+      return DiscountType.Percentage;
+    }
+
+    return obj.discountType;
   })
   @IsOptional()
   discountType?: DiscountType;

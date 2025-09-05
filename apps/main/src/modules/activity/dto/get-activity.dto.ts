@@ -6,7 +6,10 @@ import {
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ActivityWithRelationsDto } from './activity.dto';
+import {
+  ActivityPaginationDto,
+  ActivityWithRelationsDto,
+} from './activity.dto';
 
 export class GetActivityBestSellerQueryDto {
   @IsEnum(BestSeller, {
@@ -21,7 +24,7 @@ export class GetActivityBestSellerDto {
 }
 
 export class GetActivityPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: ActivityWithRelationsDto[];
+  readonly data!: ActivityPaginationDto[];
 }
 
 export class GetActivitiesSuccessResponse

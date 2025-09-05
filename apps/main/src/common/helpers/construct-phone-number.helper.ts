@@ -17,7 +17,9 @@ export function constructPhoneNumber(
   phoneCountryCode: string,
   phoneNumber: string,
 ): string {
-  const trimmedCountryCode = phoneCountryCode.replace('+', '');
+  if (!phoneCountryCode || !phoneNumber) {
+    return '';
+  }
 
-  return `${trimmedCountryCode}${phoneNumber}`;
+  return `${phoneCountryCode.replace('+', '')}${phoneNumber}`;
 }

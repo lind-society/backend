@@ -24,11 +24,17 @@ export class PaymentChannel {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @Column()
+  name!: string;
+
   @Column({ unique: true })
   code!: string;
 
   @Column({ type: 'enum', enum: BookingChannelType, nullable: true })
   type!: BookingChannelType | null;
+
+  @Column({ type: 'text', nullable: true })
+  description!: string | null;
 
   @CreateDateColumn({
     name: 'created_at',
@@ -36,8 +42,8 @@ export class PaymentChannel {
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',

@@ -10,14 +10,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
   AdminCredentialsDto,
+  AdminPaginationDto,
   AdminPayloadDto,
-  AdminWithRelationDto,
   AuthenticatedAdminPayloadDto,
   CreateAdminDto,
   UpdateAdminDto,
@@ -25,25 +24,60 @@ import {
 
 @Injectable()
 export class AdminService {
+  private _adminDetailQuery: FindOneOptions<Admin> = {
+    select: {
+      id: true,
+      username: true,
+      name: true,
+      email: true,
+      phoneNumber: true,
+      blogs: {
+        id: true,
+        title: true,
+        category: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    relations: {
+      blogs: { category: true },
+    },
+  };
+
   constructor(
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
   ) {}
-  async create(payload: CreateAdminDto): Promise<AdminWithRelationDto> {
-    const admin = this.adminRepository.create({
+
+  async create(payload: CreateAdminDto): Promise<AdminPayloadDto> {
+    const adminEntity = this.adminRepository.create({
       ...payload,
       password: await hash(payload.password),
     });
 
-    const createdAdmin = await this.adminRepository.save(admin);
+    const createdAdmin = await this.adminRepository.save(adminEntity);
 
-    return await this.findOne(createdAdmin.id);
+    return AdminPayloadDto.fromEntity(createdAdmin);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<AdminWithRelationDto[]>> {
-    const paginatedAdmin = await paginate(query, this.adminRepository, {
+  ): Promise<PaginateResponseDataProps<AdminPaginationDto[]>> {
+    const paginatedAdmins = await paginate(query, this.adminRepository, {
+      select: [
+        'id',
+        'username',
+        'name',
+        'email',
+        'phoneNumber',
+        'createdAt',
+
+        'blogs.id',
+        'blogs.title',
+        'blogs.category.id',
+        'blogs.category.name',
+      ],
       sortableColumns: ['createdAt', 'name', 'email', 'phoneNumber'],
       defaultSortBy: [['createdAt', 'DESC']],
       nullSort: 'last',
@@ -54,73 +88,57 @@ export class AdminService {
       },
       searchableColumns: ['name', 'username', 'email', 'phoneNumber'],
       relations: {
-        blogs: true,
+        blogs: { category: true },
       },
     });
 
-    const transformedAdmin = paginatedAdmin.data.map((admin) =>
-      plainToInstance(AdminWithRelationDto, admin, {
-        excludeExtraneousValues: true,
-      }),
-    );
+    const admins = AdminPaginationDto.fromEntities(paginatedAdmins.data);
 
-    return paginateResponseMapper(paginatedAdmin, transformedAdmin);
+    return paginateResponseMapper(paginatedAdmins, admins);
   }
 
-  async findOne(id: string): Promise<AdminWithRelationDto> {
+  async findOne(id: string): Promise<AdminPayloadDto> {
     const admin = await this.adminRepository.findOne({
-      where: {
-        id,
-      },
-      relations: {
-        blogs: true,
-      },
-    });
-
-    const result = plainToInstance(AdminWithRelationDto, admin, {
-      excludeExtraneousValues: true,
-    });
-
-    return result;
-  }
-
-  async findOneByUsername(username: string): Promise<AdminWithRelationDto> {
-    const admin = await this.adminRepository.findOne({
-      where: {
-        username,
-      },
-      relations: {
-        blogs: true,
-      },
+      ...this._adminDetailQuery,
+      where: { id },
     });
 
     if (!admin) {
       throw new NotFoundException('admin not found');
     }
 
-    const result = plainToInstance(AdminWithRelationDto, admin, {
-      excludeExtraneousValues: true,
+    return AdminPayloadDto.fromEntity(admin);
+  }
+
+  async findOneByUsername(username: string): Promise<AdminPayloadDto> {
+    const admin = await this.adminRepository.findOne({
+      ...this._adminDetailQuery,
+      where: { username },
     });
 
-    return result;
+    if (!admin) {
+      throw new NotFoundException('admin not found');
+    }
+
+    return AdminPayloadDto.fromEntity(admin);
   }
 
   async updateByUsername(
     username: string,
     payload: UpdateAdminDto,
-  ): Promise<AdminWithRelationDto> {
-    const initialAdmin = await this.findOneByUsername(username);
+  ): Promise<AdminPayloadDto> {
+    await this.validateExistByUsername(username);
 
     await this.adminRepository.update({ username }, payload);
 
-    return await this.findOne(initialAdmin.id);
+    return await this.findOneByUsername(username);
   }
 
   async updateProfile(
     id: string,
     payload: UpdateAdminDto,
-  ): Promise<AdminWithRelationDto> {
-    await this.findOne(id);
+  ): Promise<AdminPayloadDto> {
+    await this.validateExistById(id);
 
     await this.adminRepository.update(id, payload);
 
@@ -128,9 +146,29 @@ export class AdminService {
   }
 
   async delete(username: string): Promise<void> {
-    await this.findOneByUsername(username);
+    await this.validateExistByUsername(username);
 
     await this.adminRepository.delete({ username });
+  }
+
+  async validateExistById(id: string) {
+    const exists = await this.adminRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('admin not found');
+    }
+  }
+
+  async validateExistByUsername(username: string) {
+    const exists = await this.adminRepository.exists({
+      where: { username },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('admin not found');
+    }
   }
 
   async findCredentialByIdentifier(
@@ -181,7 +219,13 @@ export class AdminService {
 
   async findPayloadById(id: string): Promise<AdminPayloadDto> {
     const admin = await this.adminRepository.findOne({
-      select: ['id', 'email', 'username', 'phoneNumber'],
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        phoneNumber: true,
+      },
       where: { id },
     });
 
@@ -214,8 +258,8 @@ export class AdminService {
   async updatePassword(
     id: string,
     newPassword: string,
-  ): Promise<AdminWithRelationDto> {
-    await this.findOne(id);
+  ): Promise<AdminPayloadDto> {
+    await this.validateExistById(id);
 
     await this.adminRepository.update(id, { password: newPassword });
 
@@ -232,14 +276,17 @@ export class AdminService {
   }
 
   async removeRefreshToken(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExistById(id);
 
     await this.adminRepository.update(id, {
       refreshToken: null,
     });
   }
 
-  async findOneIfRefreshTokenMatch(id: string, refreshToken: string) {
+  async findOneIfRefreshTokenMatch(
+    id: string,
+    refreshToken: string,
+  ): Promise<AdminPayloadDto> {
     const adminCredentials = await this.findCredentialById(id);
 
     if (!adminCredentials) {

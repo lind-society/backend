@@ -16,8 +16,7 @@ import {
 } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { plainToClass, plainToInstance } from 'class-transformer';
-import { omit } from 'lodash';
+import { plainToClass } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { BookingService } from '../booking/booking.service';
@@ -32,12 +31,12 @@ import {
   CreateVillaFacililtyPivotDto,
   GetVillaBestSellerDto,
   UpdateVillaFacililtyPivotDto,
+  VillaDto,
   VillaWithRelationsDto,
 } from './dto';
 import { CreateVillaDto } from './dto/create-villa.dto';
 import { UpdateVillaDto } from './dto/update-villa.dto';
 import { getVillaCurrentDailyPrice } from './helper';
-import { CreateVillaPolicyDto, UpdateVillaPolicyDto } from './policy/dto';
 import { VillaPolicyTypeService } from './policy/type/villa-policy-type.service';
 import { VillaPriceRuleWithRelationsDto } from './price-rule/dto';
 
@@ -63,12 +62,6 @@ export class VillaService {
     payload.lowSeasonDailyPriceAfterDiscount = payload.lowSeasonDailyPrice;
     payload.highSeasonDailyPriceAfterDiscount = payload.highSeasonDailyPrice;
     payload.peakSeasonDailyPriceAfterDiscount = payload.peakSeasonDailyPrice;
-
-    await this._validateRelatedEntities(
-      payload.currencyId,
-      payload.ownerId,
-      payload.facilities,
-    );
 
     const createdVilla = await this.datasource.transaction(
       async (manager: EntityManager) => {
@@ -145,7 +138,7 @@ export class VillaService {
       },
     );
 
-    return this.findOne(createdVilla.id);
+    return VillaWithRelationsDto.fromEntity(createdVilla);
   }
 
   async findAll(
@@ -289,18 +282,19 @@ export class VillaService {
           this._filterAndSortVillaPriceRule(currentDate, villa.villaPriceRules);
       }
 
-      const currentPriceRule = villa.villaPriceRules[0]?.priceRule;
-
-      const mappedVilla = this._mapVillaData(villa);
+      const currentPriceRule = villa.villaPriceRules?.[0]?.priceRule;
 
       if (currentPriceRule) {
-        this._setCurrentDailyPrice(mappedVilla, currentPriceRule);
+        this._setCurrentDailyPrice(villa, currentPriceRule);
       }
 
-      return mappedVilla;
+      return villa;
     });
 
-    return paginateResponseMapper(paginatedVilla, mappedPaginatedVilla);
+    return paginateResponseMapper(
+      paginatedVilla,
+      VillaWithRelationsDto.fromEntities(mappedPaginatedVilla),
+    );
   }
 
   async findOne(
@@ -331,18 +325,16 @@ export class VillaService {
       throw new NotFoundException(`villa not found`);
     }
 
-    const currentDate = new Date();
-
-    if (villa.villaPriceRules.length > 0) {
+    if (villa.villaPriceRules) {
       villa.villaPriceRules = this._filterAndSortVillaPriceRule(
-        currentDate,
+        new Date(),
         villa.villaPriceRules,
       );
     }
 
     const currentPriceRule = villa.villaPriceRules[0]?.priceRule;
 
-    const mappedVilla = this._mapVillaData(villa);
+    const mappedVilla = VillaWithRelationsDto.fromEntity(villa);
 
     if (currentPriceRule) {
       this._setCurrentDailyPrice(mappedVilla, currentPriceRule);
@@ -356,12 +348,6 @@ export class VillaService {
     payload: UpdateVillaDto,
   ): Promise<VillaWithRelationsDto> {
     this._handleDefaultDiscountType(payload);
-
-    await this._validateRelatedEntities(
-      payload.currencyId,
-      payload.ownerId,
-      payload.facilities,
-    );
 
     await this.datasource.transaction(async (manager) => {
       const initialData = await this.findOne(id, manager);
@@ -533,77 +519,6 @@ export class VillaService {
     return { data: dtos };
   }
 
-  private _mapVillaData(villa: Villa): VillaWithRelationsDto {
-    return plainToInstance(VillaWithRelationsDto, {
-      ...omit(villa, [
-        'villaAdditionals',
-        'villaFacilities',
-        'villaFeatures',
-        'villaPolicies',
-        'villaPriceRules',
-      ]),
-
-      additionals: villa.villaAdditionals.map(({ id, additional }) => ({
-        pivotId: id,
-        ...additional,
-      })),
-
-      facilities: villa.villaFacilities.map(
-        ({ id, description, facility }) => ({
-          pivotId: id,
-          description,
-          ...facility,
-        }),
-      ),
-
-      features: villa.villaFeatures.map(({ id, feature }) => ({
-        pivotId: id,
-        ...feature,
-      })),
-
-      policies: villa.villaPolicies.map(({ id, policy }) => ({
-        pivotId: id,
-        ...policy,
-      })),
-
-      priceRules: villa.villaPriceRules.map(({ id, priceRule }) => ({
-        pivotId: id,
-        ...priceRule,
-      })),
-    });
-  }
-
-  private async _validateRelatedEntities(
-    currencyId?: string,
-    ownerId?: string,
-    facilities?:
-      | CreateVillaFacililtyPivotDto[]
-      | UpdateVillaFacililtyPivotDto[],
-    policies?: CreateVillaPolicyDto[] | UpdateVillaPolicyDto[],
-  ): Promise<void> {
-    if (currencyId) {
-      await this.currencyService.findOne(currencyId);
-    }
-
-    if (ownerId) {
-      await this.ownerService.findOne(ownerId);
-    }
-
-    if (Array.isArray(facilities) && facilities.length > 0) {
-      const ids = facilities.map((facility) => facility.id);
-
-      await this.facilityService.validateFaciliies(ids);
-    }
-
-    if (Array.isArray(policies) && policies.length > 0) {
-      const typeIds = policies.map(
-        (policy: CreateVillaPolicyDto | UpdateVillaPolicyDto) => policy.typeId,
-      );
-
-      await this.villaPolicyTypeService.validateVillaPolicyTypes(typeIds);
-    }
-  }
-
   private async _convertToBaseCurrency(
     villaData: CreateVillaDto | UpdateVillaDto | VillaWithRelationsDto,
   ): Promise<CreateVillaDto | UpdateVillaDto | VillaWithRelationsDto> {
@@ -706,10 +621,7 @@ export class VillaService {
     initialData: VillaWithRelationsDto,
     updatedData: UpdateVillaDto,
   ): UpdateVillaDto {
-    const villaPriceRules = initialData.priceRules.map(({ id, priceRule }) => ({
-      pivotId: id,
-      ...priceRule,
-    }));
+    const villaPriceRules = initialData.priceRules;
 
     const currentActiveDiscount = villaPriceRules.find(
       (villaPriceRule) =>
@@ -775,7 +687,7 @@ export class VillaService {
   }
 
   private _setCurrentDailyPrice(
-    villa: VillaWithRelationsDto,
+    villa: VillaDto,
     priceRule: VillaPriceRuleWithRelationsDto,
   ): void {
     const { dailyPrice, dailyPriceAfterDiscount } = getVillaCurrentDailyPrice(

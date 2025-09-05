@@ -1,3 +1,4 @@
+import { EntityAction } from '@apps/main/common/enums';
 import { paginateResponseMapper } from '@apps/main/common/helpers';
 import {
   Activity,
@@ -41,8 +42,9 @@ export class ReviewService {
 
       await this._validateBookingStatus(manager, bookingId);
 
-      await this._validateRelatedEntities(
+      await this._calculateAverageRatingAndTotalReview(
         manager,
+        EntityAction.Create,
         payload.activityId,
         payload.villaId,
       );
@@ -51,7 +53,7 @@ export class ReviewService {
 
       const createdReview = await manager.save(Review, review);
 
-      return createdReview;
+      return ReviewWithRelationsDto.fromEntity(createdReview);
     });
   }
 
@@ -96,7 +98,10 @@ export class ReviewService {
     return paginateResponseMapper(paginatedReview);
   }
 
-  async findOne(id: string, entityManager?: EntityManager) {
+  async findOne(
+    id: string,
+    entityManager?: EntityManager,
+  ): Promise<ReviewWithRelationsDto> {
     const repository = entityManager
       ? entityManager.getRepository(Review)
       : this.reviewRepository;
@@ -125,7 +130,7 @@ export class ReviewService {
       throw new NotFoundException('review not found');
     }
 
-    return review;
+    return ReviewWithRelationsDto.fromEntity(review);
   }
 
   async update(
@@ -137,8 +142,9 @@ export class ReviewService {
 
       await manager.update(Review, id, payload);
 
-      await this._validateRelatedEntities(
+      await this._calculateAverageRatingAndTotalReview(
         manager,
+        EntityAction.Update,
         initialReview.activityId,
         initialReview.villaId,
       );
@@ -148,9 +154,18 @@ export class ReviewService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.dataSource.transaction(async (manager) => {
+      const initialReview = await this.findOne(id, manager);
 
-    await this.reviewRepository.delete(id);
+      await this.reviewRepository.delete(id);
+
+      await this._calculateAverageRatingAndTotalReview(
+        manager,
+        EntityAction.Delete,
+        initialReview.activityId,
+        initialReview.villaId,
+      );
+    });
   }
 
   private async _validateBookingStatus(
@@ -175,10 +190,23 @@ export class ReviewService {
         );
       }
     }
+
+    const existingReview = await manager.exists(Review, {
+      where: {
+        bookingId,
+      },
+    });
+
+    if (existingReview) {
+      throw new BadRequestException(
+        'User can only create one review per booking',
+      );
+    }
   }
 
-  private async _validateRelatedEntities(
+  private async _calculateAverageRatingAndTotalReview(
     manager: EntityManager,
+    entityAction: string,
     activityId?: string,
     villaId?: string,
   ): Promise<void> {
@@ -193,6 +221,19 @@ export class ReviewService {
       const averageRating = this._calculateAverageRating(reviews);
 
       await manager.update(Activity, activityId, { averageRating });
+
+      switch (entityAction) {
+        case EntityAction.Create:
+          await manager.increment(Activity, activityId, 'total_review', 1);
+          break;
+
+        case EntityAction.Delete:
+          await manager.decrement(Activity, activityId, 'total_review', 1);
+          break;
+
+        default:
+          break;
+      }
     }
 
     if (villaId) {
@@ -206,6 +247,19 @@ export class ReviewService {
       const averageRating = this._calculateAverageRating(reviews);
 
       await manager.update(Villa, villaId, { averageRating });
+
+      switch (entityAction) {
+        case EntityAction.Create:
+          await manager.increment(Villa, villaId, 'total_review', 1);
+          break;
+
+        case EntityAction.Delete:
+          await manager.decrement(Villa, villaId, 'total_review', 1);
+          break;
+
+        default:
+          break;
+      }
     }
   }
 

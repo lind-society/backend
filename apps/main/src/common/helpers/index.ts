@@ -7,6 +7,7 @@ export * from './entity-name-mapper.helper';
 export * from './extract-coordinate-from-google-map.helper';
 export * from './format-price.helper';
 export * from './generate-date-range.helper';
+export * from './generate-short-description.helper';
 export * from './generate-today-date-range.helper';
 export * from './get-filter-value.helper';
 export * from './group-and-sort.helper';

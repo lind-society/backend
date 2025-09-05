@@ -31,6 +31,7 @@ export class CurrencyService {
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<CurrencyDto[]>> {
     const paginatedCurrency = await paginate(query, this.currencyRepository, {
+      select: ['id', 'code', 'name', 'symbol', 'allowDecimal', 'allowRound'],
       sortableColumns: ['createdAt', 'code', 'name', 'symbol'],
       defaultSortBy: [['createdAt', 'DESC']],
       nullSort: 'last',
@@ -52,6 +53,14 @@ export class CurrencyService {
     usedInPriceConverterInterceptor?: boolean,
   ): Promise<CurrencyDto> {
     const currency = await this.currencyRepository.findOne({
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        symbol: true,
+        allowDecimal: true,
+        allowRound: true,
+      },
       where: {
         id,
       },
@@ -65,7 +74,7 @@ export class CurrencyService {
   }
 
   async update(id: string, payload: UpdateCurrencyDto): Promise<CurrencyDto> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.currencyRepository.update(id, payload);
 
@@ -73,12 +82,14 @@ export class CurrencyService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.currencyRepository.delete(id);
   }
 
   async convertToBaseCurrency(initialCurrencyId: string, price?: number) {
+    await this.findOne(initialCurrencyId);
+
     const baseCurrencyId = await this.findBaseCurrencyId();
 
     const basePrice = price
@@ -109,5 +120,13 @@ export class CurrencyService {
     }
 
     return baseCurrencyId.id;
+  }
+
+  async validateExist(id: string) {
+    const exists = await this.currencyRepository.exists({ where: { id } });
+
+    if (!exists) {
+      throw new NotFoundException('currency not found');
+    }
   }
 }

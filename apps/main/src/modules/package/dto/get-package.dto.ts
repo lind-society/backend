@@ -5,10 +5,10 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { PackageDto } from './package.dto';
+import { PackageDto, PackagePaginationDto } from './package.dto';
 
 export class GetPackagePaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: PackageDto[];
+  readonly data!: PackagePaginationDto[];
 }
 
 export class GetPackagesSuccessResponse

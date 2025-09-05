@@ -6,7 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import {
-  ActivityCategoryDto,
+  ActivityCategoryPaginationDto,
   ActivityCategoryWithRelationsDto,
   CreateActivityCategoryDto,
   UpdateActivityCategoryDto,
@@ -18,39 +18,64 @@ export class ActivityCategoryService {
     @InjectRepository(ActivityCategory)
     private activityCategoryRepository: Repository<ActivityCategory>,
   ) {}
+
   async create(
     payload: CreateActivityCategoryDto,
-  ): Promise<ActivityCategoryDto> {
-    const activityCategory = this.activityCategoryRepository.create(payload);
+  ): Promise<ActivityCategoryWithRelationsDto> {
+    const activityCategoryEntity =
+      this.activityCategoryRepository.create(payload);
 
-    return await this.activityCategoryRepository.save(activityCategory);
+    const createdActivityCategory = await this.activityCategoryRepository.save(
+      activityCategoryEntity,
+    );
+
+    return ActivityCategoryWithRelationsDto.fromEntity(createdActivityCategory);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<ActivityCategoryWithRelationsDto[]>> {
-    const paginatedActivityCategory = await paginate(
+  ): Promise<PaginateResponseDataProps<ActivityCategoryPaginationDto[]>> {
+    const paginatedActivityCategories = await paginate(
       query,
       this.activityCategoryRepository,
       {
+        select: ['id', 'name', 'createdAt', 'activities.id', 'activities.name'],
         sortableColumns: ['createdAt'],
         defaultSortBy: [['createdAt', 'DESC']],
+        nullSort: 'last',
         defaultLimit: 10,
+        maxLimit: 100,
         searchableColumns: ['name'],
         relations: { activities: true },
       },
     );
 
-    return paginateResponseMapper(paginatedActivityCategory);
+    const activityCategories = ActivityCategoryPaginationDto.fromEntities(
+      paginatedActivityCategories.data,
+    );
+
+    return paginateResponseMapper(
+      paginatedActivityCategories,
+      activityCategories,
+    );
   }
 
   async findOne(id: string): Promise<ActivityCategoryWithRelationsDto> {
     const activityCategory = await this.activityCategoryRepository.findOne({
+      select: {
+        id: true,
+        name: true,
+        activities: {
+          id: true,
+          name: true,
+          highlight: true,
+        },
+      },
       where: {
         id,
       },
       relations: {
-        activities: { currency: true },
+        activities: true,
       },
     });
 
@@ -58,21 +83,14 @@ export class ActivityCategoryService {
       throw new NotFoundException('activity category not found');
     }
 
-    const { activities, ...activityCategoryData } = activityCategory;
-
-    return {
-      ...activityCategoryData,
-      activities: activities.map((activity) => ({
-        ...activity,
-      })),
-    };
+    return ActivityCategoryWithRelationsDto.fromEntity(activityCategory);
   }
 
   async update(
     id: string,
     payload: UpdateActivityCategoryDto,
-  ): Promise<ActivityCategoryDto> {
-    await this.findOne(id);
+  ): Promise<ActivityCategoryWithRelationsDto> {
+    await this.validateExist(id);
 
     await this.activityCategoryRepository.update(id, payload);
 
@@ -80,8 +98,18 @@ export class ActivityCategoryService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.activityCategoryRepository.delete(id);
+  }
+
+  async validateExist(id: string) {
+    const exists = await this.activityCategoryRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('activity category not found');
+    }
   }
 }

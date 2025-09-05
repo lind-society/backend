@@ -45,7 +45,6 @@ export class Feature {
     name: 'discount_type',
     type: 'enum',
     enum: DiscountType,
-    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountType!: DiscountType | null;
@@ -95,8 +94,8 @@ export class Feature {
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',

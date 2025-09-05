@@ -26,6 +26,7 @@ import {
 } from 'class-validator';
 import { CreateBookingCustomerDto } from '../customer/dto';
 import { BookingWithRelationsDto } from './booking.dto';
+import { UpdateBookingDto } from './update-booking.dto';
 
 // helper function for validation
 function IsRequiredForBookingType(
@@ -70,10 +71,10 @@ function IsBookingStatusValid(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {
-          const obj = args.object as CreateBookingDto;
+          const obj = args.object as CreateBookingDto | UpdateBookingDto;
 
           if (!obj.type) {
-            return false;
+            return true;
           }
 
           // If no status provided, it will be set by transformer

@@ -1,5 +1,4 @@
 import { DefaultHttpStatus } from '@apps/main/common/enums';
-import { BookingType } from '@apps/main/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -17,10 +16,10 @@ export class UpdateBookingSuccessResponse
 {
   readonly data: BookingWithRelationsDto;
 
-  constructor(data: BookingWithRelationsDto, type: BookingType) {
+  constructor(data: BookingWithRelationsDto) {
     super({
       code: HttpStatus.OK,
-      message: `update ${type.toLowerCase()} booking success`,
+      message: 'update booking success',
       status: DefaultHttpStatus.Success,
     });
 

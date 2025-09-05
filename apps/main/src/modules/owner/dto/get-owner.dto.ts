@@ -5,10 +5,10 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { OwnerWithRelationDto } from './owner.dto';
+import { OwnerWithRelationsDto } from './owner.dto';
 
 export class GetOwnersPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: OwnerWithRelationDto[];
+  readonly data!: OwnerWithRelationsDto[];
 }
 
 export class GetOwnersSuccessResponse
@@ -30,31 +30,14 @@ export class GetOwnersSuccessResponse
 
 export class GetOwnerSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<OwnerWithRelationDto>
+  implements HttpResponseOptions<OwnerWithRelationsDto>
 {
-  readonly data: OwnerWithRelationDto;
+  readonly data: OwnerWithRelationsDto;
 
-  constructor(data: OwnerWithRelationDto) {
+  constructor(data: OwnerWithRelationsDto) {
     super({
       code: HttpStatus.OK,
       message: 'get owner success',
-      status: DefaultHttpStatus.Success,
-    });
-
-    this.data = data;
-  }
-}
-
-export class ViewProfileSuccessResponse
-  extends HttpResponseDefaultProps
-  implements HttpResponseOptions<OwnerWithRelationDto>
-{
-  readonly data: OwnerWithRelationDto;
-
-  constructor(data: OwnerWithRelationDto) {
-    super({
-      code: HttpStatus.OK,
-      message: 'view profile success',
       status: DefaultHttpStatus.Success,
     });
 

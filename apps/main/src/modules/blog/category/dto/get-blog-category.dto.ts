@@ -5,10 +5,13 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { BlogCategoryDto } from './blog-category.dto';
+import {
+  BlogCategoryPaginationDto,
+  BlogCategoryWithRelationsDto,
+} from './blog-category.dto';
 
 export class GetBlogCategoriesPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: BlogCategoryDto[];
+  readonly data!: BlogCategoryPaginationDto[];
 }
 
 export class GetBlogCategoriesSuccessResponse
@@ -30,11 +33,11 @@ export class GetBlogCategoriesSuccessResponse
 
 export class GetBlogCategorySuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<BlogCategoryDto>
+  implements HttpResponseOptions<BlogCategoryWithRelationsDto>
 {
-  readonly data: BlogCategoryDto;
+  readonly data: BlogCategoryWithRelationsDto;
 
-  constructor(data: BlogCategoryDto) {
+  constructor(data: BlogCategoryWithRelationsDto) {
     super({
       code: HttpStatus.OK,
       message: 'get blog category success',

@@ -2,36 +2,46 @@ import { paginateResponseMapper } from '@apps/main/common/helpers';
 import { Blog } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
-import { AdminService } from '../admin/admin.service';
 import { PaginateResponseDataProps } from '../shared/dto';
-import { BlogCategoryService } from './category/blog-category.service';
-import { BlogWithRelationsDto, CreateBlogDto, UpdateBlogDto } from './dto';
+import {
+  BlogPaginationDto,
+  BlogWithRelationsDto,
+  CreateBlogDto,
+  UpdateBlogDto,
+} from './dto';
 
 @Injectable()
 export class BlogService {
   constructor(
     @InjectRepository(Blog)
     private blogRepository: Repository<Blog>,
-    private adminService: AdminService,
-    private blogCategoryService: BlogCategoryService,
   ) {}
 
   async create(payload: CreateBlogDto): Promise<BlogWithRelationsDto> {
-    await this._validateRelatedEntities(payload.authorId, payload.categoryId);
+    const blogEntity = this.blogRepository.create(payload);
 
-    const createdBlog = this.blogRepository.create(payload);
+    const createdBlog = await this.blogRepository.save(blogEntity);
 
-    return await this.blogRepository.save(createdBlog);
+    return BlogWithRelationsDto.fromEntity(createdBlog);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<BlogWithRelationsDto[]>> {
-    const paginatedBlog = await paginate(query, this.blogRepository, {
-      sortableColumns: ['createdAt', 'title', 'authorId', 'categoryId'],
+  ): Promise<PaginateResponseDataProps<BlogPaginationDto[]>> {
+    const paginatedBlogs = await paginate(query, this.blogRepository, {
+      select: [
+        'id',
+        'title',
+        'content',
+        'createdAt',
+        'category.id',
+        'category.name',
+        'author.id',
+        'author.name',
+      ],
+      sortableColumns: ['createdAt', 'title'],
       defaultSortBy: [['createdAt', 'DESC']],
       nullSort: 'last',
       defaultLimit: 10,
@@ -41,18 +51,33 @@ export class BlogService {
         authorId: [FilterOperator.EQ],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE],
       },
-      searchableColumns: ['title', 'category.name'],
+      searchableColumns: ['title'],
       relations: {
         author: true,
         category: true,
       },
     });
 
-    return paginateResponseMapper(paginatedBlog);
+    const blogs = BlogPaginationDto.fromEntities(paginatedBlogs.data);
+
+    return paginateResponseMapper(paginatedBlogs, blogs);
   }
 
   async findOne(id: string): Promise<BlogWithRelationsDto> {
     const blog = await this.blogRepository.findOne({
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        category: {
+          id: true,
+          name: true,
+        },
+        author: {
+          id: true,
+          name: true,
+        },
+      },
       where: {
         id,
       },
@@ -66,18 +91,14 @@ export class BlogService {
       throw new NotFoundException('blog not found');
     }
 
-    return plainToInstance(BlogWithRelationsDto, blog, {
-      enableImplicitConversion: true,
-    });
+    return BlogWithRelationsDto.fromEntity(blog);
   }
 
   async update(
     id: string,
     payload: UpdateBlogDto,
   ): Promise<BlogWithRelationsDto> {
-    await this.findOne(id);
-
-    await this._validateRelatedEntities(null, payload.categoryId);
+    await this.validateExist(id);
 
     await this.blogRepository.update(id, payload);
 
@@ -85,21 +106,18 @@ export class BlogService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.blogRepository.delete(id);
   }
 
-  private async _validateRelatedEntities(
-    authorId?: string,
-    categoryId?: string,
-  ): Promise<void> {
-    if (categoryId) {
-      await this.blogCategoryService.findOne(categoryId);
-    }
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.blogRepository.exists({
+      where: { id },
+    });
 
-    if (authorId) {
-      await this.adminService.findOne(authorId);
+    if (!exists) {
+      throw new NotFoundException('blog not found');
     }
   }
 }

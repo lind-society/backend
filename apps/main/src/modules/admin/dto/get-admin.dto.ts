@@ -5,10 +5,10 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { AdminWithRelationDto } from './admin.dto';
+import { AdminPaginationDto, AdminPayloadDto } from './admin.dto';
 
 export class GetAdminsPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: AdminWithRelationDto[];
+  readonly data!: AdminPaginationDto[];
 }
 
 export class GetAdminsSuccessResponse
@@ -30,11 +30,11 @@ export class GetAdminsSuccessResponse
 
 export class GetAdminSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<AdminWithRelationDto>
+  implements HttpResponseOptions<AdminPayloadDto>
 {
-  readonly data: AdminWithRelationDto;
+  readonly data: AdminPayloadDto;
 
-  constructor(data: AdminWithRelationDto) {
+  constructor(data: AdminPayloadDto) {
     super({
       code: HttpStatus.OK,
       message: 'get admin success',
@@ -47,11 +47,11 @@ export class GetAdminSuccessResponse
 
 export class ViewProfileSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<AdminWithRelationDto>
+  implements HttpResponseOptions<AdminPayloadDto>
 {
-  readonly data: AdminWithRelationDto;
+  readonly data: AdminPayloadDto;
 
-  constructor(data: AdminWithRelationDto) {
+  constructor(data: AdminPayloadDto) {
     super({
       code: HttpStatus.OK,
       message: 'view profile success',

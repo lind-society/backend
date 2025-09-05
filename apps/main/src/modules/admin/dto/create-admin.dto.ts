@@ -6,7 +6,7 @@ import {
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { IsEmail, IsNotEmpty, IsNumberString, IsString } from 'class-validator';
-import { AdminDto } from './admin.dto';
+import { AdminPayloadDto } from './admin.dto';
 
 export class CreateAdminDto {
   @IsString()
@@ -33,11 +33,11 @@ export class CreateAdminDto {
 
 export class CreateAdminSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<AdminDto>
+  implements HttpResponseOptions<AdminPayloadDto>
 {
-  readonly data: AdminDto;
+  readonly data: AdminPayloadDto;
 
-  constructor(data: AdminDto) {
+  constructor(data: AdminPayloadDto) {
     super({
       code: HttpStatus.CREATED,
       message: 'create admin success',

@@ -17,17 +17,14 @@ export class ActivityCategory {
   @Column({ unique: true })
   name!: string;
 
-  @OneToMany(() => Activity, (activity) => activity.category)
-  activities: Activity[];
-
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamptz',
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',
@@ -36,4 +33,7 @@ export class ActivityCategory {
     select: false,
   })
   deletedAt!: Date | null;
+
+  @OneToMany(() => Activity, (activity) => activity.category)
+  activities?: Activity[];
 }

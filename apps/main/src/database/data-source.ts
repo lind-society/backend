@@ -15,7 +15,10 @@ export default new DataSource({
   password: DB_PASSWORD,
   database: DB_NAME,
   entities: [
-    join(__dirname, '../../../../apps/main/src/database/entities/*.entity.js'),
+    join(
+      __dirname,
+      '../../../../apps/main/src/database/entities/**/*.entity.js',
+    ),
     join(__dirname, '../../../../libs/common/entities/*.entity.js'),
   ],
   synchronize: false,

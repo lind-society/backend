@@ -21,8 +21,6 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
-import { omit } from 'lodash';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Brackets, DataSource, EntityManager, Repository } from 'typeorm';
 import { CurrencyService } from '../../currency/currency.service';
@@ -97,7 +95,7 @@ export class VillaPriceRuleService {
 
     this.eventEmitter.emit(CREATED_PRICE_RULE, createdVillaPriceRule.id);
 
-    return createdVillaPriceRule;
+    return VillaPriceRuleWithRelationsDto.fromEntity(createdVillaPriceRule);
   }
 
   async findAll(
@@ -123,17 +121,15 @@ export class VillaPriceRuleService {
       },
     );
 
-    const mappedPaginatedVillaPriceRule = await Promise.all(
-      paginatedVillaPriceRule.data.map(async (villaPriceRule) => {
-        const mappedVillaPriceRule =
-          this._mapVillaPriceRuleData(villaPriceRule);
+    const mappedPaginatedVillaPriceRule =
+      VillaPriceRuleWithRelationsDto.fromEntities(paginatedVillaPriceRule.data);
 
-        mappedVillaPriceRule.isAppliedToAllVilla =
+    await Promise.all(
+      mappedPaginatedVillaPriceRule.map(async (villaPriceRule) => {
+        villaPriceRule.isAppliedToAllVilla =
           await this._isCurrentPriceRuleAppliedToAllVilla(
-            villaPriceRule.villaPriceRules.length,
+            villaPriceRule.villas.length,
           );
-
-        return mappedVillaPriceRule;
       }),
     );
 
@@ -165,7 +161,8 @@ export class VillaPriceRuleService {
       throw new NotFoundException('villa price rule not found');
     }
 
-    const mappedVillaPriceRule = this._mapVillaPriceRuleData(villaPriceRule);
+    const mappedVillaPriceRule =
+      VillaPriceRuleWithRelationsDto.fromEntity(villaPriceRule);
 
     mappedVillaPriceRule.isAppliedToAllVilla =
       await this._isCurrentPriceRuleAppliedToAllVilla(
@@ -247,20 +244,6 @@ export class VillaPriceRuleService {
       await manager.delete(VillaPriceRule, id);
 
       this.eventEmitter.emit(DELETED_PRICE_RULE, affectedVillaIds);
-    });
-  }
-
-  private _mapVillaPriceRuleData(
-    villaPriceRule: VillaPriceRule,
-  ): VillaPriceRuleWithRelationsDto {
-    return plainToInstance(VillaPriceRuleWithRelationsDto, {
-      ...omit(villaPriceRule, ['villaPriceRules']),
-
-      villas: villaPriceRule.villaPriceRules.map(({ id, villa }) => ({
-        pivotId: id,
-        id: villa.id,
-        name: villa.name,
-      })),
     });
   }
 

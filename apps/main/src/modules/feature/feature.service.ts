@@ -8,7 +8,7 @@ import { CurrencyService } from '../currency/currency.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
   CreateFeatureDto,
-  FeatureDto,
+  FeaturePaginationDto,
   FeatureWithRelationsDto,
   UpdateFeatureDto,
 } from './dto';
@@ -20,43 +20,47 @@ export class FeatureService {
     private featureRepository: Repository<Feature>,
     private currencyService: CurrencyService,
   ) {}
-  async create(payload: CreateFeatureDto): Promise<FeatureDto> {
+  async create(payload: CreateFeatureDto): Promise<FeatureWithRelationsDto> {
     await this._validateRelatedEntities(payload.currencyId);
 
     const convertedBasePriceFeature =
       await this._convertToBaseCurrency(payload);
 
     const feature = this.featureRepository.create(convertedBasePriceFeature);
+    const createdFeature = await this.featureRepository.save(feature);
 
-    return await this.featureRepository.save(feature);
+    return FeatureWithRelationsDto.fromEntity(createdFeature);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<FeatureWithRelationsDto[]>> {
-    const paginatedFeatureCategory = await paginate(
-      query,
-      this.featureRepository,
-      {
-        sortableColumns: ['createdAt', 'name', 'type'],
-        defaultSortBy: [['createdAt', 'DESC']],
-        nullSort: 'last',
-        defaultLimit: 10,
-        maxLimit: 100,
-        filterableColumns: {
-          type: [FilterOperator.EQ],
-          free: [FilterOperator.EQ],
-          discountType: [FilterOperator.EQ],
-          discount: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
-          price: [FilterOperator.GTE, FilterOperator.LTE],
-          priceAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
-          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
-        },
-        searchableColumns: ['name'],
+  ): Promise<PaginateResponseDataProps<FeaturePaginationDto[]>> {
+    const paginatedFeatures = await paginate(query, this.featureRepository, {
+      sortableColumns: ['createdAt', 'name', 'type'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      nullSort: 'last',
+      defaultLimit: 10,
+      maxLimit: 100,
+      filterableColumns: {
+        type: [FilterOperator.EQ],
+        free: [FilterOperator.EQ],
+        discountType: [FilterOperator.EQ],
+        discount: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+        price: [FilterOperator.GTE, FilterOperator.LTE],
+        priceAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
       },
-    );
+      searchableColumns: ['name'],
+      relations: {
+        currency: true,
+        propertyFeatures: { property: true },
+        villaFeatures: { villa: true },
+      },
+    });
 
-    return paginateResponseMapper(paginatedFeatureCategory);
+    const features = FeaturePaginationDto.fromEntities(paginatedFeatures.data);
+
+    return paginateResponseMapper(paginatedFeatures, features);
   }
 
   async findOne(id: string): Promise<FeatureWithRelationsDto> {
@@ -73,7 +77,7 @@ export class FeatureService {
       throw new NotFoundException('feature not found');
     }
 
-    return feature;
+    return FeatureWithRelationsDto.fromEntity(feature);
   }
 
   async update(

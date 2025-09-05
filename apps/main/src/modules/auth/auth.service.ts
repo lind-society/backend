@@ -15,10 +15,7 @@ export class AuthService {
     private adminService: AdminService,
   ) {}
 
-  // to do :
-  // request reset password (send otp or link via email/whatsapp)
-
-  async validateAdmin(payload: LoginRequestDto) {
+  async validateAdmin(payload: LoginRequestDto): Promise<AdminPayloadDto> {
     const adminCredentials = await this.adminService.findCredentialByIdentifier(
       payload.identifier,
     );
@@ -42,15 +39,15 @@ export class AuthService {
     return adminPayload;
   }
 
-  async register(payload: CreateAdminDto) {
+  async register(payload: CreateAdminDto): Promise<AdminPayloadDto> {
     const admin = await this.adminService.create(payload);
 
     return admin;
   }
 
   async login(payload: AdminPayloadDto): Promise<IJwtTokens> {
-    const accessToken = await this.signAccessToken(payload);
-    const refreshToken = await this.signRefreshToken(payload);
+    const accessToken = await this._signAccessToken(payload);
+    const refreshToken = await this._signRefreshToken(payload);
 
     await this.adminService.setCurrentRefreshToken(refreshToken, payload.id);
 
@@ -62,21 +59,15 @@ export class AuthService {
     return tokens;
   }
 
-  async logout(payload: AdminPayloadDto) {
+  async logout(payload: AdminPayloadDto): Promise<void> {
     await this.adminService.findPayloadById(payload.id);
 
     return await this.adminService.removeRefreshToken(payload.id);
   }
 
-  async updatePassword(payload: AdminPayloadDto, newPassword: string) {
-    await this.adminService.findPayloadById(payload.id);
-
-    return await this.adminService.updatePassword(payload.id, newPassword);
-  }
-
   async refreshTokens(payload: AdminPayloadDto): Promise<IJwtTokens> {
-    const accessToken = await this.signAccessToken(payload);
-    const refreshToken = await this.signRefreshToken(payload);
+    const accessToken = await this._signAccessToken(payload);
+    const refreshToken = await this._signRefreshToken(payload);
 
     await this.adminService.setCurrentRefreshToken(refreshToken, payload.id);
 
@@ -88,7 +79,7 @@ export class AuthService {
     return tokens;
   }
 
-  private async signAccessToken(payload: AdminPayloadDto): Promise<string> {
+  private async _signAccessToken(payload: AdminPayloadDto): Promise<string> {
     const jwtPayload = this._jwtPayloadMapper(payload);
 
     const accessToken = await this.jwtService.signAsync(jwtPayload);
@@ -96,7 +87,7 @@ export class AuthService {
     return accessToken;
   }
 
-  private async signRefreshToken(payload: AdminPayloadDto): Promise<string> {
+  private async _signRefreshToken(payload: AdminPayloadDto): Promise<string> {
     const jwtPayload = this._jwtPayloadMapper(payload);
 
     const refreshToken = await this.jwtService.signAsync(jwtPayload, {
@@ -114,5 +105,17 @@ export class AuthService {
       email: payload.email,
       phoneNumber: payload.phoneNumber,
     };
+  }
+
+  // To Do :
+  // 1. request reset password (send otp or link via email/whatsapp)
+  // 2. implement "updatePassword" method
+  async updatePassword(
+    payload: AdminPayloadDto,
+    newPassword: string,
+  ): Promise<AdminPayloadDto> {
+    await this.adminService.findPayloadById(payload.id);
+
+    return await this.adminService.updatePassword(payload.id, newPassword);
   }
 }

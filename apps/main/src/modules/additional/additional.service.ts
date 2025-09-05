@@ -6,11 +6,11 @@ import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
-  AdditionalDto,
+  AdditionalPaginationDto,
   AdditionalWithRelationsDto,
-} from './dto/additional.dto';
-import { CreateAdditionalDto } from './dto/create-additional.dto';
-import { UpdateAdditionalDto } from './dto/update-additional.dto';
+  CreateAdditionalDto,
+  UpdateAdditionalDto,
+} from './dto';
 
 @Injectable()
 export class AdditionalService {
@@ -19,19 +19,25 @@ export class AdditionalService {
     private additionalRepository: Repository<Additional>,
   ) {}
 
-  async create(payload: CreateAdditionalDto): Promise<AdditionalDto> {
-    const additional = this.additionalRepository.create(payload);
+  async create(
+    payload: CreateAdditionalDto,
+  ): Promise<AdditionalWithRelationsDto> {
+    const additionalEntity = this.additionalRepository.create(payload);
 
-    return await this.additionalRepository.save(additional);
+    const createdAdditional =
+      await this.additionalRepository.save(additionalEntity);
+
+    return AdditionalWithRelationsDto.fromEntity(createdAdditional);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<AdditionalWithRelationsDto[]>> {
-    const paginatedAdditionalCategory = await paginate(
+  ): Promise<PaginateResponseDataProps<AdditionalPaginationDto[]>> {
+    const paginatedAdditionals = await paginate(
       query,
       this.additionalRepository,
       {
+        select: ['id', 'name', 'photos', 'description', 'type'],
         sortableColumns: ['createdAt', 'name', 'type'],
         defaultSortBy: [['createdAt', 'DESC']],
         nullSort: 'last',
@@ -42,14 +48,29 @@ export class AdditionalService {
           createdAt: [FilterOperator.GTE, FilterOperator.LTE],
         },
         searchableColumns: ['name'],
+        relations: {
+          propertyAdditionals: { property: true },
+          villaAdditionals: { villa: true },
+        },
       },
     );
 
-    return paginateResponseMapper(paginatedAdditionalCategory);
+    const additionals = AdditionalPaginationDto.fromEntities(
+      paginatedAdditionals.data,
+    );
+
+    return paginateResponseMapper(paginatedAdditionals, additionals);
   }
 
   async findOne(id: string): Promise<AdditionalWithRelationsDto> {
     const additional = await this.additionalRepository.findOne({
+      select: {
+        id: true,
+        name: true,
+        photos: true,
+        description: true,
+        type: true,
+      },
       where: {
         id,
       },
@@ -66,7 +87,7 @@ export class AdditionalService {
     id: string,
     payload: UpdateAdditionalDto,
   ): Promise<AdditionalWithRelationsDto> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.update(id, payload);
 
@@ -74,8 +95,16 @@ export class AdditionalService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.remove(id);
+  }
+
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.additionalRepository.exists({ where: { id } });
+
+    if (!exists) {
+      throw new NotFoundException('additional not found');
+    }
   }
 }

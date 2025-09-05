@@ -6,7 +6,10 @@ import {
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { IsOptional, IsUUID } from 'class-validator';
-import { BookingCustomerWithRelationsDto } from './booking-customer.dto';
+import {
+  BookingCustomerPaginationDto,
+  BookingCustomerWithRelationsDto,
+} from './booking-customer.dto';
 
 export class GetBookingCustomersDto {
   @IsUUID()
@@ -15,7 +18,7 @@ export class GetBookingCustomersDto {
 }
 
 export class GetBookingCustomerPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: BookingCustomerWithRelationsDto[];
+  readonly data!: BookingCustomerPaginationDto[];
 }
 
 export class GetBookingCustomersSuccessResponse

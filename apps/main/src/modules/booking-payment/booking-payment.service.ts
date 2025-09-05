@@ -9,9 +9,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { BookingHelperService } from '../booking/helper/booking-helper.service';
 import {
   CreatePaymentRequestDto,
@@ -28,6 +28,7 @@ import {
 import { PaymentService } from '../payment/payment.service';
 import {
   BookingPaymentDto,
+  BookingPaymentPaginationDto,
   BookingPaymentWithRelationsDto,
   CreateBookingPaymentDto,
   UpdateBookingPaymentDto,
@@ -41,8 +42,6 @@ import {
 @Injectable()
 export class BookingPaymentService {
   constructor(
-    @InjectDataSource()
-    private datasource: DataSource,
     @InjectRepository(BookingPayment)
     private bookingPaymentRepository: Repository<BookingPayment>,
     private bookingHelperService: BookingHelperService,
@@ -63,11 +62,9 @@ export class BookingPaymentService {
       booking.payments,
     );
 
-    const repository = entityManager
-      ? entityManager.getRepository(BookingPayment)
-      : this.bookingPaymentRepository;
+    const repository = this._getRepository(entityManager);
 
-    const createdBookingPayment = repository.create({
+    const bookingPaymentEntity = repository.create({
       status: isDashboardRequest
         ? (payload.status ?? BookingPaymentAvailableStatus.Pending)
         : BookingPaymentAvailableStatus.Pending,
@@ -75,16 +72,62 @@ export class BookingPaymentService {
       currencyId: booking.currencyId,
     });
 
-    return await repository.save(createdBookingPayment);
+    const createdBookingPayment = await repository.save(bookingPaymentEntity);
+
+    return BookingPaymentWithRelationsDto.fromEntity(createdBookingPayment);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<BookingPaymentWithRelationsDto[]>> {
-    const paginatedBookingPayment = await paginate(
+  ): Promise<PaginateResponseDataProps<BookingPaymentPaginationDto[]>> {
+    const paginatedBookingPayments = await paginate(
       query,
       this.bookingPaymentRepository,
       {
+        select: [
+          'id',
+          'paymentMethod',
+          'paymentChannel',
+          'amount',
+          'status',
+          'paidAt',
+          'refundedAt',
+          'cancelledAt',
+          'createdAt',
+
+          'currency.id',
+          'currency.name',
+          'currency.code',
+          'currency.symbol',
+
+          'booking.id',
+          'booking.type',
+          'booking.totalAmount',
+          'booking.totalGuest',
+          'booking.bookingDate',
+          'booking.checkInDate',
+          'booking.checkOutDate',
+          'booking.status',
+
+          'booking.customer.id',
+          'booking.customer.name',
+          'booking.customer.email',
+          'booking.customer.phoneCountryCode',
+          'booking.customer.phoneNumber',
+
+          'booking.currency.id',
+          'booking.currency.name',
+          'booking.currency.code',
+          'booking.currency.symbol',
+
+          'booking.activity.id',
+          'booking.activity.name',
+          'booking.activity.category.id',
+          'booking.activity.category.name',
+
+          'booking.villa.id',
+          'booking.villa.name',
+        ],
         sortableColumns: ['createdAt', 'amount', 'status', 'paymentMethod'],
         defaultSortBy: [['createdAt', 'DESC']],
         nullSort: 'last',
@@ -104,7 +147,11 @@ export class BookingPaymentService {
       },
     );
 
-    return paginateResponseMapper(paginatedBookingPayment);
+    const bookingPayments = BookingPaymentPaginationDto.fromEntities(
+      paginatedBookingPayments.data,
+    );
+
+    return paginateResponseMapper(paginatedBookingPayments, bookingPayments);
   }
 
   async findOne(
@@ -129,7 +176,70 @@ export class BookingPaymentService {
       }
     }
 
-    const query = {
+    const repository = this._getRepository(entityManager);
+
+    const bookingPayment = await repository.findOne({
+      select: {
+        id: true,
+        paymentMethod: true,
+        paymentChannel: true,
+        amount: true,
+        status: true,
+        failureStage: true,
+        failureReason: true,
+        refundedAmount: true,
+        refundedReason: true,
+        cancelledReason: true,
+        paymentReferenceId: true,
+        paymentRequestReferenceId: true,
+        paymentSessionReferenceId: true,
+        paymentTokenReferenceId: true,
+        paymentRefundReferenceId: true,
+        refundedAt: true,
+        cancelledAt: true,
+        paidAt: true,
+        currency: {
+          id: true,
+          name: true,
+          code: true,
+          symbol: true,
+        },
+        booking: {
+          id: true,
+          type: true,
+          totalAmount: true,
+          totalGuest: true,
+          bookingDate: true,
+          checkInDate: true,
+          checkOutDate: true,
+          status: true,
+          customer: {
+            id: true,
+            name: true,
+            email: true,
+            phoneCountryCode: true,
+            phoneNumber: true,
+          },
+          currency: {
+            id: true,
+            name: true,
+            code: true,
+            symbol: true,
+          },
+          activity: {
+            id: true,
+            name: true,
+            category: {
+              id: true,
+              name: true,
+            },
+          },
+          villa: {
+            id: true,
+            name: true,
+          },
+        },
+      },
       where: {
         id,
       },
@@ -138,17 +248,13 @@ export class BookingPaymentService {
         currency: true,
         refundHistories: true,
       },
-    };
-
-    const bookingPayment = entityManager
-      ? await entityManager.findOne(BookingPayment, query)
-      : await this.bookingPaymentRepository.findOne(query);
+    });
 
     if (!bookingPayment) {
       throw new NotFoundException(`booking payment not found`);
     }
 
-    return bookingPayment;
+    return BookingPaymentWithRelationsDto.fromEntity(bookingPayment);
   }
 
   async update(
@@ -160,9 +266,7 @@ export class BookingPaymentService {
 
     await this._validateBookingPaymentExist(sanitizedId, entityManager);
 
-    const repository = entityManager
-      ? entityManager.getRepository(BookingPayment)
-      : this.bookingPaymentRepository;
+    const repository = this._getRepository(entityManager);
 
     await repository.update(sanitizedId, payload);
 
@@ -173,6 +277,15 @@ export class BookingPaymentService {
     await this._validateBookingPaymentExist(id);
 
     await this.bookingPaymentRepository.delete(id);
+  }
+
+  // Private Methods
+  private _getRepository(
+    entityManager?: EntityManager,
+  ): Repository<BookingPayment> {
+    return entityManager
+      ? entityManager.getRepository(BookingPayment)
+      : this.bookingPaymentRepository;
   }
 
   // Payment Gateway Related Methods
@@ -452,15 +565,15 @@ export class BookingPaymentService {
       },
     };
 
-    const bookingPaymentRepository = entityManager
+    const bookingPayments = entityManager
       ? await entityManager.find(BookingPayment, query)
       : await this.bookingPaymentRepository.find(query);
 
-    if (!bookingPaymentRepository) {
+    if (!bookingPayments) {
       throw new NotFoundException(`booking payment not found`);
     }
 
-    return bookingPaymentRepository;
+    return BookingPaymentWithRelationsDto.fromEntities(bookingPayments);
   }
 
   // private methods
@@ -472,11 +585,11 @@ export class BookingPaymentService {
       throw new BadRequestException('booking payment id is required');
     }
 
-    const bookingPaymentExist = entityManager
-      ? await entityManager.exists(BookingPayment, { where: { id } })
-      : await this.bookingPaymentRepository.exists({
-          where: { id },
-        });
+    const repository = this._getRepository(entityManager);
+
+    const bookingPaymentExist = await repository.exists({
+      where: { id },
+    });
 
     if (!bookingPaymentExist) {
       throw new NotFoundException('booking payment not found');
@@ -501,11 +614,11 @@ export class BookingPaymentService {
       entityManager,
     );
 
-    const bookingPaymentExist = entityManager
-      ? await entityManager.exists(BookingPayment, { where: { id } })
-      : await this.bookingPaymentRepository.exists({
-          where: { id },
-        });
+    const repository = this._getRepository(entityManager);
+
+    const bookingPaymentExist = await repository.exists({
+      where: { id },
+    });
 
     if (!bookingPaymentExist) {
       throw new NotFoundException('booking payment not found');

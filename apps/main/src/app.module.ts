@@ -1,5 +1,5 @@
 import { SetHttpCodeInterceptor } from '@libs/common/interceptors/set-http-status-code.interceptor';
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -26,9 +26,11 @@ import {
   xenditConfig,
 } from './config';
 import { ActivityModule } from './modules/activity/activity.module';
+import { ActivityCategoryModule } from './modules/activity/category/activity-category.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { BlogCategoryModule } from './modules/blog/category/blog-category.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { CurrencyModule } from './modules/currency/currency.module';
 import { FacilityModule } from './modules/facility/facility.module';
@@ -90,7 +92,9 @@ import { VillaModule } from './modules/villa/villa.module';
     AuthModule,
     AdminModule,
     ActivityModule,
+    ActivityCategoryModule,
     BlogModule,
+    BlogCategoryModule,
     BookingModule,
     CurrencyModule,
     FacilityModule,
@@ -107,10 +111,6 @@ import { VillaModule } from './modules/villa/villa.module';
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ClassSerializerInterceptor,
-    },
     {
       provide: APP_INTERCEPTOR,
       useClass: SetHttpCodeInterceptor,

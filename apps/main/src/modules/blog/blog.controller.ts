@@ -1,5 +1,4 @@
 import { HalEmbedded, Public } from '@apps/main/common/decorators';
-import { HalInterceptor } from '@apps/main/common/interceptors';
 import { AuthorizedRequest } from '@apps/main/common/types';
 import {
   Body,
@@ -12,7 +11,6 @@ import {
   Post,
   Request,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { JwtAuthGuard } from '../auth/guards';

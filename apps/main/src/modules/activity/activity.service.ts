@@ -6,18 +6,18 @@ import {
   ActivityBookingStatus,
   DiscountType,
 } from '@apps/main/database/entities';
+import { ActivityView } from '@apps/main/database/entities/views/activity.view.entity';
 import { CurrencyService } from '@apps/main/modules/currency/currency.service';
-import { OwnerService } from '@apps/main/modules/owner/owner.service';
 import { PaginateResponseDataProps } from '@apps/main/modules/shared/dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { EntityManager, Repository } from 'typeorm';
 import { BookingService } from '../booking/booking.service';
 import { BookingWithRelationsDto, CreateBookingDto } from '../booking/dto';
-import { ActivityCategoryService } from './category/activity-category.service';
 import {
+  ActivityPaginationDto,
   ActivityWithRelationsDto,
   CreateActivityDto,
   GetActivityBestSellerDto,
@@ -29,147 +29,235 @@ export class ActivityService {
   constructor(
     @InjectRepository(Activity)
     private activityRepository: Repository<Activity>,
-    private activityCategoryService: ActivityCategoryService,
+    @InjectRepository(ActivityView)
+    private activityViewRepository: Repository<ActivityView>,
     private bookingService: BookingService,
     private currencyService: CurrencyService,
-    private ownerService: OwnerService,
   ) {}
 
   async create(payload: CreateActivityDto): Promise<ActivityWithRelationsDto> {
-    this._handleDefaultDiscountType(payload);
-
-    await this._validateRelatedEntities(
-      payload.categoryId,
-      payload.currencyId,
-      payload.ownerId,
-    );
-
     const convertedBasePriceActivity =
       await this._convertToBaseCurrency(payload);
 
-    const createdActivity = this.activityRepository.create(
+    const activityEntity = this.activityRepository.create(
       convertedBasePriceActivity,
     );
 
-    const savedActivity = await this.activityRepository.save(createdActivity);
+    const createdActivity = await this.activityRepository.save(activityEntity);
 
-    return plainToInstance(ActivityWithRelationsDto, savedActivity, {
-      enableImplicitConversion: true,
-    });
+    return ActivityWithRelationsDto.fromEntity(createdActivity);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<ActivityWithRelationsDto[]>> {
-    const paginatedActivity = await paginate(query, this.activityRepository, {
-      sortableColumns: [
-        'isFavorite',
-        'createdAt',
-        'name',
-        'secondaryName',
-        'price',
-        'discountType',
-        'discount',
-        'priceAfterDiscount',
-        'duration',
-        'country',
-        'state',
-        'city',
-        'openingHour',
-        'closingHour',
-        'startDate',
-        'endDate',
-        'averageRating',
-      ],
-      defaultSortBy: [
-        ['isFavorite', 'DESC'],
-        ['averageRating', 'DESC'],
-        ['createdAt', 'DESC'],
-      ],
-      nullSort: 'last',
-      defaultLimit: 10,
-      maxLimit: 100,
-      filterableColumns: {
-        categoryId: [FilterOperator.EQ],
-        currencyId: [FilterOperator.EQ],
-        ownerId: [FilterOperator.EQ],
+  ): Promise<PaginateResponseDataProps<ActivityPaginationDto[]>> {
+    const paginatedActivities = await paginate(
+      query,
+      this.activityViewRepository,
+      {
+        select: [
+          'id',
+          'name',
+          'secondaryName',
+          'price',
+          'discountType',
+          'discount',
+          'priceAfterDiscount',
+          'duration',
+          'highlight',
+          'address',
+          'country',
+          'state',
+          'city',
+          'postalCode',
+          'mapLink',
+          'placeNearby',
+          'openingHour',
+          'closingHour',
+          'startDate',
+          'endDate',
+          'dailyLimit',
+          'photos',
+          'videos',
+          'video360s',
+          'floorPlans',
+          'averageRating',
+          'totalReview',
+          'isFavorite',
+          'totalTodayBooking',
+          'createdAt',
 
-        discountType: [FilterOperator.EQ],
-        discount: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
-        pricePerPerson: [FilterOperator.GTE, FilterOperator.LTE],
-        pricePerSession: [FilterOperator.GTE, FilterOperator.LTE],
-        pricePerPersonAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
-        pricePerSessionAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+          'category.id',
+          'category.name',
+          'currency.id',
+          'currency.name',
+          'currency.code',
+          'currency.symbol',
 
-        duration: [FilterOperator.EQ],
-        averageRating: [
-          FilterOperator.EQ,
-          FilterOperator.GTE,
-          FilterOperator.LTE,
+          'owner.id',
+          'owner.name',
+          'owner.type',
+          'owner.companyName',
+          'owner.email',
+          'owner.phoneCountryCode',
+          'owner.phoneNumber',
+          'owner.address',
+          'owner.website',
+          'owner.status',
         ],
-        openingHour: [
-          FilterOperator.EQ,
-          FilterOperator.GTE,
-          FilterOperator.LTE,
+        sortableColumns: [
+          'isFavorite',
+          'createdAt',
+          'name',
+          'secondaryName',
+          'price',
+          'discountType',
+          'discount',
+          'priceAfterDiscount',
+          'duration',
+          'country',
+          'state',
+          'city',
+          'openingHour',
+          'closingHour',
+          'startDate',
+          'endDate',
+          'averageRating',
         ],
-        closingHour: [
-          FilterOperator.EQ,
-          FilterOperator.GTE,
-          FilterOperator.LTE,
+        defaultSortBy: [
+          ['isFavorite', 'DESC'],
+          ['averageRating', 'DESC'],
+          ['createdAt', 'DESC'],
         ],
-        startDate: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
-        endDate: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
-        isFavorite: [FilterOperator.EQ],
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        nullSort: 'last',
+        defaultLimit: 10,
+        maxLimit: 100,
+        filterableColumns: {
+          categoryId: [FilterOperator.EQ],
+          currencyId: [FilterOperator.EQ],
+          ownerId: [FilterOperator.EQ],
 
-        'placeNearby.name': [FilterOperator.ILIKE],
-      },
-      searchableColumns: [
-        'name',
-        'secondaryName',
-        'address',
-        'country',
-        'state',
-        'city',
-        'postalCode',
-        'mapLink',
-      ],
-      relations: {
-        category: true,
-        currency: true,
-        owner: true,
-        reviews: { booking: { currency: true, customer: true } },
-      },
-    });
+          discountType: [FilterOperator.EQ],
+          discount: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+          pricePerPerson: [FilterOperator.GTE, FilterOperator.LTE],
+          pricePerSession: [FilterOperator.GTE, FilterOperator.LTE],
+          pricePerPersonAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
+          pricePerSessionAfterDiscount: [
+            FilterOperator.GTE,
+            FilterOperator.LTE,
+          ],
 
-    const activityIds = paginatedActivity.data.map((a) => a.id);
+          duration: [FilterOperator.EQ],
+          averageRating: [
+            FilterOperator.EQ,
+            FilterOperator.GTE,
+            FilterOperator.LTE,
+          ],
+          openingHour: [
+            FilterOperator.EQ,
+            FilterOperator.GTE,
+            FilterOperator.LTE,
+          ],
+          closingHour: [
+            FilterOperator.EQ,
+            FilterOperator.GTE,
+            FilterOperator.LTE,
+          ],
+          startDate: [
+            FilterOperator.EQ,
+            FilterOperator.GTE,
+            FilterOperator.LTE,
+          ],
+          endDate: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
+          isFavorite: [FilterOperator.EQ],
+          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
 
-    const todayBookings =
-      await this.bookingService.findTotalTodayMultipleBooking(activityIds);
-
-    const activitiesWithTodayBooking = paginatedActivity.data.map(
-      (activity) => {
-        const dto = plainToInstance(ActivityWithRelationsDto, activity);
-        dto.todayBooking = todayBookings[activity.id] ?? 0;
-        return dto;
+          'placeNearby.name': [FilterOperator.ILIKE],
+        },
+        searchableColumns: [
+          'name',
+          'secondaryName',
+          'address',
+          'country',
+          'state',
+          'city',
+          'postalCode',
+          'mapLink',
+        ],
+        relations: {
+          category: true,
+          currency: true,
+          owner: true,
+        },
       },
     );
 
-    return paginateResponseMapper(
-      paginatedActivity,
-      activitiesWithTodayBooking,
+    const activities = ActivityPaginationDto.fromEntities(
+      paginatedActivities.data,
     );
+
+    return paginateResponseMapper(paginatedActivities, activities);
   }
 
   async findOne(
     id: string,
     entityManager?: EntityManager,
   ): Promise<ActivityWithRelationsDto> {
-    const repository = entityManager
-      ? entityManager.getRepository(Activity)
-      : this.activityRepository;
+    const repository = this._getRepository(entityManager);
 
     const activity = await repository.findOne({
+      select: {
+        id: true,
+        name: true,
+        secondaryName: true,
+        price: true,
+        discountType: true,
+        discount: true,
+        priceAfterDiscount: true,
+        duration: true,
+        highlight: true,
+        address: true,
+        country: true,
+        state: true,
+        city: true,
+        postalCode: true,
+        mapLink: true,
+        placeNearby: true,
+        openingHour: true,
+        closingHour: true,
+        startDate: true,
+        endDate: true,
+        dailyLimit: true,
+        photos: true,
+        videos: true,
+        video360s: true,
+        floorPlans: true,
+        averageRating: true,
+        totalReview: true,
+        isFavorite: true,
+        category: {
+          id: true,
+          name: true,
+        },
+        currency: {
+          id: true,
+          name: true,
+          code: true,
+          symbol: true,
+        },
+        owner: {
+          id: true,
+          name: true,
+          type: true,
+          companyName: true,
+          email: true,
+          phoneCountryCode: true,
+          phoneNumber: true,
+          address: true,
+          website: true,
+          status: true,
+        },
+      },
       where: {
         id,
       },
@@ -177,7 +265,6 @@ export class ActivityService {
         category: true,
         currency: true,
         owner: true,
-        reviews: { booking: { currency: true, customer: true } },
       },
     });
 
@@ -185,43 +272,45 @@ export class ActivityService {
       throw new NotFoundException('activity not found');
     }
 
-    const todayBooking = await this.bookingService.findTotalTodayBooking(id);
-
-    const activityDto = plainToInstance(ActivityWithRelationsDto, activity);
-
-    activityDto.todayBooking = todayBooking;
-
-    return activityDto;
+    return ActivityWithRelationsDto.fromEntity(activity);
   }
 
   async update(
     id: string,
     payload: UpdateActivityDto,
   ): Promise<ActivityWithRelationsDto> {
-    const initial = await this.findOne(id);
+    await this.validateExist(id);
 
-    this._handleDefaultDiscountType(payload);
+    const initialActivity = await this.findOne(id);
 
-    await this._validateRelatedEntities(
-      payload.categoryId,
-      payload.currencyId,
-      payload.ownerId,
-    );
-
-    const convertedBasePriceActivity = await this._convertToBaseCurrency(
+    const convertedPayload = await this._convertToBaseCurrency(
       payload,
-      initial.currencyId,
+      initialActivity,
     );
 
-    await this.activityRepository.update(id, convertedBasePriceActivity);
+    await this.activityRepository.update(id, convertedPayload);
 
     return await this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.activityRepository.delete(id);
+  }
+
+  private _getRepository(entityManager?: EntityManager): Repository<Activity> {
+    return entityManager
+      ? entityManager.getRepository(Activity)
+      : this.activityRepository;
+  }
+
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.activityRepository.exists({ where: { id } });
+
+    if (!exists) {
+      throw new NotFoundException('activity not found');
+    }
   }
 
   async findBestSeller(option: BestSeller): Promise<GetActivityBestSellerDto> {
@@ -282,57 +371,38 @@ export class ActivityService {
     return { data: dtos };
   }
 
-  private async _validateRelatedEntities(
-    categoryId: string,
-    currencyId?: string,
-    ownerId?: string,
-  ): Promise<void> {
-    await this.activityCategoryService.findOne(categoryId);
-
-    if (currencyId) {
-      await this.currencyService.findOne(currencyId);
-    }
-
-    if (ownerId) {
-      await this.ownerService.findOne(ownerId);
-    }
-  }
-
   private async _convertToBaseCurrency(
     activityData: CreateActivityDto | UpdateActivityDto,
-    currencyId?: string,
+    initialData?: ActivityWithRelationsDto,
   ): Promise<CreateActivityDto | UpdateActivityDto> {
+    const currencyId = activityData.currencyId ?? initialData.currencyId;
+    const discountType = activityData.discountType ?? initialData.discountType;
+    const discount = activityData.discount ?? initialData.discount;
+    const price = activityData.price ?? initialData.price;
+
     return {
       ...activityData,
       currencyId: await this.currencyService.findBaseCurrencyId(),
       price: await this.currencyService.convertToBaseCurrency(
-        currencyId ?? activityData.currencyId,
-        activityData.price,
+        currencyId,
+        price,
       ),
       discount:
-        activityData.discountType === DiscountType.Fixed
-          ? await this.currencyService.convertToBaseCurrency(
-              activityData.currencyId,
-              activityData.discount,
-            )
-          : activityData.discount,
+        discount != null
+          ? discountType === DiscountType.Fixed
+            ? await this.currencyService.convertToBaseCurrency(
+                currencyId,
+                discount,
+              )
+            : discount
+          : undefined,
     };
-  }
-
-  private async _handleDefaultDiscountType(
-    payload: CreateActivityDto | UpdateActivityDto,
-  ) {
-    if (payload.discount && !payload.discountType) {
-      payload.discountType = DiscountType.Percentage;
-    }
   }
 
   // Booking
   async createBooking(
     payload: CreateBookingDto,
   ): Promise<BookingWithRelationsDto> {
-    const booking = await this.bookingService.create(payload);
-
-    return booking;
+    return await this.bookingService.create(payload);
   }
 }

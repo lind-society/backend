@@ -5,13 +5,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { BookingHelperService } from '../helper/booking-helper.service';
 import { BookingCustomer } from './../../../database/entities/booking-customer.entity';
 import {
-  BookingCustomerDto,
+  BookingCustomerPaginationDto,
   BookingCustomerWithRelationsDto,
   CreateBookingCustomerDto,
   UpdateBookingCustomerDto,
@@ -20,8 +20,6 @@ import {
 @Injectable()
 export class BookingCustomerService {
   constructor(
-    @InjectDataSource()
-    private datasource: DataSource,
     @InjectRepository(BookingCustomer)
     private bookingCustomerRepository: Repository<BookingCustomer>,
     private bookingHelperService: BookingHelperService,
@@ -32,7 +30,7 @@ export class BookingCustomerService {
     isDashboardRequest: boolean,
     bookingId?: string,
     entityManager?: EntityManager,
-  ): Promise<BookingCustomerDto> {
+  ): Promise<BookingCustomerWithRelationsDto> {
     if (!isDashboardRequest) {
       await this.bookingHelperService.validateBookingExist(
         bookingId,
@@ -40,22 +38,52 @@ export class BookingCustomerService {
       );
     }
 
-    const repository = entityManager
-      ? entityManager.getRepository(BookingCustomer)
-      : this.bookingCustomerRepository;
+    const repository = this._getRepository(entityManager);
 
-    const createdBookingCustomer = repository.create(payload);
+    const bookingCustomerEntity = repository.create(payload);
 
-    return await repository.save(createdBookingCustomer);
+    const createdBookingCustomer = await repository.save(bookingCustomerEntity);
+
+    return BookingCustomerWithRelationsDto.fromEntity(createdBookingCustomer);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<BookingCustomerWithRelationsDto[]>> {
-    const paginatedBookingCustomer = await paginate(
+  ): Promise<PaginateResponseDataProps<BookingCustomerPaginationDto[]>> {
+    const paginatedBookingCustomers = await paginate(
       query,
       this.bookingCustomerRepository,
       {
+        select: [
+          'id',
+          'name',
+          'email',
+          'phoneCountryCode',
+          'phoneNumber',
+          'createdAt',
+
+          'bookings.id',
+          'bookings.type',
+          'bookings.totalAmount',
+          'bookings.totalGuest',
+          'bookings.bookingDate',
+          'bookings.checkInDate',
+          'bookings.checkOutDate',
+          'bookings.status',
+
+          'bookings.currency.id',
+          'bookings.currency.name',
+          'bookings.currency.code',
+          'bookings.currency.symbol',
+
+          'bookings.activity.id',
+          'bookings.activity.name',
+          'bookings.activity.category.id',
+          'bookings.activity.category.name',
+
+          'bookings.villa.id',
+          'bookings.villa.name',
+        ],
         sortableColumns: ['createdAt', 'name'],
         defaultSortBy: [['createdAt', 'DESC']],
         nullSort: 'last',
@@ -66,12 +94,20 @@ export class BookingCustomerService {
         },
         searchableColumns: ['name', 'email', 'phoneNumber'],
         relations: {
-          bookings: true,
+          bookings: {
+            currency: true,
+            activity: { category: true },
+            villa: true,
+          },
         },
       },
     );
 
-    return paginateResponseMapper(paginatedBookingCustomer);
+    const bookingCustomers = BookingCustomerPaginationDto.fromEntities(
+      paginatedBookingCustomers.data,
+    );
+
+    return paginateResponseMapper(paginatedBookingCustomers, bookingCustomers);
   }
 
   async findOne(
@@ -96,24 +132,57 @@ export class BookingCustomerService {
       }
     }
 
-    const query = {
+    const repository = this._getRepository(entityManager);
+
+    const bookingCustomer = await repository.findOne({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phoneCountryCode: true,
+        phoneNumber: true,
+        bookings: {
+          id: true,
+          type: true,
+          totalAmount: true,
+          totalGuest: true,
+          bookingDate: true,
+          checkInDate: true,
+          checkOutDate: true,
+          status: true,
+          currency: {
+            id: true,
+            name: true,
+            code: true,
+            symbol: true,
+          },
+          activity: {
+            id: true,
+            name: true,
+            category: {
+              id: true,
+              name: true,
+            },
+          },
+          villa: {
+            id: true,
+            name: true,
+          },
+        },
+      },
       where: {
         id,
       },
       relations: {
-        bookings: true,
+        bookings: { currency: true, activity: { category: true }, villa: true },
       },
-    };
-
-    const bookingCustomer = entityManager
-      ? await entityManager.findOne(BookingCustomer, query)
-      : await this.bookingCustomerRepository.findOne(query);
+    });
 
     if (!bookingCustomer) {
       throw new NotFoundException(`booking customer not found`);
     }
 
-    return bookingCustomer;
+    return BookingCustomerWithRelationsDto.fromEntity(bookingCustomer);
   }
 
   async update(
@@ -129,9 +198,7 @@ export class BookingCustomerService {
       await this._validateBookingCustomerExist(id, entityManager);
     }
 
-    const repository = entityManager
-      ? entityManager.getRepository(BookingCustomer)
-      : this.bookingCustomerRepository;
+    const repository = this._getRepository(entityManager);
 
     await repository.update(id, payload);
 
@@ -149,6 +216,14 @@ export class BookingCustomerService {
   }
 
   // private methods
+  private _getRepository(
+    entityManager?: EntityManager,
+  ): Repository<BookingCustomer> {
+    return entityManager
+      ? entityManager.getRepository(BookingCustomer)
+      : this.bookingCustomerRepository;
+  }
+
   async _validateBookingCustomerExist(
     id: string,
     entityManager?: EntityManager,
@@ -157,11 +232,11 @@ export class BookingCustomerService {
       throw new BadRequestException('booking customer id is required');
     }
 
-    const bookingCustomerExist = entityManager
-      ? await entityManager.exists(BookingCustomer, { where: { id } })
-      : await this.bookingCustomerRepository.exists({
-          where: { id },
-        });
+    const repository = this._getRepository(entityManager);
+
+    const bookingCustomerExist = await repository.exists({
+      where: { id },
+    });
 
     if (!bookingCustomerExist) {
       throw new NotFoundException('booking customer not found');
@@ -207,25 +282,48 @@ export class BookingCustomerService {
       entityManager,
     );
 
-    const query = {
-      where: {
+    const repository = this._getRepository(entityManager);
+
+    const bookingCustomer = await repository.findOne({
+      select: {
+        id: true,
+        name: true,
+        email: true,
         bookings: {
-          id: bookingId,
+          id: true,
+          type: true,
+          totalAmount: true,
+          totalGuest: true,
+          bookingDate: true,
+          checkInDate: true,
+          checkOutDate: true,
+          status: true,
+          activity: {
+            id: true,
+            name: true,
+            category: {
+              id: true,
+              name: true,
+            },
+          },
+          villa: {
+            id: true,
+            name: true,
+          },
         },
+      },
+      where: {
+        id: bookingId,
       },
       relations: {
         bookings: true,
       },
-    };
+    });
 
-    const bookingCustomerRepositoryRepository = entityManager
-      ? await entityManager.findOne(BookingCustomer, query)
-      : await this.bookingCustomerRepository.findOne(query);
-
-    if (!bookingCustomerRepositoryRepository) {
+    if (!bookingCustomer) {
       throw new NotFoundException(`booking customer not found`);
     }
 
-    return bookingCustomerRepositoryRepository;
+    return BookingCustomerWithRelationsDto.fromEntity(bookingCustomer);
   }
 }

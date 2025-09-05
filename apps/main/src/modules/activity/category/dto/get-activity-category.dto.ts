@@ -5,10 +5,13 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { ActivityCategoryDto } from './activity-category.dto';
+import {
+  ActivityCategoryDto,
+  ActivityCategoryPaginationDto,
+} from './activity-category.dto';
 
 export class GetActivityCategoriesPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: ActivityCategoryDto[];
+  readonly data!: ActivityCategoryPaginationDto[];
 }
 
 export class GetActivityCategoriesSuccessResponse

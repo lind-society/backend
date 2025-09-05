@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import {
   CreateOwnerDto,
   OwnerDto,
-  OwnerWithRelationDto,
+  OwnerWithRelationsDto,
   UpdateOwnerDto,
 } from './dto';
 
@@ -50,7 +50,7 @@ export class OwnerService {
     return paginateResponseMapper(paginatedOwner);
   }
 
-  async findOne(id: string): Promise<OwnerWithRelationDto> {
+  async findOne(id: string): Promise<OwnerWithRelationsDto> {
     const owner = await this.ownerRepository.findOne({
       where: { id },
       relations: {
@@ -70,8 +70,8 @@ export class OwnerService {
   async update(
     id: string,
     payload: UpdateOwnerDto,
-  ): Promise<OwnerWithRelationDto> {
-    await this.findOne(id);
+  ): Promise<OwnerWithRelationsDto> {
+    await this.validateExist(id);
 
     await this.ownerRepository.update(id, payload);
 
@@ -79,8 +79,18 @@ export class OwnerService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.ownerRepository.delete(id);
+  }
+
+  async validateExist(id: string) {
+    const exists = await this.ownerRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('owner not found');
+    }
   }
 }

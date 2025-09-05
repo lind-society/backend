@@ -10,6 +10,7 @@ import {
   ConvertedPriceResponsetDto,
   CreateCurrencyConverterDto,
   CurrencyConverterDto,
+  CurrencyConverterWithRelationsDto,
   UpdateCurrencyConverterDto,
 } from './dto';
 @Injectable()
@@ -84,6 +85,24 @@ export class CurrencyConverterService {
       query,
       this.currencyConverterRepository,
       {
+        select: [
+          'id',
+          'exchangeRate',
+          'description',
+          'createdAt',
+          'baseCurrency.id',
+          'baseCurrency.code',
+          'baseCurrency.name',
+          'baseCurrency.symbol',
+          'baseCurrency.allowDecimal',
+          'baseCurrency.allowRound',
+          'targetCurrency.id',
+          'targetCurrency.code',
+          'targetCurrency.name',
+          'targetCurrency.symbol',
+          'targetCurrency.allowDecimal',
+          'targetCurrency.allowRound',
+        ],
         sortableColumns: ['createdAt', 'exchangeRate'],
         defaultSortBy: [['createdAt', 'DESC']],
         nullSort: 'last',
@@ -107,26 +126,51 @@ export class CurrencyConverterService {
       },
     );
 
-    return paginateResponseMapper(paginatedCurrencyConverter);
+    const dto = CurrencyConverterWithRelationsDto.fromEntities(
+      paginatedCurrencyConverter.data,
+    );
+
+    return paginateResponseMapper(paginatedCurrencyConverter, dto);
   }
 
   async isExist(
     baseCurrencyId: string,
     targetCurrencyId: string,
   ): Promise<Boolean> {
-    const currency = await this.currencyConverterRepository.exists({
+    const currencyExist = await this.currencyConverterRepository.exists({
+      select: { id: true },
       where: {
         baseCurrencyId,
         targetCurrencyId,
       },
-      select: ['id'],
     });
 
-    return !!currency;
+    return currencyExist;
   }
 
   async findOne(id: string): Promise<CurrencyConverterDto> {
-    const currency = await this.currencyConverterRepository.findOne({
+    const currencyConverter = await this.currencyConverterRepository.findOne({
+      select: {
+        id: true,
+        exchangeRate: true,
+        description: true,
+        baseCurrency: {
+          id: true,
+          code: true,
+          name: true,
+          symbol: true,
+          allowDecimal: true,
+          allowRound: true,
+        },
+        targetCurrency: {
+          id: true,
+          code: true,
+          name: true,
+          symbol: true,
+          allowDecimal: true,
+          allowRound: true,
+        },
+      },
       where: {
         id,
       },
@@ -136,11 +180,11 @@ export class CurrencyConverterService {
       },
     });
 
-    if (!currency) {
+    if (!currencyConverter) {
       throw new NotFoundException('currency converter not found');
     }
 
-    return currency;
+    return CurrencyConverterDto.fromEntity(currencyConverter);
   }
 
   async update(

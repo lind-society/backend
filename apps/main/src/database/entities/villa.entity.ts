@@ -146,7 +146,6 @@ export class Villa {
     name: 'discount_yearly_type',
     type: 'enum',
     enum: DiscountType,
-    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountYearlyType!: DiscountType | null;
@@ -270,9 +269,16 @@ export class Villa {
     type: 'decimal',
     precision: 5,
     scale: 2,
-    nullable: true,
+    default: 0,
   })
-  averageRating!: number | null;
+  averageRating!: number;
+
+  @Column({
+    name: 'total_review',
+    type: 'integer',
+    default: 0,
+  })
+  totalReview!: number;
 
   @Column({
     name: 'is_favorite',
@@ -344,8 +350,8 @@ export class Villa {
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',

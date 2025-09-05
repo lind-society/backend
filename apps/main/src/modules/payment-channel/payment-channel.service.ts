@@ -38,7 +38,7 @@ export class PaymentChannelService {
       query,
       this.paymentChannelRepository,
       {
-        sortableColumns: ['createdAt', 'code'],
+        sortableColumns: ['createdAt', 'name', 'code'],
         defaultSortBy: [['code', 'ASC']],
         nullSort: 'last',
         defaultLimit: 10,
@@ -46,7 +46,7 @@ export class PaymentChannelService {
         filterableColumns: {
           createdAt: [FilterOperator.GTE, FilterOperator.LTE],
         },
-        searchableColumns: ['code'],
+        searchableColumns: ['name', 'code'],
       },
     );
 
@@ -112,6 +112,16 @@ export class PaymentChannelService {
     await this.datasource.transaction(async (manager) => {
       await manager.remove(PaymentChannel, entities);
     });
+  }
+
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.paymentChannelRepository.exists({
+      where: { id: In(['a', 'b']) },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('payment channel not found');
+    }
   }
 
   async findMultiple(ids: string[]): Promise<PaymentChannel[]> {

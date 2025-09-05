@@ -5,10 +5,10 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { BlogWithRelationsDto } from './blog.dto';
+import { BlogPaginationDto, BlogWithRelationsDto } from './blog.dto';
 
 export class GetBlogPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: BlogWithRelationsDto[];
+  readonly data!: BlogPaginationDto[];
 }
 
 export class GetBlogsSuccessResponse

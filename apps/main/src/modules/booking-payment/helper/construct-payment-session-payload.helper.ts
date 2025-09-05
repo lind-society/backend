@@ -22,7 +22,10 @@ export function constructPaymentSessionPayload(
   return {
     ...payload,
     referenceId: bookingPaymentId,
-    customer: constructPaymentCustomer(bookingDetail.customer),
+    customer: constructPaymentCustomer(
+      bookingDetail.customer.id,
+      bookingDetail.customer.name,
+    ),
     sessionType: payload.sessionType ?? PaymentAvailableSessionType.Pay,
     currency: PaymentAvailableCurrency.IDR,
     amount: Number(bookingDetail.totalAmount),

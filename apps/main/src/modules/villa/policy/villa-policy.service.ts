@@ -53,6 +53,10 @@ export class VillaPolicyService {
       where: {
         id,
       },
+      relations: {
+        type: true,
+        villaPolicies: true,
+      },
     });
 
     if (!villaPolicy) {

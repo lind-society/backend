@@ -1,5 +1,6 @@
 export * from './best-seller-param.enum';
 export * from './default-http-status.enum';
+export * from './entity-action.enum';
 export * from './entity-name.enum';
 export * from './file-type.enum';
 export * from './payment-customer-type.dto';

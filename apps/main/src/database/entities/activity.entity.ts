@@ -18,12 +18,11 @@ import { DiscountType } from './shared-enum.entity';
 import { PlaceNearby } from './shared-interface.entity';
 
 export enum ActivityDuration {
-  Temporary = 'Temporary',
-  Permanent = 'Permanent',
+  Temporary = 'temporary',
+  Permanent = 'permanent',
 }
 
-@Entity({ name: 'activities' })
-export class Activity {
+export class BaseActivity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -37,23 +36,22 @@ export class Activity {
   highlight!: string;
 
   @Column({
-    type: 'decimal',
-    precision: 15,
-    scale: 2,
-  })
-  price!: number;
-
-  @Column({
     name: 'discount_type',
     type: 'enum',
     enum: DiscountType,
-    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountType!: DiscountType | null;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   discount!: number | null;
+
+  @Column({
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+  })
+  price!: number;
 
   @Column({
     name: 'price_after_discount',
@@ -133,9 +131,16 @@ export class Activity {
     type: 'decimal',
     precision: 5,
     scale: 2,
-    nullable: true,
+    default: 0,
   })
-  averageRating!: number | null;
+  averageRating!: number;
+
+  @Column({
+    name: 'total_review',
+    type: 'integer',
+    default: 0,
+  })
+  totalReview!: number;
 
   @Column({
     name: 'is_favorite',
@@ -187,8 +192,8 @@ export class Activity {
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',
@@ -198,3 +203,6 @@ export class Activity {
   })
   deletedAt!: Date | null;
 }
+
+@Entity({ name: 'activities' })
+export class Activity extends BaseActivity {}

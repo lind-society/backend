@@ -24,38 +24,38 @@ export enum BookingType {
 
 export enum BookingStatus {
   // Activity
-  Pending = 'Pending',
-  Confirmed = 'Confirmed',
-  Completed = 'Completed',
+  Pending = 'pending',
+  Confirmed = 'confirmed',
+  Completed = 'completed',
 
   // Villa
-  Requested = 'Requested',
-  Negotiation = 'Negotiation',
-  WaitingForPayment = 'Waiting for Payment',
-  Booked = 'Booked',
-  CheckedIn = 'Checked In',
-  Done = 'Done',
+  Requested = 'requested',
+  Negotiation = 'negotiation',
+  WaitingForPayment = 'waiting_for_payment',
+  Booked = 'booked',
+  CheckedIn = 'checked_in',
+  Done = 'done',
 
   // Both
-  Canceled = 'Canceled',
+  Canceled = 'canceled',
 }
 
 // Seperate booking status enum for application validation
 export enum ActivityBookingStatus {
-  Pending = 'Pending',
-  Confirmed = 'Confirmed',
-  Completed = 'Completed',
-  Canceled = 'Canceled',
+  Pending = 'pending',
+  Confirmed = 'confirmed',
+  Completed = 'completed',
+  Canceled = 'canceled',
 }
 
 export enum VillaBookingStatus {
-  Requested = 'Requested',
-  Negotiation = 'Negotiation',
-  WaitingForPayment = 'Waiting for Payment',
-  Booked = 'Booked',
-  CheckedIn = 'Checked In',
-  Done = 'Done',
-  Canceled = 'Canceled',
+  Requested = 'requested',
+  Negotiation = 'negotiation',
+  WaitingForPayment = 'waiting_for_payment',
+  Booked = 'booked',
+  CheckedIn = 'checked_n',
+  Done = 'done',
+  Canceled = 'canceled',
 }
 
 @Entity({ name: 'bookings' })
@@ -82,15 +82,15 @@ export class Booking {
 
   // Activity Only
   @Column({ name: 'booking_date', type: 'timestamptz', nullable: true })
-  bookingDate!: Date;
+  bookingDate!: Date | null;
 
   // Villa Only
   @Column({ name: 'check_in_date', type: 'timestamptz', nullable: true })
-  checkInDate!: Date;
+  checkInDate!: Date | null;
 
   // Villa Only
   @Column({ name: 'check_out_date', type: 'timestamptz', nullable: true })
-  checkOutDate!: Date;
+  checkOutDate!: Date | null;
 
   // Both with different validation each
   @Column({ type: 'enum', enum: BookingStatus, nullable: true })
@@ -107,6 +107,9 @@ export class Booking {
 
   @Column({ name: 'villa_id', type: 'uuid', nullable: true })
   villaId!: string | null;
+
+  @Column({ name: 'review_id', type: 'uuid', nullable: true })
+  reviewId!: string | null;
 
   @OneToOne(() => Review, (review) => review.booking, {
     nullable: true,
@@ -154,8 +157,8 @@ export class Booking {
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',

@@ -1,4 +1,4 @@
-import { Booking, BookingPayment } from '@apps/main/database/entities';
+import { BookingPayment } from '@apps/main/database/entities';
 import { CurrencyModule } from '@apps/main/modules/currency/currency.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,7 +13,7 @@ import { BookingPaymentRefundModule } from './refund/booking-payment-refund.modu
   controllers: [BookingPaymentController, BookingPaymentDashboardController],
   providers: [BookingPaymentService],
   imports: [
-    TypeOrmModule.forFeature([BookingPayment, Booking]),
+    TypeOrmModule.forFeature([BookingPayment]),
     BookingPaymentRefundModule,
     CurrencyModule,
     BookingHelperModule,

@@ -14,10 +14,10 @@ import { DiscountType } from './shared-enum.entity';
 import { VillaPriceRulePivot } from './villa-price-rule-pivot.entity';
 
 export enum VillaPriceRuleSeason {
-  Regular_Season = 'Regular Season',
-  Low_Season = 'Low Season',
-  High_Season = 'High Season',
-  Peak_Season = 'Peak Season',
+  Regular_Season = 'regular_season',
+  Low_Season = 'low_season',
+  High_Season = 'high_season',
+  Peak_Season = 'peak_season',
 }
 
 @Entity('villa_price_rules')
@@ -50,7 +50,6 @@ export class VillaPriceRule {
     name: 'discount_type',
     type: 'enum',
     enum: DiscountType,
-    enumName: 'discount_type_enum',
     nullable: true,
   })
   discountType!: DiscountType | null;
@@ -83,8 +82,8 @@ export class VillaPriceRule {
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',

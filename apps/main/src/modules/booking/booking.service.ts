@@ -13,7 +13,6 @@ import {
 import {
   BadRequestException,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -23,6 +22,7 @@ import { Between, DataSource, EntityManager, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from './../shared/dto';
 import { BookingCustomerService } from './customer/booking-customer.service';
 import {
+  BookingPaginationDto,
   BookingWithRelationsDto,
   CreateBookingDto,
   UpdateBookingDto,
@@ -30,8 +30,6 @@ import {
 
 @Injectable()
 export class BookingService {
-  private readonly logger = new Logger(BookingService.name);
-
   constructor(
     private eventEmitter: EventEmitter2,
     @InjectDataSource()
@@ -60,21 +58,79 @@ export class BookingService {
 
       const { customer, ...bookingPayload } = payload;
 
-      const createdBooking = await manager.save(Booking, {
+      const bookingEntity = manager.create(Booking, {
         ...bookingPayload,
         customerId: createdBookingCustomer.id,
       });
 
+      const createdBooking = await manager.save(bookingEntity);
+
       await this.eventEmitter.emitAsync(CREATED_BOOKING, createdBooking.id);
 
-      return createdBooking;
+      return BookingWithRelationsDto.fromEntity(createdBooking);
     });
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<BookingWithRelationsDto[]>> {
-    const paginatedBooking = await paginate(query, this.bookingRepository, {
+  ): Promise<PaginateResponseDataProps<BookingPaginationDto[]>> {
+    const paginatedBookings = await paginate(query, this.bookingRepository, {
+      select: [
+        'id',
+        'type',
+        'totalAmount',
+        'totalGuest',
+        'bookingDate',
+        'checkInDate',
+        'checkOutDate',
+        'status',
+        'createdAt',
+
+        'customer.id',
+        'customer.name',
+        'customer.email',
+        'customer.phoneCountryCode',
+        'customer.phoneNumber',
+
+        'currency.id',
+        'currency.name',
+        'currency.code',
+        'currency.symbol',
+
+        'activity.id',
+        'activity.name',
+        'activity.category.id',
+        'activity.category.name',
+        'activity.owner.id',
+        'activity.owner.name',
+
+        'villa.id',
+        'villa.name',
+        'villa.owner.id',
+        'villa.owner.name',
+
+        'review.id',
+        'review.rating',
+
+        'payments.id',
+        'payments.paymentMethod',
+        'payments.paymentChannel',
+        'payments.failureStage',
+        'payments.failureReason',
+        'payments.refundedAmount',
+        'payments.refundedReason',
+        'payments.refundedAt',
+        'payments.cancelledReason',
+        'payments.cancelledAt',
+        'payments.amount',
+        'payments.paidAt',
+        'payments.status',
+
+        'payments.currency.id',
+        'payments.currency.name',
+        'payments.currency.code',
+        'payments.currency.symbol',
+      ],
       sortableColumns: [
         'type',
         'createdAt',
@@ -138,18 +194,124 @@ export class BookingService {
       },
     });
 
-    return paginateResponseMapper(paginatedBooking);
+    const bookings = BookingPaginationDto.fromEntities(paginatedBookings.data);
+
+    return paginateResponseMapper(paginatedBookings, bookings);
   }
 
   async findOne(
     id: string,
     entityManager?: EntityManager,
   ): Promise<BookingWithRelationsDto> {
-    const repository = entityManager
-      ? entityManager.getRepository(Booking)
-      : this.bookingRepository;
+    const repository = this._getRepository(entityManager);
 
     const booking = await repository.findOne({
+      select: {
+        id: true,
+        type: true,
+        totalAmount: true,
+        totalGuest: true,
+        bookingDate: true,
+        checkInDate: true,
+        checkOutDate: true,
+        status: true,
+        customer: {
+          id: true,
+          name: true,
+          email: true,
+          phoneCountryCode: true,
+          phoneNumber: true,
+        },
+        currency: {
+          id: true,
+          name: true,
+          code: true,
+          symbol: true,
+        },
+        activity: {
+          id: true,
+          name: true,
+          category: {
+            id: true,
+            name: true,
+          },
+          currency: {
+            id: true,
+            name: true,
+            code: true,
+            symbol: true,
+          },
+          owner: {
+            id: true,
+            name: true,
+            type: true,
+            companyName: true,
+            email: true,
+            phoneCountryCode: true,
+            phoneNumber: true,
+            address: true,
+            website: true,
+            status: true,
+          },
+        },
+        villa: {
+          id: true,
+          name: true,
+          currency: {
+            id: true,
+            name: true,
+            code: true,
+            symbol: true,
+          },
+          owner: {
+            id: true,
+            name: true,
+            type: true,
+            companyName: true,
+            email: true,
+            phoneCountryCode: true,
+            phoneNumber: true,
+            address: true,
+            website: true,
+            status: true,
+          },
+        },
+        review: {
+          id: true,
+          rating: true,
+          message: true,
+          booking: {
+            customer: {
+              id: true,
+              name: true,
+              email: true,
+              phoneCountryCode: true,
+              phoneNumber: true,
+            },
+          },
+        },
+        payments: {
+          id: true,
+          paymentMethod: true,
+          paymentChannel: true,
+          failureStage: true,
+          failureReason: true,
+          refundedAmount: true,
+          refundedReason: true,
+          refundedAt: true,
+          cancelledReason: true,
+          cancelledAt: true,
+          amount: true,
+          paidAt: true,
+          status: true,
+          currency: {
+            id: true,
+            name: true,
+            code: true,
+            symbol: true,
+          },
+        },
+      },
       where: {
         id,
       },
@@ -174,7 +336,7 @@ export class BookingService {
       throw new NotFoundException(`booking not found`);
     }
 
-    return booking;
+    return BookingWithRelationsDto.fromEntity(booking);
   }
 
   async update(
@@ -182,9 +344,11 @@ export class BookingService {
     payload: UpdateBookingDto,
     entityManager?: EntityManager,
   ): Promise<BookingWithRelationsDto> {
-    const initialBooking = await this.findOne(id, entityManager);
+    await this.validateExist(id);
 
     const transactionTask = async (manager: EntityManager) => {
+      const initialBooking = await this.findOne(id, manager);
+
       const { customer: customerData, ...bookingData } = payload;
 
       if (
@@ -195,6 +359,10 @@ export class BookingService {
           initialBooking.activityId,
           manager,
         );
+      }
+
+      if (payload.status) {
+        this._validateUpdateStatus(payload.status, initialBooking.type);
       }
 
       if (payload.customer) {
@@ -219,15 +387,28 @@ export class BookingService {
     return await this.findOne(id, entityManager);
   }
 
-  async remove(id: string): Promise<BookingWithRelationsDto> {
-    const booking = await this.findOne(id);
+  async remove(id: string): Promise<void> {
+    await this.validateExist(id);
 
     await this.bookingRepository.delete(id);
-
-    return booking;
   }
 
   // Helper
+  private _getRepository(entityManager?: EntityManager): Repository<Booking> {
+    return entityManager
+      ? entityManager.getRepository(Booking)
+      : this.bookingRepository;
+  }
+
+  async validateExist(id: string) {
+    const exists = await this.bookingRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('booking not found');
+    }
+  }
 
   // Activity
   async findTotalTodayBooking(
@@ -346,6 +527,25 @@ export class BookingService {
       return BookingType.Villa;
     } else {
       return undefined;
+    }
+  }
+
+  private _validateUpdateStatus(
+    status: ActivityBookingStatus | VillaBookingStatus,
+    initialBookingType: BookingType,
+  ): void {
+    if (
+      !Object.values(
+        initialBookingType === BookingType.Activity
+          ? ActivityBookingStatus
+          : VillaBookingStatus,
+      ).includes(status)
+    ) {
+      throw new BadRequestException(
+        `Invalid status for booking type ${initialBookingType}, status must be one of: ${Object.values(
+          BookingType.Activity ? ActivityBookingStatus : VillaBookingStatus,
+        ).join(', ')} for ${initialBookingType} bookings`,
+      );
     }
   }
 }

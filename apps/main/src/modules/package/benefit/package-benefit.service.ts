@@ -22,28 +22,6 @@ export class PackageBenefitService {
     @InjectRepository(PackageBenefit)
     private packageBenefitRepository: Repository<PackageBenefit>,
   ) {}
-
-  async validatePackageBenefits(packageBenefitIds: string[]): Promise<void> {
-    const validPackageBenefits = await this.packageBenefitRepository.find({
-      where: { id: In(packageBenefitIds) },
-    });
-
-    if (validPackageBenefits.length !== packageBenefitIds.length) {
-      const validPackageBenefitIds = validPackageBenefits.map(
-        (PackageBenefit) => PackageBenefit.id,
-      );
-      const invalidPackageBenefitIds = packageBenefitIds.filter(
-        (id) => !validPackageBenefitIds.includes(id),
-      );
-
-      if (invalidPackageBenefitIds.length > 0) {
-        throw new BadRequestException(
-          `invalid package benefit ids: ${invalidPackageBenefitIds.join(', ')}`,
-        );
-      }
-    }
-  }
-
   async create(payload: CreatePackageBenefitDto): Promise<PackageBenefitDto> {
     const packageBenefit = this.packageBenefitRepository.create(payload);
 
@@ -101,5 +79,26 @@ export class PackageBenefitService {
     await this.findOne(id);
 
     await this.packageBenefitRepository.delete(id);
+  }
+
+  async validatePackageBenefits(packageBenefitIds: string[]): Promise<void> {
+    const validPackageBenefits = await this.packageBenefitRepository.find({
+      where: { id: In(packageBenefitIds) },
+    });
+
+    if (validPackageBenefits.length !== packageBenefitIds.length) {
+      const validPackageBenefitIds = validPackageBenefits.map(
+        (PackageBenefit) => PackageBenefit.id,
+      );
+      const invalidPackageBenefitIds = packageBenefitIds.filter(
+        (id) => !validPackageBenefitIds.includes(id),
+      );
+
+      if (invalidPackageBenefitIds.length > 0) {
+        throw new BadRequestException(
+          `invalid package benefit ids: ${invalidPackageBenefitIds.join(', ')}`,
+        );
+      }
+    }
   }
 }

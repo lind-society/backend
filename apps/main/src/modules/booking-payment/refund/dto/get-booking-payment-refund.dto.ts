@@ -5,10 +5,13 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { BookingPaymentRefundWithRelationsDto } from './booking-payment-refund.dto';
+import {
+  BookingPaymentRefundPaginationDto,
+  BookingPaymentRefundWithRelationsDto,
+} from './booking-payment-refund.dto';
 
 export class GetBookingPaymentRefundPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: BookingPaymentRefundWithRelationsDto[];
+  readonly data!: BookingPaymentRefundPaginationDto[];
 }
 
 export class GetBookingPaymentRefundsSuccessResponse

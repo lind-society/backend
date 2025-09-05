@@ -3,11 +3,11 @@ import { BlogCategory } from '@apps/main/database/entities';
 import { PaginateResponseDataProps } from '@apps/main/modules/shared/dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import {
   BlogCategoryDto,
+  BlogCategoryPaginationDto,
   BlogCategoryWithRelationsDto,
   CreateBlogCategoryDto,
   UpdateBlogCategoryDto,
@@ -19,19 +19,35 @@ export class BlogCategoryService {
     @InjectRepository(BlogCategory)
     private blogCateogryRepository: Repository<BlogCategory>,
   ) {}
-  async create(payload: CreateBlogCategoryDto): Promise<BlogCategoryDto> {
-    const blogCategory = this.blogCateogryRepository.create(payload);
 
-    return await this.blogCateogryRepository.save(blogCategory);
+  async create(
+    payload: CreateBlogCategoryDto,
+  ): Promise<BlogCategoryWithRelationsDto> {
+    const blogCategoryEntity = this.blogCateogryRepository.create(payload);
+
+    const createdBlogCategory =
+      await this.blogCateogryRepository.save(blogCategoryEntity);
+
+    return BlogCategoryWithRelationsDto.fromEntity(createdBlogCategory);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<BlogCategoryWithRelationsDto[]>> {
-    const paginatedBlogCategory = await paginate(
+  ): Promise<PaginateResponseDataProps<BlogCategoryPaginationDto[]>> {
+    const paginatedBlogCategories = await paginate(
       query,
       this.blogCateogryRepository,
       {
+        select: [
+          'id',
+          'name',
+          'createdAt',
+
+          'blogs.id',
+          'blogs.title',
+          'blogs.author.id',
+          'blogs.author.name',
+        ],
         sortableColumns: ['createdAt', 'name', 'blogs.id'],
         defaultSortBy: [['createdAt', 'DESC']],
         nullSort: 'last',
@@ -42,15 +58,31 @@ export class BlogCategoryService {
           createdAt: [FilterOperator.GTE, FilterOperator.LTE],
         },
         searchableColumns: ['name'],
-        relations: { blogs: true },
+        relations: { blogs: { author: true } },
       },
     );
 
-    return paginateResponseMapper(paginatedBlogCategory);
+    const blogCategories = BlogCategoryPaginationDto.fromEntities(
+      paginatedBlogCategories.data,
+    );
+
+    return paginateResponseMapper(paginatedBlogCategories, blogCategories);
   }
 
   async findOne(id: string): Promise<BlogCategoryWithRelationsDto> {
     const blogCategory = await this.blogCateogryRepository.findOne({
+      select: {
+        id: true,
+        name: true,
+        blogs: {
+          id: true,
+          title: true,
+          author: {
+            id: true,
+            name: true,
+          },
+        },
+      },
       where: {
         id,
       },
@@ -63,16 +95,14 @@ export class BlogCategoryService {
       throw new NotFoundException('blog category not found');
     }
 
-    return plainToInstance(BlogCategoryWithRelationsDto, blogCategory, {
-      enableImplicitConversion: true,
-    });
+    return BlogCategoryWithRelationsDto.fromEntity(blogCategory);
   }
 
   async update(
     id: string,
     payload: UpdateBlogCategoryDto,
   ): Promise<BlogCategoryDto> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.blogCateogryRepository.update(id, payload);
 
@@ -80,8 +110,16 @@ export class BlogCategoryService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.blogCateogryRepository.delete(id);
+  }
+
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.blogCateogryRepository.exists({ where: { id } });
+
+    if (!exists) {
+      throw new NotFoundException('blog category not found');
+    }
   }
 }

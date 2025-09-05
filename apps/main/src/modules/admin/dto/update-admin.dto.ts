@@ -5,7 +5,7 @@ import {
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { OmitType, PartialType } from '@nestjs/mapped-types';
-import { AdminDto } from './admin.dto';
+import { AdminPayloadDto } from './admin.dto';
 import { CreateAdminDto } from './create-admin.dto';
 
 export class UpdateAdminDto extends PartialType(
@@ -14,11 +14,11 @@ export class UpdateAdminDto extends PartialType(
 
 export class UpdateAdminSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<AdminDto>
+  implements HttpResponseOptions<AdminPayloadDto>
 {
-  readonly data: AdminDto;
+  readonly data: AdminPayloadDto;
 
-  constructor(data: AdminDto) {
+  constructor(data: AdminPayloadDto) {
     super({
       code: HttpStatus.OK,
       message: 'update admin success',
@@ -31,11 +31,11 @@ export class UpdateAdminSuccessResponse
 
 export class UpdateAdminPasswordSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<AdminDto>
+  implements HttpResponseOptions<AdminPayloadDto>
 {
-  readonly data: AdminDto;
+  readonly data: AdminPayloadDto;
 
-  constructor(data: AdminDto) {
+  constructor(data: AdminPayloadDto) {
     super({
       code: HttpStatus.OK,
       message: 'update admin password success',
@@ -48,11 +48,11 @@ export class UpdateAdminPasswordSuccessResponse
 
 export class UpdateProfileSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<AdminDto>
+  implements HttpResponseOptions<AdminPayloadDto>
 {
-  readonly data: AdminDto;
+  readonly data: AdminPayloadDto;
 
-  constructor(data: AdminDto) {
+  constructor(data: AdminPayloadDto) {
     super({
       code: HttpStatus.OK,
       message: 'update profile success',

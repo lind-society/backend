@@ -11,10 +11,13 @@ import {
   PaymentSessionDto,
   PaymentTokenDto,
 } from '../../payment/dto';
-import { BookingPaymentWithRelationsDto } from './booking-payment.dto';
+import {
+  BookingPaymentPaginationDto,
+  BookingPaymentWithRelationsDto,
+} from './booking-payment.dto';
 
 export class GetBookingPaymentPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: BookingPaymentWithRelationsDto[];
+  readonly data!: BookingPaymentPaginationDto[];
 }
 
 export class GetBookingPaymentsSuccessResponse

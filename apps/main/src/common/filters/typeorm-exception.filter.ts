@@ -38,9 +38,18 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
       );
     } else if (errorCode === PostgreSqlErrorCode.RelationNotFound) {
       responseCode = HttpStatus.BAD_REQUEST;
+
       message = sanitizePostgresqlErrorResponse(
         driverError?.detail ?? 'bad request',
       );
+
+      if (driverError?.detail.includes('is not present in table')) {
+        const [, field] = driverError?.detail.match(
+          /\((.+)\)=\(.+\) is not present in table "(.+)"/,
+        );
+
+        message = `failed to create ${driverError.table}, ${field.replace('_id', '')} not found`;
+      }
     }
 
     this.logger.error(exception);

@@ -22,6 +22,14 @@ export class VillaFacilityPivot {
   @Column({ name: 'facility_id', type: 'uuid' })
   facilityId!: string;
 
+  @Column({
+    name: 'include_description',
+    type: 'boolean',
+    nullable: false,
+    default: false,
+  })
+  includeDescription!: boolean;
+
   @Column({ type: 'text', nullable: true })
   description!: string | null;
 
@@ -43,8 +51,8 @@ export class VillaFacilityPivot {
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', nullable: true })
-  updatedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @DeleteDateColumn({
     name: 'deleted_at',

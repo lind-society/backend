@@ -1,5 +1,4 @@
 import { DefaultHttpStatus } from '@apps/main/common/enums';
-import { BookingType } from '@apps/main/database/entities';
 import {
   HttpResponseDefaultProps,
   HttpResponseOptions,
@@ -7,7 +6,7 @@ import {
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { IsOptional, IsUUID } from 'class-validator';
-import { BookingWithRelationsDto } from './booking.dto';
+import { BookingPaginationDto, BookingWithRelationsDto } from './booking.dto';
 
 export class GetBookingsDto {
   @IsUUID()
@@ -16,7 +15,7 @@ export class GetBookingsDto {
 }
 
 export class GetBookingPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: BookingWithRelationsDto[];
+  readonly data!: BookingPaginationDto[];
 }
 
 export class GetBookingsSuccessResponse
@@ -25,10 +24,10 @@ export class GetBookingsSuccessResponse
 {
   readonly data: GetBookingPaginateDto;
 
-  constructor(data: GetBookingPaginateDto, type?: BookingType) {
+  constructor(data: GetBookingPaginateDto) {
     super({
       code: HttpStatus.OK,
-      message: `get ${type?.toLowerCase() ?? ''} bookings success`,
+      message: 'get bookings success',
       status: DefaultHttpStatus.Success,
     });
 
@@ -42,10 +41,10 @@ export class GetBookingSuccessResponse
 {
   readonly data: BookingWithRelationsDto;
 
-  constructor(data: BookingWithRelationsDto, type: BookingType) {
+  constructor(data: BookingWithRelationsDto) {
     super({
       code: HttpStatus.OK,
-      message: `get ${type.toLowerCase()} booking success`,
+      message: 'get booking success',
       status: DefaultHttpStatus.Success,
     });
 

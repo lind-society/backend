@@ -34,13 +34,11 @@ export class BookingHelperService {
       throw new BadRequestException('booking id is required');
     }
 
-    const condition = {
-      where: { id: bookingId },
-    };
+    const repository = this._getRepository(entityManager);
 
-    const bookingExist = entityManager
-      ? await entityManager.exists(Booking, condition)
-      : await this.bookingRepository.exists(condition);
+    const bookingExist = await repository.exists({
+      where: { id: bookingId },
+    });
 
     if (!bookingExist) {
       throw new NotFoundException('booking not found');
@@ -51,9 +49,7 @@ export class BookingHelperService {
     bookingId: string,
     entityManager?: EntityManager,
   ): Promise<BookingWithRelationsDto> {
-    const repository = entityManager
-      ? entityManager.getRepository(Booking)
-      : this.bookingRepository;
+    const repository = this._getRepository(entityManager);
 
     const booking = await repository.findOne({
       where: {
@@ -80,21 +76,19 @@ export class BookingHelperService {
       throw new NotFoundException(`booking not found`);
     }
 
-    return booking;
+    return BookingWithRelationsDto.fromEntity(booking);
   }
 
   async getBookingCurrencyId(
     bookingId: string,
     entityManager?: EntityManager,
   ): Promise<BookingDto> {
-    const condition = {
+    const repository = this._getRepository(entityManager);
+
+    const booking = await repository.findOne({
       select: { id: true, currencyId: true },
       where: { id: bookingId },
-    };
-
-    const booking = entityManager
-      ? await entityManager.findOne(Booking, condition)
-      : await this.bookingRepository.findOne(condition);
+    });
 
     if (!booking) {
       throw new NotFoundException('booking not found');
@@ -103,7 +97,14 @@ export class BookingHelperService {
     return booking;
   }
 
-  mapBookingToInvoiceRequestDto(
+  // Private Methods
+  private _getRepository(entityManager?: EntityManager): Repository<Booking> {
+    return entityManager
+      ? entityManager.getRepository(Booking)
+      : this.bookingRepository;
+  }
+
+  private mapBookingToInvoiceRequestDto(
     bookingDto: BookingWithRelationsDto,
   ): CreatePaymentInvoiceDto {
     const bookingName =
