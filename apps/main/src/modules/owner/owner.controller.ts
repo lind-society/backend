@@ -38,23 +38,23 @@ export class OwnerController {
 
   @Post()
   async create(@Body() payload: CreateOwnerDto) {
-    const blog = await this.ownerService.create(payload);
+    const owner = await this.ownerService.create(payload);
 
-    return new CreateOwnerSuccessResponse(blog);
+    return new CreateOwnerSuccessResponse(owner);
   }
 
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
-    const blogs = await this.ownerService.findAll(query);
+    const owners = await this.ownerService.findAll(query);
 
-    return new GetOwnersSuccessResponse(blogs);
+    return new GetOwnersSuccessResponse(owners);
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const blog = await this.ownerService.findOne(id);
+    const owner = await this.ownerService.findOne(id);
 
-    return new GetOwnerSuccessResponse(blog);
+    return new GetOwnerSuccessResponse(owner);
   }
 
   @Patch(':id')
@@ -62,9 +62,9 @@ export class OwnerController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() payload: UpdateOwnerDto,
   ) {
-    const blog = await this.ownerService.update(id, payload);
+    const owner = await this.ownerService.update(id, payload);
 
-    return new UpdateOwnerSuccessResponse(blog);
+    return new UpdateOwnerSuccessResponse(owner);
   }
 
   @Delete(':id')

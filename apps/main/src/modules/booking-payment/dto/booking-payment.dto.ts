@@ -87,7 +87,6 @@ export class BookingPaymentDto implements IBookingPaymentDto {
   readonly amount!: number | null;
 
   @Expose()
-  @ToDecimal(true)
   readonly status!: BookingPaymentAvailableStatus | null;
 
   @Expose()

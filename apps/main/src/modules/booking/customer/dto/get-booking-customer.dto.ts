@@ -23,11 +23,18 @@ export class GetBookingCustomerPaginateDto extends PaginateResponseDefaultDataPr
 
 export class GetBookingCustomersSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<GetBookingCustomerPaginateDto>
+  implements
+    HttpResponseOptions<
+      GetBookingCustomerPaginateDto | BookingCustomerWithRelationsDto[]
+    >
 {
-  readonly data: GetBookingCustomerPaginateDto;
+  readonly data:
+    | GetBookingCustomerPaginateDto
+    | BookingCustomerWithRelationsDto[];
 
-  constructor(data: GetBookingCustomerPaginateDto) {
+  constructor(
+    data: GetBookingCustomerPaginateDto | BookingCustomerWithRelationsDto[],
+  ) {
     super({
       code: HttpStatus.OK,
       message: 'get booking customers success',

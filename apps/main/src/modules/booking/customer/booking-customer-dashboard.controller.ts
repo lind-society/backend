@@ -34,10 +34,8 @@ export class BookingCustomerDashboardController {
 
   @Post()
   async create(@Body() payload: CreateBookingCustomerDto) {
-    const bookingCustomer = await this.bookingCustomerService.create(
-      payload,
-      true,
-    );
+    const bookingCustomer =
+      await this.bookingCustomerService.createFromDashboard(payload);
 
     return new CreateBookingCustomerSuccessResponse(bookingCustomer);
   }
@@ -51,11 +49,8 @@ export class BookingCustomerDashboardController {
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const bookingCustomer = await this.bookingCustomerService.findOne(
-      id,
-      true,
-      true,
-    );
+    const bookingCustomer =
+      await this.bookingCustomerService.findOneFromDashboard(id);
 
     return new GetBookingCustomerSuccessResponse(bookingCustomer);
   }
@@ -65,19 +60,19 @@ export class BookingCustomerDashboardController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBookingCustomerDto: UpdateBookingCustomerDto,
   ) {
-    const bookingCustomer = await this.bookingCustomerService.update(
-      id,
-      updateBookingCustomerDto,
-      true,
-    );
+    const bookingCustomer =
+      await this.bookingCustomerService.updateFromDashboard(
+        id,
+        updateBookingCustomerDto,
+      );
 
     return new UpdateBookingCustomerSuccessResponse(bookingCustomer);
   }
 
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    await this.bookingCustomerService.remove(id, true);
+    await this.bookingCustomerService.removeFromDashboard(id);
 
-    return new DeleteResponse('delete booking customer success');
+    return new DeleteResponse('Delete booking customer success');
   }
 }

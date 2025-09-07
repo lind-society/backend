@@ -5,10 +5,10 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { ReviewWithRelationsDto } from './review.dto';
+import { ReviewPaginationDto, ReviewWithRelationsDto } from './review.dto';
 
 export class GetReviewPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: ReviewWithRelationsDto[];
+  readonly data!: ReviewPaginationDto[];
 }
 
 export class GetReviewsSuccessResponse

@@ -89,6 +89,7 @@ export class ActivityService {
 
           'category.id',
           'category.name',
+          
           'currency.id',
           'currency.name',
           'currency.code',
@@ -136,7 +137,6 @@ export class ActivityService {
           categoryId: [FilterOperator.EQ],
           currencyId: [FilterOperator.EQ],
           ownerId: [FilterOperator.EQ],
-
           discountType: [FilterOperator.EQ],
           discount: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
           pricePerPerson: [FilterOperator.GTE, FilterOperator.LTE],
@@ -146,7 +146,6 @@ export class ActivityService {
             FilterOperator.GTE,
             FilterOperator.LTE,
           ],
-
           duration: [FilterOperator.EQ],
           averageRating: [
             FilterOperator.EQ,

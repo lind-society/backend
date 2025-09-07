@@ -75,23 +75,24 @@ export class BookingEventListenerService {
     payload: PaymentRequestDto,
   ): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.referenceId,
-        {
-          amount: payload.requestAmount,
-          status: mapXenditToGenericPaymentRequestAvailableStatus(
-            payload.status,
-          ),
-          paymentMethod: payload.channelCode,
-          paymentChannel: payload.channelCode,
-          paymentRequestReferenceId: payload.paymentRequestId,
-          failureReason: payload.failureCode,
-          failureStage: payload.failureCode
-            ? BookingPaymentFailureStage.CreatePaymentRequest
-            : null,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.referenceId),
+          {
+            amount: payload.requestAmount,
+            status: mapXenditToGenericPaymentRequestAvailableStatus(
+              payload.status,
+            ),
+            paymentMethod: payload.channelCode,
+            paymentChannel: payload.channelCode,
+            paymentRequestReferenceId: payload.paymentRequestId,
+            failureReason: payload.failureCode,
+            failureStage: payload.failureCode
+              ? BookingPaymentFailureStage.CreatePaymentRequest
+              : null,
+          },
+          manager,
+        );
 
       await this.bookingService.update(
         bookingPayment.bookingId,
@@ -115,23 +116,24 @@ export class BookingEventListenerService {
     payload: PaymentRequestDto,
   ): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.referenceId,
-        {
-          amount: payload.requestAmount,
-          status: mapXenditToGenericPaymentRequestAvailableStatus(
-            payload.status,
-          ),
-          paymentMethod: payload.channelCode,
-          paymentChannel: payload.channelCode,
-          paymentRequestReferenceId: payload.paymentRequestId,
-          failureReason: payload.failureCode,
-          failureStage: payload.failureCode
-            ? BookingPaymentFailureStage.CreatePaymentRequest
-            : null,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.referenceId),
+          {
+            amount: payload.requestAmount,
+            status: mapXenditToGenericPaymentRequestAvailableStatus(
+              payload.status,
+            ),
+            paymentMethod: payload.channelCode,
+            paymentChannel: payload.channelCode,
+            paymentRequestReferenceId: payload.paymentRequestId,
+            failureReason: payload.failureCode,
+            failureStage: payload.failureCode
+              ? BookingPaymentFailureStage.CreatePaymentRequest
+              : null,
+          },
+          manager,
+        );
 
       await this.bookingService.update(
         bookingPayment.bookingId,
@@ -155,25 +157,26 @@ export class BookingEventListenerService {
     payload: PaymentRequestCallbackDto,
   ): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.data.referenceId,
-        {
-          amount: payload.data.requestAmount,
-          status: mapXenditToGenericPaymentRequestAvailableStatus(
-            payload.data.status,
-          ),
-          paymentMethod: payload.data.channelCode,
-          paymentChannel: payload.data.channelCode,
-          paidAt: new Date(),
-          paymentReferenceId: payload.data.paymentId,
-          paymentRequestReferenceId: payload.data.paymentRequestId,
-          failureReason: payload.data.failureCode,
-          failureStage: payload.data.failureCode
-            ? BookingPaymentFailureStage.PayPaymentRequest
-            : null,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.data.referenceId),
+          {
+            amount: payload.data.requestAmount,
+            status: mapXenditToGenericPaymentRequestAvailableStatus(
+              payload.data.status,
+            ),
+            paymentMethod: payload.data.channelCode,
+            paymentChannel: payload.data.channelCode,
+            paidAt: new Date(),
+            paymentReferenceId: payload.data.paymentId,
+            paymentRequestReferenceId: payload.data.paymentRequestId,
+            failureReason: payload.data.failureCode,
+            failureStage: payload.data.failureCode
+              ? BookingPaymentFailureStage.PayPaymentRequest
+              : null,
+          },
+          manager,
+        );
 
       await this.bookingService.update(
         bookingPayment.bookingId,
@@ -202,22 +205,23 @@ export class BookingEventListenerService {
     payload: PaymentSessionDto,
   ): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.referenceId,
-        {
-          amount: payload.amount,
-          status: mapXenditToGenericPaymentSessionAvailableStatus(
-            payload.status,
-          ),
-          paymentMethod: 'card',
-          paymentChannel: 'card',
-          paymentSessionReferenceId: payload.paymentSessionId,
-          paymentTokenReferenceId: payload.paymentTokenId,
-          paymentRequestReferenceId: payload.paymentRequestId,
-          paymentReferenceId: payload.paymentId,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.referenceId),
+          {
+            amount: payload.amount,
+            status: mapXenditToGenericPaymentSessionAvailableStatus(
+              payload.status,
+            ),
+            paymentMethod: 'card',
+            paymentChannel: 'card',
+            paymentSessionReferenceId: payload.paymentSessionId,
+            paymentTokenReferenceId: payload.paymentTokenId,
+            paymentRequestReferenceId: payload.paymentRequestId,
+            paymentReferenceId: payload.paymentId,
+          },
+          manager,
+        );
 
       await this.bookingService.update(
         bookingPayment.bookingId,
@@ -241,22 +245,23 @@ export class BookingEventListenerService {
     payload: PaymentSessionDto,
   ): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.referenceId,
-        {
-          amount: payload.amount,
-          status: mapXenditToGenericPaymentSessionAvailableStatus(
-            payload.status,
-          ),
-          paymentMethod: 'card',
-          paymentChannel: 'card',
-          paymentSessionReferenceId: payload.paymentSessionId,
-          paymentTokenReferenceId: payload.paymentTokenId,
-          paymentRequestReferenceId: payload.paymentRequestId,
-          paymentReferenceId: payload.paymentId,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.referenceId),
+          {
+            amount: payload.amount,
+            status: mapXenditToGenericPaymentSessionAvailableStatus(
+              payload.status,
+            ),
+            paymentMethod: 'card',
+            paymentChannel: 'card',
+            paymentSessionReferenceId: payload.paymentSessionId,
+            paymentTokenReferenceId: payload.paymentTokenId,
+            paymentRequestReferenceId: payload.paymentRequestId,
+            paymentReferenceId: payload.paymentId,
+          },
+          manager,
+        );
 
       await this.bookingService.update(
         bookingPayment.bookingId,
@@ -280,25 +285,26 @@ export class BookingEventListenerService {
     payload: PaymentRequestCallbackDto,
   ): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.data.referenceId,
-        {
-          amount: payload.data.requestAmount,
-          status: mapXenditToGenericPaymentRequestAvailableStatus(
-            payload.data.status,
-          ),
-          paymentMethod: payload.data.channelCode,
-          paymentChannel: payload.data.channelCode,
-          paidAt: new Date(),
-          paymentReferenceId: payload.data.paymentId,
-          paymentRequestReferenceId: payload.data.paymentRequestId,
-          failureReason: payload.data.failureCode,
-          failureStage: payload.data.failureCode
-            ? BookingPaymentFailureStage.PayPaymentSession
-            : null,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.data.referenceId),
+          {
+            amount: payload.data.requestAmount,
+            status: mapXenditToGenericPaymentRequestAvailableStatus(
+              payload.data.status,
+            ),
+            paymentMethod: payload.data.channelCode,
+            paymentChannel: payload.data.channelCode,
+            paidAt: new Date(),
+            paymentReferenceId: payload.data.paymentId,
+            paymentRequestReferenceId: payload.data.paymentRequestId,
+            failureReason: payload.data.failureCode,
+            failureStage: payload.data.failureCode
+              ? BookingPaymentFailureStage.PayPaymentSession
+              : null,
+          },
+          manager,
+        );
 
       await this.bookingService.update(
         bookingPayment.bookingId,
@@ -327,17 +333,18 @@ export class BookingEventListenerService {
     payload: PaymentRefundDto,
   ): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.referenceId,
-        {
-          status: BookingPaymentAvailableStatus.WaitingForRefund,
-          failureReason: payload.failureCode,
-          failureStage: payload.failureCode
-            ? BookingPaymentFailureStage.PaymentRefundRequest
-            : null,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.referenceId),
+          {
+            status: BookingPaymentAvailableStatus.WaitingForRefund,
+            failureReason: payload.failureCode,
+            failureStage: payload.failureCode
+              ? BookingPaymentFailureStage.PaymentRefundRequest
+              : null,
+          },
+          manager,
+        );
 
       await this.bookingPaymentRefundService.create(
         {
@@ -365,13 +372,11 @@ export class BookingEventListenerService {
     payload: PaymentRefundCallbackDto,
   ): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const initialBookingPayment = await this.bookingPaymentService.findOne(
-        payload.data.referenceId,
-        false,
-        true,
-        null,
-        manager,
-      );
+      const initialBookingPayment =
+        await this.bookingPaymentService.findOneFromDashboard(
+          this._getBookingPaymentId(payload.data.referenceId),
+          manager,
+        );
 
       await this.bookingPaymentRefundService.create(
         {
@@ -389,22 +394,23 @@ export class BookingEventListenerService {
       );
 
       if (payload.data.status === PaymentAvailableRefundStatus.Succeeded) {
-        const bookingPayment = await this.bookingPaymentService.update(
-          payload.data.referenceId,
-          {
-            status: BookingPaymentAvailableStatus.Refunded,
-            refundedAmount: initialBookingPayment.refundedAmount
-              ? initialBookingPayment.refundedAmount + payload.data.amount
-              : payload.data.amount,
-            refundedReason: payload.data.reason,
-            paymentRefundReferenceId: payload.data.id,
-            failureReason: payload.data.failureCode,
-            failureStage: payload.data.failureCode
-              ? BookingPaymentFailureStage.PaymentRefundResult
-              : null,
-          },
-          manager,
-        );
+        const bookingPayment =
+          await this.bookingPaymentService.updateFromDashboard(
+            this._getBookingPaymentId(payload.data.referenceId),
+            {
+              status: BookingPaymentAvailableStatus.Refunded,
+              refundedAmount: initialBookingPayment.refundedAmount
+                ? initialBookingPayment.refundedAmount + payload.data.amount
+                : payload.data.amount,
+              refundedReason: payload.data.reason,
+              paymentRefundReferenceId: payload.data.id,
+              failureReason: payload.data.failureCode,
+              failureStage: payload.data.failureCode
+                ? BookingPaymentFailureStage.PaymentRefundResult
+                : null,
+            },
+            manager,
+          );
 
         await this.bookingService.update(
           bookingPayment.bookingId,
@@ -429,18 +435,19 @@ export class BookingEventListenerService {
           `current booking payment status : ${bookingPayment.status}`,
         );
       } else {
-        const bookingPayment = await this.bookingPaymentService.update(
-          payload.data.referenceId,
-          {
-            status: BookingPaymentAvailableStatus.Paid,
-            paymentRefundReferenceId: payload.data.id,
-            failureReason: payload.data.failureCode,
-            failureStage: payload.data.failureCode
-              ? BookingPaymentFailureStage.PaymentRefundResult
-              : null,
-          },
-          manager,
-        );
+        const bookingPayment =
+          await this.bookingPaymentService.updateFromDashboard(
+            this._getBookingPaymentId(payload.data.referenceId),
+            {
+              status: BookingPaymentAvailableStatus.Paid,
+              paymentRefundReferenceId: payload.data.id,
+              failureReason: payload.data.failureCode,
+              failureStage: payload.data.failureCode
+                ? BookingPaymentFailureStage.PaymentRefundResult
+                : null,
+            },
+            manager,
+          );
 
         this.logger.log(
           `payment refund request for booking ${bookingPayment.booking.id} with booking payment id ${bookingPayment.id}`,
@@ -461,23 +468,24 @@ export class BookingEventListenerService {
   @OnEvent(CANCEL_PAYMENT, { async: true })
   async handleCancelBookingPayment(payload: PaymentDto): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.referenceId,
-        {
-          amount: payload.requestAmount,
-          status: mapXenditToGenericPaymentAvailableStatus(payload.status),
-          paymentMethod: payload.channelCode,
-          paymentChannel: payload.channelCode,
-          paymentReferenceId: payload.paymentId,
-          paymentTokenReferenceId: payload.paymentTokenId,
-          paymentRequestReferenceId: payload.paymentRequestId,
-          failureReason: payload.failureCode,
-          failureStage: payload.failureCode
-            ? BookingPaymentFailureStage.CreatePaymentRequest
-            : null,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.referenceId),
+          {
+            amount: payload.requestAmount,
+            status: mapXenditToGenericPaymentAvailableStatus(payload.status),
+            paymentMethod: payload.channelCode,
+            paymentChannel: payload.channelCode,
+            paymentReferenceId: payload.paymentId,
+            paymentTokenReferenceId: payload.paymentTokenId,
+            paymentRequestReferenceId: payload.paymentRequestId,
+            failureReason: payload.failureCode,
+            failureStage: payload.failureCode
+              ? BookingPaymentFailureStage.CreatePaymentRequest
+              : null,
+          },
+          manager,
+        );
 
       await this.bookingService.update(
         bookingPayment.bookingId,
@@ -499,23 +507,24 @@ export class BookingEventListenerService {
   @OnEvent(CAPTURE_PAYMENT, { async: true })
   async handleCaptureBookingPayment(payload: PaymentDto): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.referenceId,
-        {
-          amount: payload.requestAmount,
-          status: mapXenditToGenericPaymentAvailableStatus(payload.status),
-          paymentMethod: payload.channelCode,
-          paymentChannel: payload.channelCode,
-          paymentReferenceId: payload.paymentId,
-          paymentTokenReferenceId: payload.paymentTokenId,
-          paymentRequestReferenceId: payload.paymentRequestId,
-          failureReason: payload.failureCode,
-          failureStage: payload.failureCode
-            ? BookingPaymentFailureStage.CreatePaymentRequest
-            : null,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.referenceId),
+          {
+            amount: payload.requestAmount,
+            status: mapXenditToGenericPaymentAvailableStatus(payload.status),
+            paymentMethod: payload.channelCode,
+            paymentChannel: payload.channelCode,
+            paymentReferenceId: payload.paymentId,
+            paymentTokenReferenceId: payload.paymentTokenId,
+            paymentRequestReferenceId: payload.paymentRequestId,
+            failureReason: payload.failureCode,
+            failureStage: payload.failureCode
+              ? BookingPaymentFailureStage.CreatePaymentRequest
+              : null,
+          },
+          manager,
+        );
 
       await this.bookingService.update(
         bookingPayment.bookingId,
@@ -540,23 +549,24 @@ export class BookingEventListenerService {
     payload: PaymentTokenCallbackDto,
   ): Promise<void> {
     await this.datasource.transaction(async (manager: EntityManager) => {
-      const bookingPayment = await this.bookingPaymentService.update(
-        payload.data.referenceId,
-        {
-          paymentTokenReferenceId: payload.data.paymentTokenId,
-          status: mapXenditToGenericPaymentTokenAvailableStatus(
-            payload.data.status,
-          ),
-          paymentMethod: payload.data.channelCode,
-          paymentChannel: payload.data.channelCode,
-          paidAt: new Date(),
-          failureReason: payload.data.failureCode,
-          failureStage: payload.data.failureCode
-            ? BookingPaymentFailureStage.PaymentTokenActivation
-            : null,
-        },
-        manager,
-      );
+      const bookingPayment =
+        await this.bookingPaymentService.updateFromDashboard(
+          this._getBookingPaymentId(payload.data.referenceId),
+          {
+            paymentTokenReferenceId: payload.data.paymentTokenId,
+            status: mapXenditToGenericPaymentTokenAvailableStatus(
+              payload.data.status,
+            ),
+            paymentMethod: payload.data.channelCode,
+            paymentChannel: payload.data.channelCode,
+            paidAt: new Date(),
+            failureReason: payload.data.failureCode,
+            failureStage: payload.data.failureCode
+              ? BookingPaymentFailureStage.PaymentTokenActivation
+              : null,
+          },
+          manager,
+        );
 
       await this.bookingService.update(
         bookingPayment.bookingId,
@@ -703,5 +713,9 @@ We look forward to welcoming you!`;
           ? ActivityBookingStatus.Pending
           : VillaBookingStatus.WaitingForPayment;
     }
+  }
+
+  private _getBookingPaymentId(paymentReferenceId: string): string {
+    return paymentReferenceId.split('_')[0];
   }
 }

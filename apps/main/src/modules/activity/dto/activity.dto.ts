@@ -80,7 +80,7 @@ export class ActivityDto implements IActivityDto {
   readonly discount!: number | null;
 
   @Expose()
-  @ToDecimal()
+  @ToDecimal(false)
   readonly price!: number;
 
   @Expose()

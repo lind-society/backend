@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { BookingCustomerService } from './booking-customer.service';
 import {
+  GetBookingCustomersSuccessResponse,
   GetBookingCustomerSuccessResponse,
   UpdateBookingCustomerDto,
   UpdateBookingCustomerSuccessResponse,
@@ -23,6 +24,16 @@ export class BookingCustomerController {
   constructor(
     private readonly bookingCustomerService: BookingCustomerService,
   ) {}
+
+  @Public()
+  @Get()
+  async findByBookingId(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
+    const bookingCustomer =
+      await this.bookingCustomerService.findByBookingId(bookingId);
+
+    return new GetBookingCustomersSuccessResponse(bookingCustomer);
+  }
+
   @Public()
   @Get(':id')
   async findOne(
@@ -30,10 +41,8 @@ export class BookingCustomerController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     const bookingCustomer = await this.bookingCustomerService.findOne(
-      id,
-      true,
-      false,
       bookingId,
+      id,
     );
 
     return new GetBookingCustomerSuccessResponse(bookingCustomer);
@@ -46,10 +55,9 @@ export class BookingCustomerController {
     @Body() updateBookingCustomerDto: UpdateBookingCustomerDto,
   ) {
     const bookingCustomer = await this.bookingCustomerService.update(
+      bookingId,
       id,
       updateBookingCustomerDto,
-      false,
-      bookingId,
     );
 
     return new UpdateBookingCustomerSuccessResponse(bookingCustomer);

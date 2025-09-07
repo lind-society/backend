@@ -37,7 +37,7 @@ export class Review {
     onDelete: 'SET NULL',
     nullable: true,
   })
-  @JoinColumn({ name: 'villa_booking_id' })
+  @JoinColumn({ name: 'booking_id' })
   booking: Booking;
 
   @ManyToOne(() => Activity, (activity) => activity.reviews, {

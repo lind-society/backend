@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, FindOneOptions, Repository } from 'typeorm';
 import { BookingHelperService } from '../helper/booking-helper.service';
 import { BookingCustomer } from './../../../database/entities/booking-customer.entity';
 import {
@@ -19,6 +19,47 @@ import {
 
 @Injectable()
 export class BookingCustomerService {
+  private _bookingCustomerDetailQuery: FindOneOptions<BookingCustomer> = {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phoneCountryCode: true,
+      phoneNumber: true,
+      bookings: {
+        id: true,
+        type: true,
+        totalAmount: true,
+        totalGuest: true,
+        bookingDate: true,
+        checkInDate: true,
+        checkOutDate: true,
+        status: true,
+        currency: {
+          id: true,
+          name: true,
+          code: true,
+          symbol: true,
+        },
+        activity: {
+          id: true,
+          name: true,
+          category: {
+            id: true,
+            name: true,
+          },
+        },
+        villa: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    relations: {
+      bookings: { currency: true, activity: { category: true }, villa: true },
+    },
+  };
+
   constructor(
     @InjectRepository(BookingCustomer)
     private bookingCustomerRepository: Repository<BookingCustomer>,
@@ -26,17 +67,11 @@ export class BookingCustomerService {
   ) {}
 
   async create(
+    bookingId: string,
     payload: CreateBookingCustomerDto,
-    isDashboardRequest: boolean,
-    bookingId?: string,
     entityManager?: EntityManager,
   ): Promise<BookingCustomerWithRelationsDto> {
-    if (!isDashboardRequest) {
-      await this.bookingHelperService.validateBookingExist(
-        bookingId,
-        entityManager,
-      );
-    }
+    await this._validateRelationsExist(bookingId, null, true);
 
     const repository = this._getRepository(entityManager);
 
@@ -110,72 +145,38 @@ export class BookingCustomerService {
     return paginateResponseMapper(paginatedBookingCustomers, bookingCustomers);
   }
 
+  async findByBookingId(
+    bookingId: string,
+    entityManager?: EntityManager,
+  ): Promise<BookingCustomerWithRelationsDto[]> {
+    await this._validateRelationsExist(bookingId, null, true);
+
+    const repository = this._getRepository(entityManager);
+
+    const bookingCustomer = await repository.find({
+      ...this._bookingCustomerDetailQuery,
+      where: { bookings: { id: bookingId } },
+    });
+
+    if (!bookingCustomer) {
+      throw new NotFoundException(`booking customer not found`);
+    }
+
+    return BookingCustomerWithRelationsDto.fromEntities(bookingCustomer);
+  }
+
   async findOne(
+    bookingId: string,
     id: string,
-    needValidation: boolean,
-    isDashboardRequest: boolean,
-    bookingId?: string,
     entityManager?: EntityManager,
   ): Promise<BookingCustomerWithRelationsDto> {
-    if (!isDashboardRequest) {
-      await this.bookingHelperService.validateBookingExist(
-        bookingId,
-        entityManager,
-      );
-
-      if (needValidation) {
-        await this._validateIdsExist(bookingId, id, entityManager);
-      }
-    } else {
-      if (needValidation) {
-        await this._validateBookingCustomerExist(id, entityManager);
-      }
-    }
+    await this._validateRelationsExist(bookingId, id, false);
 
     const repository = this._getRepository(entityManager);
 
     const bookingCustomer = await repository.findOne({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phoneCountryCode: true,
-        phoneNumber: true,
-        bookings: {
-          id: true,
-          type: true,
-          totalAmount: true,
-          totalGuest: true,
-          bookingDate: true,
-          checkInDate: true,
-          checkOutDate: true,
-          status: true,
-          currency: {
-            id: true,
-            name: true,
-            code: true,
-            symbol: true,
-          },
-          activity: {
-            id: true,
-            name: true,
-            category: {
-              id: true,
-              name: true,
-            },
-          },
-          villa: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      where: {
-        id,
-      },
-      relations: {
-        bookings: { currency: true, activity: { category: true }, villa: true },
-      },
+      ...this._bookingCustomerDetailQuery,
+      where: { bookings: { id: bookingId } },
     });
 
     if (!bookingCustomer) {
@@ -186,31 +187,76 @@ export class BookingCustomerService {
   }
 
   async update(
+    bookingId: string,
     id: string,
     payload: UpdateBookingCustomerDto,
-    isDashboardRequest: boolean,
-    bookingId?: string,
     entityManager?: EntityManager,
   ): Promise<BookingCustomerWithRelationsDto> {
-    if (!isDashboardRequest) {
-      await this._validateIdsExist(bookingId, id, entityManager);
-    } else {
-      await this._validateBookingCustomerExist(id, entityManager);
-    }
+    await this._validateRelationsExist(bookingId, id, false);
 
     const repository = this._getRepository(entityManager);
 
     await repository.update(id, payload);
 
-    return await this.findOne(id, false, true, null, entityManager);
+    return await this.findOne(id, bookingId);
   }
 
-  async remove(id: string, isDashboardRequest: boolean, bookingId?: string) {
-    if (!isDashboardRequest) {
-      await this._validateIdsExist(bookingId, id);
-    } else {
-      await this._validateBookingCustomerExist(id);
+  async remove(bookingId: string, id: string) {
+    await this._validateRelationsExist(bookingId, id, false);
+
+    await this.bookingCustomerRepository.delete(id);
+  }
+
+  // Dashboard Related Services
+  async createFromDashboard(
+    payload: CreateBookingCustomerDto,
+    entityManager?: EntityManager,
+  ): Promise<BookingCustomerWithRelationsDto> {
+    const repository = this._getRepository(entityManager);
+
+    const bookingCustomerEntity = repository.create(payload);
+
+    const createdBookingCustomer = await repository.save(bookingCustomerEntity);
+
+    return BookingCustomerWithRelationsDto.fromEntity(createdBookingCustomer);
+  }
+
+  async findOneFromDashboard(
+    id: string,
+    entityManager?: EntityManager,
+  ): Promise<BookingCustomerWithRelationsDto> {
+    await this.validateExists(id, entityManager);
+
+    const repository = this._getRepository(entityManager);
+
+    const bookingCustomer = await repository.findOne({
+      ...this._bookingCustomerDetailQuery,
+      where: { id },
+    });
+
+    if (!bookingCustomer) {
+      throw new NotFoundException(`booking customer not found`);
     }
+
+    return BookingCustomerWithRelationsDto.fromEntity(bookingCustomer);
+  }
+
+  async updateFromDashboard(
+    id: string,
+    payload: UpdateBookingCustomerDto,
+    entityManager?: EntityManager,
+  ): Promise<BookingCustomerWithRelationsDto> {
+    await this.validateExists(id, entityManager);
+
+    const repository = this._getRepository(entityManager);
+
+    await repository.update(id, payload);
+
+    return await this.findOneFromDashboard(id, entityManager);
+  }
+
+  async removeFromDashboard(id: string) {
+    await this.validateExists(id);
 
     await this.bookingCustomerRepository.delete(id);
   }
@@ -224,10 +270,7 @@ export class BookingCustomerService {
       : this.bookingCustomerRepository;
   }
 
-  async _validateBookingCustomerExist(
-    id: string,
-    entityManager?: EntityManager,
-  ) {
+  async validateExists(id: string, entityManager?: EntityManager) {
     if (!id) {
       throw new BadRequestException('booking customer id is required');
     }
@@ -243,17 +286,14 @@ export class BookingCustomerService {
     }
   }
 
-  async _validateIdsExist(
+  async _validateRelationsExist(
     bookingId: string,
     id: string,
+    isCreateAction: boolean,
     entityManager?: EntityManager,
   ) {
     if (!bookingId) {
       throw new BadRequestException('booking id is required');
-    }
-
-    if (!id) {
-      throw new BadRequestException('booking customer id is required');
     }
 
     await this.bookingHelperService.validateBookingExist(
@@ -261,14 +301,12 @@ export class BookingCustomerService {
       entityManager,
     );
 
-    const bookingCustomerExist = entityManager
-      ? await entityManager.exists(BookingCustomer, { where: { id } })
-      : await this.bookingCustomerRepository.exists({
-          where: { id },
-        });
+    if (!isCreateAction) {
+      if (!id) {
+        throw new BadRequestException('booking customer id is required');
+      }
 
-    if (!bookingCustomerExist) {
-      throw new NotFoundException('booking customer not found');
+      await this.validateExists(id);
     }
   }
 

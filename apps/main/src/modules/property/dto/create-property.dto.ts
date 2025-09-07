@@ -11,7 +11,7 @@ import {
   PlaceNearbyDto,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -49,13 +49,25 @@ export class CreatePropertyDto {
   @IsNotEmpty()
   readonly price!: number;
 
+  @Expose()
   @IsEnum(DiscountType, {
     message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
+  @Transform(({ obj }) => {
+    if (
+      obj.discount !== undefined &&
+      obj.discount !== null &&
+      !obj.discountType
+    ) {
+      return DiscountType.Percentage;
+    }
+
+    return obj.discountType;
   })
   @IsOptional()
   discountType?: DiscountType;
 
-  @ValidateIf((o) => o.discountType !== null)
+  @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
   @IsNotEmpty({
     message: 'discount should be provided when discountType is filled',
   })
@@ -64,7 +76,7 @@ export class CreatePropertyDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @ValidateDiscountValue('discountType', 'price', DiscountType)
+  @ValidateDiscountValue('discountType', 'price')
   @IsOptional()
   readonly discount?: number;
 

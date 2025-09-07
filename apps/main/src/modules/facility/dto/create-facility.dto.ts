@@ -14,7 +14,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { FacilityDto } from './facility.dto';
+import { FacilityWithRelationsDto } from './facility.dto';
 
 export class CreateFacilityDto {
   @IsString()
@@ -38,11 +38,11 @@ export class CreateFacilityDto {
 
 export class CreateFacilitySuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<FacilityDto>
+  implements HttpResponseOptions<FacilityWithRelationsDto>
 {
-  readonly data: FacilityDto;
+  readonly data: FacilityWithRelationsDto;
 
-  constructor(data: FacilityDto) {
+  constructor(data: FacilityWithRelationsDto) {
     super({
       code: HttpStatus.CREATED,
       message: 'create facility success',

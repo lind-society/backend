@@ -11,7 +11,7 @@ import { In, Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
   CreateFacilityDto,
-  FacilityDto,
+  FacilityPaginationDto,
   FacilityWithRelationsDto,
   UpdateFacilityDto,
 } from './dto';
@@ -42,16 +42,18 @@ export class FacilityService {
     }
   }
 
-  async create(payload: CreateFacilityDto): Promise<FacilityDto> {
-    const createdFacility = this.facilityRepository.create(payload);
+  async create(payload: CreateFacilityDto): Promise<FacilityWithRelationsDto> {
+    const facilityEntity = this.facilityRepository.create(payload);
 
-    return await this.facilityRepository.save(createdFacility);
+    const createdFacility = await this.facilityRepository.save(facilityEntity);
+
+    return FacilityWithRelationsDto.fromEntity(createdFacility);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<FacilityWithRelationsDto[]>> {
-    const paginatedFacility = await paginate(query, this.facilityRepository, {
+  ): Promise<PaginateResponseDataProps<FacilityPaginationDto[]>> {
+    const paginatedFacilities = await paginate(query, this.facilityRepository, {
       sortableColumns: ['createdAt', 'name', 'type'],
       defaultSortBy: [['createdAt', 'DESC']],
       nullSort: 'last',
@@ -64,7 +66,11 @@ export class FacilityService {
       searchableColumns: ['name'],
     });
 
-    return paginateResponseMapper(paginatedFacility);
+    const facilities = FacilityPaginationDto.fromEntities(
+      paginatedFacilities.data,
+    );
+
+    return paginateResponseMapper(paginatedFacilities, facilities);
   }
 
   async findOne(id: string): Promise<FacilityWithRelationsDto> {
@@ -78,14 +84,14 @@ export class FacilityService {
       throw new NotFoundException(`facility not found`);
     }
 
-    return facility;
+    return FacilityWithRelationsDto.fromEntity(facility);
   }
 
   async update(
     id: string,
     payload: UpdateFacilityDto,
   ): Promise<FacilityWithRelationsDto> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.facilityRepository.update(id, payload);
 
@@ -93,8 +99,16 @@ export class FacilityService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.facilityRepository.delete(id);
+  }
+
+  async validateExist(id: string) {
+    const exists = await this.facilityRepository.exists({ where: { id } });
+
+    if (!exists) {
+      throw new NotFoundException('facility not found');
+    }
   }
 }

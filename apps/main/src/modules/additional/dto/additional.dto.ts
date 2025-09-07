@@ -1,3 +1,4 @@
+import { generateShortDescription } from '@apps/main/common/helpers';
 import {
   Additional,
   AdditionalType,
@@ -103,7 +104,10 @@ export class AdditionalWithRelationsDto
       villas: Villa[];
     })[],
   ): AdditionalDto[] {
-    return entities.map((entity) => this.fromEntity(entity));
+    return entities.map((entity) => ({
+      ...this.fromEntity(entity),
+      highlight: generateShortDescription(entity.description),
+    }));
   }
 }
 
@@ -186,7 +190,10 @@ export class AdditionalPaginationDto implements IAdditionalPaginationDto {
       villas?: Villa[];
     })[],
   ): AdditionalPaginationDto[] {
-    return entities.map((entity) => this.fromEntity(entity));
+    return entities.map((entity) => ({
+      ...this.fromEntity(entity),
+      highlight: generateShortDescription(entity.description),
+    }));
   }
 }
 

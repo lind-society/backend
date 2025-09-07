@@ -25,7 +25,7 @@ export class ConvertedPriceRequestDto {
   readonly targetCurrencyId!: string;
 }
 
-export class ConvertedPriceResponsetDto {
+export class ConvertedPriceResponseDto {
   readonly exchangeRate: number;
   readonly initial: priceDetailDto;
   readonly converted: priceDetailDto;
@@ -41,11 +41,11 @@ export class priceDetailDto {
 
 export class ConvertedPriceSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<ConvertedPriceResponsetDto>
+  implements HttpResponseOptions<ConvertedPriceResponseDto>
 {
-  readonly data: ConvertedPriceResponsetDto;
+  readonly data: ConvertedPriceResponseDto;
 
-  constructor(data: ConvertedPriceResponsetDto) {
+  constructor(data: ConvertedPriceResponseDto) {
     super({
       code: HttpStatus.OK,
       message: 'convert price to base price success',

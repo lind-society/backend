@@ -1,3 +1,4 @@
+import { ValidateDiscountValueWithoutPrice } from '@apps/main/common/decorators';
 import { DefaultHttpStatus } from '@apps/main/common/enums';
 import {
   DiscountType,
@@ -8,7 +9,7 @@ import {
   HttpResponseOptions,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -19,8 +20,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  Max,
-  Min,
+  ValidateIf,
 } from 'class-validator';
 import { VillaPriceRuleWithRelationsDto } from './villa-price-rule.dto';
 
@@ -53,19 +53,34 @@ export class CreateVillaPriceRuleDto {
   @IsNotEmpty()
   readonly isDiscount!: boolean;
 
+  @Expose()
   @IsEnum(DiscountType, {
     message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
+  @Transform(({ obj }) => {
+    if (
+      obj.discount !== undefined &&
+      obj.discount !== null &&
+      !obj.discountType
+    ) {
+      return DiscountType.Percentage;
+    }
+
+    return obj.discountType;
   })
   @IsOptional()
   discountType?: DiscountType;
 
+  @ValidateIf((o) => o.discountType !== null && o.discountType !== undefined)
+  @IsNotEmpty({
+    message: 'discount should be provided when discountType is filled',
+  })
   @Type(() => Number)
   @IsNumber(
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @Min(0, { message: 'minimum discount is 0' })
-  @Max(100, { message: 'maximum discount is 100' })
+  @ValidateDiscountValueWithoutPrice('discountType')
   @IsOptional()
   readonly discount?: number;
 

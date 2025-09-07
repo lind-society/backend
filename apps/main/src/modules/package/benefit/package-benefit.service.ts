@@ -11,7 +11,7 @@ import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { In, Repository } from 'typeorm';
 import {
   CreatePackageBenefitDto,
-  PackageBenefitDto,
+  PackageBenefitPaginationDto,
   PackageBenefitWithRelationsDto,
   UpdatePackageBenefitDto,
 } from './dto';
@@ -22,19 +22,34 @@ export class PackageBenefitService {
     @InjectRepository(PackageBenefit)
     private packageBenefitRepository: Repository<PackageBenefit>,
   ) {}
-  async create(payload: CreatePackageBenefitDto): Promise<PackageBenefitDto> {
-    const packageBenefit = this.packageBenefitRepository.create(payload);
+  async create(
+    payload: CreatePackageBenefitDto,
+  ): Promise<PackageBenefitWithRelationsDto> {
+    const packageBenefitEntity = this.packageBenefitRepository.create(payload);
 
-    return await this.packageBenefitRepository.save(packageBenefit);
+    const createdPackageBenefit =
+      await this.packageBenefitRepository.save(packageBenefitEntity);
+
+    return PackageBenefitWithRelationsDto.fromEntity(createdPackageBenefit);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<PackageBenefitWithRelationsDto[]>> {
-    const paginatedPackageBenefitCategory = await paginate(
+  ): Promise<PaginateResponseDataProps<PackageBenefitPaginationDto[]>> {
+    const paginatedPackageBenefits = await paginate(
       query,
       this.packageBenefitRepository,
       {
+        select: [
+          'id',
+          'title',
+          'createdAt',
+
+          'packageBenefits.id',
+          'packageBenefits.package.id',
+          'packageBenefits.package.name',
+          'packageBenefits.package.description',
+        ],
         sortableColumns: ['createdAt', 'title'],
         defaultSortBy: [['createdAt', 'DESC']],
         nullSort: 'last',
@@ -44,16 +59,38 @@ export class PackageBenefitService {
           createdAt: [FilterOperator.GTE, FilterOperator.LTE],
         },
         searchableColumns: ['title'],
+        relations: {
+          packageBenefits: { package: true },
+        },
       },
     );
 
-    return paginateResponseMapper(paginatedPackageBenefitCategory);
+    const packageBenefits = PackageBenefitPaginationDto.fromEntities(
+      paginatedPackageBenefits.data,
+    );
+
+    return paginateResponseMapper(paginatedPackageBenefits, packageBenefits);
   }
 
   async findOne(id: string): Promise<PackageBenefitWithRelationsDto> {
     const packageBenefit = await this.packageBenefitRepository.findOne({
+      select: {
+        id: true,
+        title: true,
+        packageBenefits: {
+          id: true,
+          package: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
+      },
       where: {
         id,
+      },
+      relations: {
+        packageBenefits: { package: true },
       },
     });
 
@@ -61,14 +98,14 @@ export class PackageBenefitService {
       throw new NotFoundException('package benefit not found');
     }
 
-    return packageBenefit;
+    return PackageBenefitWithRelationsDto.fromEntity(packageBenefit);
   }
 
   async update(
     id: string,
     payload: UpdatePackageBenefitDto,
   ): Promise<PackageBenefitWithRelationsDto> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.packageBenefitRepository.update(id, payload);
 
@@ -76,9 +113,19 @@ export class PackageBenefitService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.packageBenefitRepository.delete(id);
+  }
+
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.packageBenefitRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('review not found');
+    }
   }
 
   async validatePackageBenefits(packageBenefitIds: string[]): Promise<void> {

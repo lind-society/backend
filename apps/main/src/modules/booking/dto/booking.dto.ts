@@ -20,7 +20,7 @@ import {
   RelatedCurrencyDto,
 } from '@apps/main/modules/currency/dto';
 import { VillaWithRelationsDto } from '@apps/main/modules/villa/dto';
-import { Exclude, Expose, plainToInstance, Transform } from 'class-transformer';
+import { Exclude, Expose, plainToInstance } from 'class-transformer';
 import {
   ActivityWithRelationsDto,
   RelatedActivityDto,
@@ -96,7 +96,7 @@ export class BookingDto implements IBookingDto {
   readonly totalGuest!: number;
 
   @Expose()
-  @Transform(({ value }) => parseFloat(value))
+  @ToDecimal()
   readonly totalAmount!: number;
 
   @Expose()
@@ -197,13 +197,19 @@ export class BookingWithRelationsDto
     if (entity.activity) {
       dto.activity = ActivityWithRelationsDto.fromEntity(entity.activity);
 
-      dto.activity.owner = OwnerWithRelationsDto.fromEntity(
-        entity.activity.owner,
-      );
+      if (entity.activity.owner) {
+        dto.activity.owner = OwnerWithRelationsDto.fromEntity(
+          entity.activity.owner,
+        );
+      }
     }
 
     if (entity.villa) {
       dto.villa = VillaWithRelationsDto.fromEntity(entity.villa);
+
+      if (entity.villa.owner) {
+        dto.villa.owner = OwnerWithRelationsDto.fromEntity(entity.villa.owner);
+      }
     }
 
     if (entity.review) {
@@ -237,7 +243,7 @@ export class BookingPaginationDto implements IBookingPaginationDto {
   readonly totalGuest!: number;
 
   @Expose()
-  @Transform(({ value }) => parseFloat(value))
+  @ToDecimal()
   readonly totalAmount!: number;
 
   @Expose()

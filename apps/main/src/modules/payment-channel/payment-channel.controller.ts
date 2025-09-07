@@ -14,11 +14,8 @@ import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreatePaymentChannelDto,
   CreatePaymentChannelSuccessResponse,
-  DeletePaymentChannelDto,
   GetPaymentChannelsSuccessResponse,
   GetPaymentChannelSuccessResponse,
-  UpdatePaymentChannelBulkDto,
-  UpdatePaymentChannelBulkSuccessResponse,
   UpdatePaymentChannelDto,
   UpdatePaymentChannelSuccessResponse,
 } from './dto';
@@ -60,24 +57,10 @@ export class PaymentChannelController {
     return new UpdatePaymentChannelSuccessResponse(result);
   }
 
-  @Patch()
-  async updateBulk(@Body() payload: UpdatePaymentChannelBulkDto[]) {
-    const result = await this.paymentChannelService.updateBulk(payload);
-
-    return new UpdatePaymentChannelBulkSuccessResponse(result);
-  }
-
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.paymentChannelService.remove(id);
 
     return new DeleteResponse('delete payment channel success');
-  }
-
-  @Delete()
-  async removeBulk(@Body() payload: DeletePaymentChannelDto) {
-    await this.paymentChannelService.removeBulk(payload);
-
-    return new DeleteResponse('delete multiple payment channel success');
   }
 }

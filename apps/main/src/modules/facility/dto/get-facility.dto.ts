@@ -6,7 +6,7 @@ import {
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { IsOptional, IsUUID } from 'class-validator';
-import { FacilityDto } from './facility.dto';
+import { FacilityDto, FacilityPaginationDto } from './facility.dto';
 
 export class GetFacilitiesDto {
   @IsUUID()
@@ -19,7 +19,7 @@ export class GetFacilitiesDto {
 }
 
 export class GetFacilityPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: FacilityDto[];
+  readonly data!: FacilityPaginationDto[];
 }
 
 export class GetFacilitiesSuccessResponse

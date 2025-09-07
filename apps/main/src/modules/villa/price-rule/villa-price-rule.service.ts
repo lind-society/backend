@@ -13,6 +13,7 @@ import {
   VillaPriceRule,
   VillaPriceRulePivot,
 } from '@apps/main/database/entities';
+import { VillaPriceRuleView } from '@apps/main/database/entities/views/villa-price-rule.view.entity';
 import { PaginateResponseDataProps } from '@apps/main/modules/shared/dto';
 import {
   BadRequestException,
@@ -31,7 +32,6 @@ import {
   GetUnavailableVillaDto,
   GetVillaWithPriceRuleDto,
   UpdateVillaPriceRuleDto,
-  VillaPriceRuleDto,
   VillaPriceRuleWithRelationsDto,
   VillaWithPriceRuleDto,
 } from './dto';
@@ -43,15 +43,17 @@ export class VillaPriceRuleService {
     private datasource: DataSource,
     @InjectRepository(VillaPriceRule)
     private villaPriceRuleRepository: Repository<VillaPriceRule>,
+    @InjectRepository(VillaPriceRuleView)
+    private villaPriceRuleViewRepository: Repository<VillaPriceRuleView>,
     @InjectRepository(Villa)
     private villaRepository: Repository<Villa>,
     private currencyService: CurrencyService,
     private eventEmitter: EventEmitter2,
   ) {}
 
-  async create(payload: CreateVillaPriceRuleDto): Promise<VillaPriceRuleDto> {
-    this._handleDefaultDiscountType(payload);
-
+  async create(
+    payload: CreateVillaPriceRuleDto,
+  ): Promise<VillaPriceRuleWithRelationsDto> {
     const createdVillaPriceRule = await this.datasource.transaction(
       async (manager: EntityManager) => {
         const adjustedDateTimeRangeBasePriceVillaPriceRuleData =
@@ -62,9 +64,14 @@ export class VillaPriceRuleService {
             adjustedDateTimeRangeBasePriceVillaPriceRuleData,
           );
 
-        const createdVillaPriceRule = await manager.save(
+        const villaPriceRuleEntity = manager.create(
           VillaPriceRule,
           convertedBasePriceVillaPriceRuleData,
+        );
+
+        const createdVillaPriceRule = await manager.save(
+          VillaPriceRule,
+          villaPriceRuleEntity,
         );
 
         // validation for checking villa is not included in other villa price rule for the inputted start - end date
@@ -103,8 +110,31 @@ export class VillaPriceRuleService {
   ): Promise<PaginateResponseDataProps<VillaPriceRuleWithRelationsDto[]>> {
     const paginatedVillaPriceRule = await paginate(
       query,
-      this.villaPriceRuleRepository,
+      this.villaPriceRuleViewRepository,
       {
+        select: [
+          'id',
+          'name',
+          'description',
+          'startDate',
+          'endDate',
+          'season',
+          'isDiscount',
+          'discountType',
+          'discount',
+          'isActive',
+          'isAppliedToAllVilla',
+          'createdAt',
+
+          'currency.id',
+          'currency.name',
+          'currency.code',
+          'currency.symbol',
+
+          'villaPriceRules.id',
+          'villaPriceRules.villa.id',
+          'villaPriceRules.villa.name',
+        ],
         sortableColumns: ['createdAt', 'name'],
         defaultSortBy: [['createdAt', 'DESC']],
         nullSort: 'last',
@@ -124,15 +154,6 @@ export class VillaPriceRuleService {
     const mappedPaginatedVillaPriceRule =
       VillaPriceRuleWithRelationsDto.fromEntities(paginatedVillaPriceRule.data);
 
-    await Promise.all(
-      mappedPaginatedVillaPriceRule.map(async (villaPriceRule) => {
-        villaPriceRule.isAppliedToAllVilla =
-          await this._isCurrentPriceRuleAppliedToAllVilla(
-            villaPriceRule.villas.length,
-          );
-      }),
-    );
-
     return paginateResponseMapper(
       paginatedVillaPriceRule,
       mappedPaginatedVillaPriceRule,
@@ -143,11 +164,35 @@ export class VillaPriceRuleService {
     id: string,
     entityManager?: EntityManager,
   ): Promise<VillaPriceRuleWithRelationsDto> {
-    const repository = entityManager
-      ? entityManager.getRepository(VillaPriceRule)
-      : this.villaPriceRuleRepository;
+    const repository = this._getRepository(entityManager, true);
 
     const villaPriceRule = await repository.findOne({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        startDate: true,
+        endDate: true,
+        season: true,
+        isDiscount: true,
+        discountType: true,
+        discount: true,
+        isActive: true,
+        isAppliedToAllVilla: true,
+        currency: {
+          id: true,
+          name: true,
+          code: true,
+          symbol: true,
+        },
+        villaPriceRules: {
+          id: true,
+          villa: {
+            id: true,
+            name: true,
+          },
+        },
+      },
       where: {
         id,
       },
@@ -161,29 +206,18 @@ export class VillaPriceRuleService {
       throw new NotFoundException('villa price rule not found');
     }
 
-    const mappedVillaPriceRule =
-      VillaPriceRuleWithRelationsDto.fromEntity(villaPriceRule);
-
-    mappedVillaPriceRule.isAppliedToAllVilla =
-      await this._isCurrentPriceRuleAppliedToAllVilla(
-        villaPriceRule.villaPriceRules.length,
-        entityManager,
-      );
-
-    return mappedVillaPriceRule;
+    return VillaPriceRuleWithRelationsDto.fromEntity(villaPriceRule);
   }
 
   async update(
     id: string,
     payload: UpdateVillaPriceRuleDto,
   ): Promise<VillaPriceRuleWithRelationsDto> {
-    this._handleDefaultDiscountType(payload);
+    await this.validateExist(id);
 
     const { villaIds, ...villaPriceRuleData } = payload;
 
     return await this.datasource.transaction(async (manager) => {
-      await this.findOne(id, manager);
-
       const adjustedDateTimeRangeBasePriceVillaPriceRuleData =
         await this._setDateTimeRange(villaPriceRuleData);
 
@@ -228,9 +262,9 @@ export class VillaPriceRuleService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.datasource.transaction(async (manager) => {
-      await this.findOne(id, manager);
+    await this.validateExist(id);
 
+    await this.datasource.transaction(async (manager) => {
       const affectedVillas: GetAffectedVillaDto[] = await manager
         .getRepository(VillaPriceRule)
         .createQueryBuilder('priceRule')
@@ -245,6 +279,29 @@ export class VillaPriceRuleService {
 
       this.eventEmitter.emit(DELETED_PRICE_RULE, affectedVillaIds);
     });
+  }
+
+  private _getRepository(
+    entityManager?: EntityManager,
+    isGetAction?: boolean,
+  ): Repository<VillaPriceRule | VillaPriceRuleView> {
+    return entityManager
+      ? isGetAction
+        ? entityManager.getRepository(VillaPriceRuleView)
+        : entityManager.getRepository(VillaPriceRule)
+      : isGetAction
+        ? this.villaPriceRuleViewRepository
+        : this.villaPriceRuleRepository;
+  }
+
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.villaPriceRuleRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('villa price rule not found');
+    }
   }
 
   // Helper Functions
@@ -381,14 +438,7 @@ export class VillaPriceRuleService {
     };
   }
 
-  private async _handleDefaultDiscountType(
-    payload: CreateVillaPriceRuleDto | UpdateVillaPriceRuleDto,
-  ) {
-    if (payload.discount && !payload.discountType) {
-      payload.discountType = DiscountType.Percentage;
-    }
-  }
-
+  /*
   private async _totalVillaCount(entityManager?: EntityManager) {
     const repository = entityManager
       ? entityManager.getRepository(Villa)
@@ -398,7 +448,7 @@ export class VillaPriceRuleService {
 
     return totalVilla;
   }
-
+    
   private async _isCurrentPriceRuleAppliedToAllVilla(
     villasCount: number,
     entityManager?: EntityManager,
@@ -406,5 +456,22 @@ export class VillaPriceRuleService {
     const totalVilla = await this._totalVillaCount(entityManager);
 
     return villasCount === totalVilla;
+
+    // usage
+    mappedVillaPriceRule.isAppliedToAllVilla =
+      await this._isCurrentPriceRuleAppliedToAllVilla(
+        villaPriceRule.villaPriceRules.length,
+        entityManager,
+      );
+
+    await Promise.all(
+      mappedPaginatedVillaPriceRule.map(async (villaPriceRule) => {
+        villaPriceRule.isAppliedToAllVilla =
+          await this._isCurrentPriceRuleAppliedToAllVilla(
+            villaPriceRule.villas.length,
+          );
+      }),
+    );
   }
+  */
 }

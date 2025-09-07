@@ -1,3 +1,4 @@
+import { ToDecimal } from '@apps/main/common/decorators';
 import {
   Currency,
   DiscountType,
@@ -10,11 +11,12 @@ import {
   RelatedCurrencyDto,
 } from '@apps/main/modules/currency/dto';
 import { Exclude, Expose, plainToInstance } from 'class-transformer';
+import { omit } from 'lodash';
 import { RelatedVillaDto, VillaWithRelationsDto } from '../../dto';
 
 export interface IVillaPriceRuleDto
   extends Omit<VillaPriceRule, 'villaPriceRules' | 'currency'> {
-  isAppliedToAllVilla?: boolean;
+  readonly isAppliedToAllVilla?: boolean;
 }
 
 export interface IVillaPriceRuleWithRelationsDto extends IVillaPriceRuleDto {
@@ -27,7 +29,7 @@ export interface IVillaPriceRulePaginationDto
     VillaPriceRule,
     'currencyId' | 'updatedAt' | 'deletedAt' | 'currency' | 'villaPriceRules'
   > {
-  isAppliedToAllVilla?: boolean;
+  readonly isAppliedToAllVilla?: boolean;
   currency?: RelatedCurrencyDto;
   villas?: RelatedVillaDto[];
 }
@@ -45,7 +47,7 @@ export interface IRelatedVillaPriceRuleDto
     | 'discount'
     | 'isActive'
   > {
-  isAppliedToAllVilla?: boolean;
+  readonly isAppliedToAllVilla?: boolean;
   currency?: RelatedCurrencyDto;
 }
 
@@ -75,6 +77,7 @@ export class VillaPriceRuleDto implements IVillaPriceRuleDto {
   readonly discountType!: DiscountType | null;
 
   @Expose()
+  @ToDecimal()
   readonly discount!: number | null;
 
   @Expose()
@@ -93,7 +96,7 @@ export class VillaPriceRuleDto implements IVillaPriceRuleDto {
   readonly deletedAt!: Date;
 
   @Expose()
-  isAppliedToAllVilla?: boolean;
+  readonly isAppliedToAllVilla?: boolean;
 
   static fromEntity(entity: VillaPriceRule): VillaPriceRuleDto {
     return plainToInstance(VillaPriceRuleDto, entity);
@@ -120,14 +123,19 @@ export class VillaPriceRuleWithRelationsDto
       villas?: Villa[];
     },
   ): VillaPriceRuleWithRelationsDto {
-    const dto = VillaPriceRuleWithRelationsDto.fromEntity(entity);
+    const dto = plainToInstance(VillaPriceRuleWithRelationsDto, {
+      ...omit(entity, ['villaPriceRules']),
+    });
 
     if (entity.currency) {
       dto.currency = CurrencyDto.fromEntity(entity.currency);
     }
 
-    if (entity.villas) {
-      VillaWithRelationsDto.fromEntities(entity.villas);
+    if (entity.villaPriceRules) {
+      dto.villas = entity.villaPriceRules.map(({ id: pivotId, villa }) => ({
+        ...VillaWithRelationsDto.fromEntity(villa),
+        pivotId,
+      }));
     }
 
     return dto;
@@ -171,6 +179,7 @@ export class VillaPriceRulePaginationDto
   readonly discountType!: DiscountType | null;
 
   @Expose()
+  @ToDecimal()
   readonly discount!: number | null;
 
   @Expose()
@@ -180,7 +189,7 @@ export class VillaPriceRulePaginationDto
   readonly createdAt!: Date;
 
   @Expose()
-  isAppliedToAllVilla?: boolean;
+  readonly isAppliedToAllVilla?: boolean;
 
   @Expose()
   currency?: RelatedCurrencyDto;
@@ -240,13 +249,14 @@ export class RelatedVillaPriceRuleDto implements IRelatedVillaPriceRuleDto {
   readonly discountType!: DiscountType;
 
   @Expose()
+  @ToDecimal()
   readonly discount!: number;
 
   @Expose()
   readonly isActive!: boolean;
 
   @Expose()
-  isAppliedToAllVilla?: boolean;
+  readonly isAppliedToAllVilla?: boolean;
 
   @Expose()
   currency?: RelatedCurrencyDto;

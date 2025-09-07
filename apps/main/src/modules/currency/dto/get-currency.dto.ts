@@ -5,10 +5,10 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { CurrencyDto } from './currency.dto';
+import { CurrencyDto, CurrencyPaginationDto } from './currency.dto';
 
 export class GetCurrenciesPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: CurrencyDto[];
+  readonly data!: CurrencyPaginationDto[];
 }
 
 export class GetCurrenciesSuccessResponse

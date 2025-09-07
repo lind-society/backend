@@ -22,22 +22,21 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { BookingService } from '../booking/booking.service';
 import { BookingWithRelationsDto, CreateBookingDto } from '../booking/dto';
 import { CurrencyService } from '../currency/currency.service';
-import { FacilityService } from '../facility/facility.service';
 import { CreateFeatureDto } from '../feature/dto';
 import { FeatureService } from '../feature/feature.service';
-import { OwnerService } from '../owner/owner.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
   CreateVillaFacililtyPivotDto,
+  CurrentVillaPrices,
   GetVillaBestSellerDto,
   UpdateVillaFacililtyPivotDto,
   VillaDto,
+  VillaPaginationDto,
   VillaWithRelationsDto,
 } from './dto';
 import { CreateVillaDto } from './dto/create-villa.dto';
 import { UpdateVillaDto } from './dto/update-villa.dto';
 import { getVillaCurrentDailyPrice } from './helper';
-import { VillaPolicyTypeService } from './policy/type/villa-policy-type.service';
 import { VillaPriceRuleWithRelationsDto } from './price-rule/dto';
 
 @Injectable()
@@ -49,19 +48,17 @@ export class VillaService {
     private villaRepository: Repository<Villa>,
     private bookingService: BookingService,
     private currencyService: CurrencyService,
-    private facilityService: FacilityService,
     private featureService: FeatureService,
-    private ownerService: OwnerService,
-    private villaPolicyTypeService: VillaPolicyTypeService,
   ) {}
 
   async create(payload: CreateVillaDto): Promise<VillaWithRelationsDto> {
-    this._handleDefaultDiscountType(payload);
-
-    payload.dailyPriceAfterDiscount = payload.dailyPrice;
-    payload.lowSeasonDailyPriceAfterDiscount = payload.lowSeasonDailyPrice;
-    payload.highSeasonDailyPriceAfterDiscount = payload.highSeasonDailyPrice;
-    payload.peakSeasonDailyPriceAfterDiscount = payload.peakSeasonDailyPrice;
+    payload.dailyPriceAfterDiscount = payload.dailyPrice ?? undefined;
+    payload.lowSeasonDailyPriceAfterDiscount =
+      payload.lowSeasonDailyPrice ?? undefined;
+    payload.highSeasonDailyPriceAfterDiscount =
+      payload.highSeasonDailyPrice ?? undefined;
+    payload.peakSeasonDailyPriceAfterDiscount =
+      payload.peakSeasonDailyPrice ?? undefined;
 
     const createdVilla = await this.datasource.transaction(
       async (manager: EntityManager) => {
@@ -143,8 +140,134 @@ export class VillaService {
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<VillaWithRelationsDto[]>> {
-    const paginatedVilla = await paginate(query, this.villaRepository, {
+  ): Promise<PaginateResponseDataProps<VillaPaginationDto[]>> {
+    const queryBuilder = this.villaRepository
+      .createQueryBuilder('villa')
+      .leftJoinAndSelect('villa.currency', 'currency')
+      .leftJoinAndSelect('villa.owner', 'owner')
+      .leftJoinAndSelect('villa.villaPolicies', 'villaPolicies')
+      .leftJoinAndSelect('villaPolicies.policy', 'policy')
+      .leftJoinAndSelect('policy.type', 'policyType')
+      .leftJoinAndSelect('villa.villaPriceRules', 'villaPriceRules')
+      .leftJoinAndSelect('villaPriceRules.priceRule', 'priceRule')
+      .leftJoinAndSelect('priceRule.currency', 'priceRuleCurrency')
+      .leftJoinAndSelect('villa.villaAdditionals', 'villaAdditionals')
+      .leftJoinAndSelect('villaAdditionals.additional', 'additional')
+      .leftJoinAndSelect('villa.villaFacilities', 'villaFacilities')
+      .leftJoinAndSelect('villaFacilities.facility', 'facility')
+      .leftJoinAndSelect('villa.villaFeatures', 'villaFeatures')
+      .leftJoinAndSelect('villaFeatures.feature', 'feature')
+      .leftJoinAndSelect('feature.currency', 'featureCurrency')
+      .select([
+        'villa.id',
+        'villa.name',
+        'villa.secondaryName',
+        'villa.availability',
+        'villa.dailyPrice',
+        'villa.lowSeasonDailyPrice',
+        'villa.highSeasonDailyPrice',
+        'villa.peakSeasonDailyPrice',
+        'villa.dailyPriceAfterDiscount',
+        'villa.lowSeasonDailyPriceAfterDiscount',
+        'villa.highSeasonDailyPriceAfterDiscount',
+        'villa.peakSeasonDailyPriceAfterDiscount',
+        'villa.priceMonthly',
+        'villa.priceYearly',
+        'villa.discountMonthlyType',
+        'villa.discountYearlyType',
+        'villa.discountMonthly',
+        'villa.discountYearly',
+        'villa.priceMonthlyAfterDiscount',
+        'villa.priceYearlyAfterDiscount',
+        'villa.availabilityQuotaPerMonth',
+        'villa.availabilityQuotaPerYear',
+        'villa.highlight',
+        'villa.address',
+        'villa.country',
+        'villa.state',
+        'villa.city',
+        'villa.postalCode',
+        'villa.mapLink',
+        'villa.placeNearby',
+        'villa.photos',
+        'villa.videos',
+        'villa.video360s',
+        'villa.floorPlans',
+        'villa.averageRating',
+        'villa.totalReview',
+        'villa.isFavorite',
+        'villa.createdAt',
+
+        'currency.id',
+        'currency.name',
+        'currency.code',
+        'currency.symbol',
+
+        'owner.id',
+        'owner.name',
+        'owner.type',
+        'owner.companyName',
+        'owner.email',
+        'owner.phoneCountryCode',
+        'owner.phoneNumber',
+        'owner.address',
+        'owner.website',
+        'owner.status',
+
+        'villaPolicies.id',
+        'policy.id',
+        'policy.name',
+        'policy.icon',
+        'policyType.id',
+        'policyType.name',
+        'policy.description',
+
+        'villaPriceRules.id',
+        'priceRule.id',
+        'priceRule.name',
+        'priceRule.isDiscount',
+        'priceRule.discountType',
+        'priceRule.discount',
+        'priceRule.startDate',
+        'priceRule.endDate',
+        'priceRule.isActive',
+        'priceRule.season',
+        'priceRule.description',
+        'priceRuleCurrency.id',
+        'priceRuleCurrency.name',
+        'priceRuleCurrency.code',
+        'priceRuleCurrency.symbol',
+
+        'villaAdditionals.id',
+        'additional.id',
+        'additional.name',
+        'additional.type',
+        'additional.photos',
+        'additional.description',
+
+        'villaFacilities.id',
+        'facility.id',
+        'facility.name',
+        'facility.icon',
+        'facility.type',
+
+        'villaFeatures.id',
+        'feature.id',
+        'feature.name',
+        'feature.type',
+        'feature.icon',
+        'feature.free',
+        'feature.price',
+        'feature.discountType',
+        'feature.discount',
+        'feature.priceAfterDiscount',
+        'featureCurrency.id',
+        'featureCurrency.name',
+        'featureCurrency.code',
+        'featureCurrency.symbol',
+      ]);
+
+    const paginatedVillas = await paginate(query, queryBuilder, {
       sortableColumns: [
         'isFavorite',
         'createdAt',
@@ -250,7 +373,6 @@ export class VillaService {
         'villaAdditionals.additional.name': [FilterOperator.ILIKE],
         'villaFacilities.facility.name': [FilterOperator.ILIKE],
         'villaFeatures.feature.name': [FilterOperator.ILIKE],
-        'villaPolicies.policy.name': [FilterOperator.ILIKE],
       },
       searchableColumns: [
         'name',
@@ -262,50 +384,194 @@ export class VillaService {
         'postalCode',
         'mapLink',
       ],
-      relations: {
-        currency: true,
-        owner: true,
-        reviews: { booking: { customer: true } },
-        villaAdditionals: { additional: true },
-        villaFeatures: { feature: { currency: true } },
-        villaFacilities: { facility: true },
-        villaPolicies: { policy: { type: true } },
-        villaPriceRules: { priceRule: { currency: true } },
-      },
     });
 
     const currentDate = new Date();
 
-    const mappedPaginatedVilla = paginatedVilla.data.map((villa) => {
-      if (villa.villaPriceRules) {
-        villa.villaPriceRules = villa.villaPriceRules =
-          this._filterAndSortVillaPriceRule(currentDate, villa.villaPriceRules);
-      }
+    const villas = VillaPaginationDto.fromEntities(
+      paginatedVillas.data.map((villa) => {
+        if (villa.villaPriceRules) {
+          villa.villaPriceRules = this._filterAndSortVillaPriceRule(
+            currentDate,
+            villa.villaPriceRules,
+          );
+        }
 
-      const currentPriceRule = villa.villaPriceRules?.[0]?.priceRule;
-
-      if (currentPriceRule) {
-        this._setCurrentDailyPrice(villa, currentPriceRule);
-      }
-
-      return villa;
-    });
-
-    return paginateResponseMapper(
-      paginatedVilla,
-      VillaWithRelationsDto.fromEntities(mappedPaginatedVilla),
+        return villa;
+      }),
     );
+
+    return paginateResponseMapper(paginatedVillas, villas);
   }
 
   async findOne(
     id: string,
     entityManager?: EntityManager,
   ): Promise<VillaWithRelationsDto> {
-    const repository = entityManager
-      ? entityManager.getRepository(Villa)
-      : this.villaRepository;
+    const repository = this._getRepository(entityManager);
 
     const villa = await repository.findOne({
+      select: {
+        id: true,
+        name: true,
+        secondaryName: true,
+        availability: true,
+        dailyPrice: true,
+        lowSeasonDailyPrice: true,
+        highSeasonDailyPrice: true,
+        peakSeasonDailyPrice: true,
+        dailyPriceAfterDiscount: true,
+        lowSeasonDailyPriceAfterDiscount: true,
+        highSeasonDailyPriceAfterDiscount: true,
+        peakSeasonDailyPriceAfterDiscount: true,
+        priceMonthly: true,
+        priceYearly: true,
+        discountMonthlyType: true,
+        discountYearlyType: true,
+        discountMonthly: true,
+        discountYearly: true,
+        priceMonthlyAfterDiscount: true,
+        priceYearlyAfterDiscount: true,
+        availabilityQuotaPerMonth: true,
+        availabilityQuotaPerYear: true,
+        highlight: true,
+        address: true,
+        country: true,
+        state: true,
+        city: true,
+        postalCode: true,
+        mapLink: true,
+        placeNearby: true,
+        photos: true,
+        videos: true,
+        video360s: true,
+        floorPlans: true,
+        averageRating: true,
+        totalReview: true,
+        isFavorite: true,
+        currency: {
+          id: true,
+          name: true,
+          code: true,
+          symbol: true,
+        },
+        owner: {
+          id: true,
+          name: true,
+          type: true,
+          companyName: true,
+          email: true,
+          phoneCountryCode: true,
+          phoneNumber: true,
+          address: true,
+          website: true,
+          status: true,
+        },
+        bookings: {
+          id: true,
+          checkInDate: true,
+          checkOutDate: true,
+          status: true,
+          totalAmount: true,
+          totalGuest: true,
+          payments: {
+            amount: true,
+            paymentChannel: true,
+            paymentMethod: true,
+            status: true,
+            paidAt: true,
+          },
+        },
+        reviews: {
+          message: true,
+          rating: true,
+          booking: {
+            id: true,
+            checkInDate: true,
+            checkOutDate: true,
+            customer: {
+              id: true,
+              name: true,
+              phoneNumber: true,
+              phoneCountryCode: true,
+              email: true,
+            },
+          },
+        },
+        villaPolicies: {
+          id: true,
+          policy: {
+            id: true,
+            name: true,
+            icon: true,
+            type: {
+              id: true,
+              name: true,
+            },
+            description: true,
+          },
+        },
+        villaPriceRules: {
+          id: true,
+          priceRule: {
+            id: true,
+            name: true,
+            isDiscount: true,
+            discountType: true,
+            discount: true,
+            startDate: true,
+            endDate: true,
+            isActive: true,
+            season: true,
+            description: true,
+            currency: {
+              id: true,
+              name: true,
+              code: true,
+              symbol: true,
+            },
+          },
+        },
+        villaAdditionals: {
+          id: true,
+          additional: {
+            id: true,
+            name: true,
+            type: true,
+            photos: true,
+            description: true,
+          },
+        },
+        villaFacilities: {
+          id: true,
+          facility: {
+            id: true,
+            name: true,
+            icon: true,
+            type: true,
+          },
+        },
+        villaFeatures: {
+          id: true,
+          feature: {
+            id: true,
+            name: true,
+            type: true,
+            icon: true,
+            free: true,
+            price: true,
+            discountType: true,
+            discount: true,
+            priceAfterDiscount: true,
+            currency: {
+              id: true,
+              name: true,
+              code: true,
+              symbol: true,
+            },
+          },
+        },
+      },
       where: {
         id,
       },
@@ -334,21 +600,17 @@ export class VillaService {
 
     const currentPriceRule = villa.villaPriceRules[0]?.priceRule;
 
-    const mappedVilla = VillaWithRelationsDto.fromEntity(villa);
-
     if (currentPriceRule) {
-      this._setCurrentDailyPrice(mappedVilla, currentPriceRule);
+      this._setCurrentDailyPrice(villa, currentPriceRule);
     }
 
-    return mappedVilla;
+    return VillaWithRelationsDto.fromEntity(villa);
   }
 
   async update(
     id: string,
     payload: UpdateVillaDto,
   ): Promise<VillaWithRelationsDto> {
-    this._handleDefaultDiscountType(payload);
-
     await this.datasource.transaction(async (manager) => {
       const initialData = await this.findOne(id, manager);
 
@@ -450,9 +712,25 @@ export class VillaService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.villaRepository.delete(id);
+  }
+
+  private _getRepository(entityManager?: EntityManager): Repository<Villa> {
+    return entityManager
+      ? entityManager.getRepository(Villa)
+      : this.villaRepository;
+  }
+
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.villaRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('villa not found');
+    }
   }
 
   async findBestSeller(option: BestSeller): Promise<GetVillaBestSellerDto> {
@@ -605,18 +883,6 @@ export class VillaService {
     };
   }
 
-  private async _handleDefaultDiscountType(
-    payload: CreateVillaDto | UpdateVillaDto,
-  ) {
-    if (payload.discountMonthly && !payload.discountMonthlyType) {
-      payload.discountMonthlyType = DiscountType.Percentage;
-    }
-
-    if (payload.discountYearly && !payload.discountYearlyType) {
-      payload.discountYearlyType = DiscountType.Percentage;
-    }
-  }
-
   private _handleDailyPriceAfterDiscountUponUpdate(
     initialData: VillaWithRelationsDto,
     updatedData: UpdateVillaDto,
@@ -695,7 +961,7 @@ export class VillaService {
       villa,
     );
 
-    villa.currentPrice = {
+    const villaCurrentPrices: CurrentVillaPrices = {
       currentSeason: priceRule.season,
       currentIsDiscount: priceRule.isDiscount,
       currentDiscountType: priceRule.discountType,
@@ -705,6 +971,8 @@ export class VillaService {
       currencyId: priceRule.currencyId,
       currency: priceRule.currency,
     };
+
+    villa.currentPrice = villaCurrentPrices;
   }
 
   private _filterAndSortVillaPriceRule(

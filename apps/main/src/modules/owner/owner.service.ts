@@ -2,12 +2,12 @@ import { paginateResponseMapper } from '@apps/main/common/helpers';
 import { Owner } from '@apps/main/database/entities';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
+import { PaginateResponseDataProps } from '../shared/dto';
 import {
   CreateOwnerDto,
-  OwnerDto,
+  OwnerPaginationDto,
   OwnerWithRelationsDto,
   UpdateOwnerDto,
 } from './dto';
@@ -19,16 +19,45 @@ export class OwnerService {
     private ownerRepository: Repository<Owner>,
   ) {}
 
-  async create(payload: CreateOwnerDto): Promise<OwnerDto> {
-    const owner = this.ownerRepository.create(payload);
+  async create(payload: CreateOwnerDto): Promise<OwnerWithRelationsDto> {
+    const ownerEntity = this.ownerRepository.create(payload);
 
-    const savedOwner = await this.ownerRepository.save(owner);
+    const createdOwner = await this.ownerRepository.save(ownerEntity);
 
-    return plainToInstance(OwnerDto, savedOwner);
+    return OwnerWithRelationsDto.fromEntity(createdOwner);
   }
 
-  async findAll(query: PaginateQuery) {
-    const paginatedOwner = await paginate(query, this.ownerRepository, {
+  async findAll(
+    query: PaginateQuery,
+  ): Promise<PaginateResponseDataProps<OwnerPaginationDto[]>> {
+    const paginatedOwners = await paginate(query, this.ownerRepository, {
+      select: [
+        'id',
+        'name',
+        'type',
+        'companyName',
+        'phoneCountryCode',
+        'phoneNumber',
+        'email',
+        'address',
+        'website',
+        'status',
+        'createdAt',
+
+        'activities.id',
+        'activities.name',
+        'activities.highlight',
+        'activities.category.id',
+        'activities.category.name',
+
+        'properties.id',
+        'properties.name',
+        'properties.highlight',
+
+        'villas.id',
+        'villas.name',
+        'villas.highlight',
+      ],
       sortableColumns: ['createdAt', 'name', 'type', 'status'],
       defaultSortBy: [['createdAt', 'DESC']],
       nullSort: 'last',
@@ -41,20 +70,53 @@ export class OwnerService {
       },
       searchableColumns: ['name', 'companyName', 'email', 'address', 'website'],
       relations: {
-        activities: true,
+        activities: { category: true },
         properties: true,
         villas: true,
       },
     });
 
-    return paginateResponseMapper(paginatedOwner);
+    const owners = OwnerPaginationDto.fromEntities(paginatedOwners.data);
+
+    return paginateResponseMapper(paginatedOwners, owners);
   }
 
   async findOne(id: string): Promise<OwnerWithRelationsDto> {
     const owner = await this.ownerRepository.findOne({
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        companyName: true,
+        phoneCountryCode: true,
+        phoneNumber: true,
+        email: true,
+        address: true,
+        website: true,
+        status: true,
+        activities: {
+          id: true,
+          name: true,
+          highlight: true,
+          category: {
+            id: true,
+            name: true,
+          },
+        },
+        properties: {
+          id: true,
+          name: true,
+          highlight: true,
+        },
+        villas: {
+          id: true,
+          name: true,
+          highlight: true,
+        },
+      },
       where: { id },
       relations: {
-        activities: true,
+        activities: { category: true },
         properties: true,
         villas: true,
       },
@@ -64,7 +126,7 @@ export class OwnerService {
       throw new NotFoundException('owner not found');
     }
 
-    return plainToInstance(OwnerDto, owner);
+    return OwnerWithRelationsDto.fromEntity(owner);
   }
 
   async update(

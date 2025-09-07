@@ -1,4 +1,3 @@
-import { Public } from '@apps/main/common/decorators';
 import {
   Body,
   Controller,

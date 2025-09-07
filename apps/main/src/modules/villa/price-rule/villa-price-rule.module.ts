@@ -1,4 +1,5 @@
 import { Villa, VillaPriceRule } from '@apps/main/database/entities';
+import { VillaPriceRuleView } from '@apps/main/database/entities/views/villa-price-rule.view.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CurrencyModule } from '../../currency/currency.module';
@@ -14,6 +15,9 @@ import { VillaPriceRuleService } from './villa-price-rule.service';
     VillaPriceService,
     VillaPriceRuleEventHandlerService,
   ],
-  imports: [TypeOrmModule.forFeature([VillaPriceRule, Villa]), CurrencyModule],
+  imports: [
+    TypeOrmModule.forFeature([VillaPriceRule, VillaPriceRuleView, Villa]),
+    CurrencyModule,
+  ],
 })
 export class VillaPriceRuleModule {}

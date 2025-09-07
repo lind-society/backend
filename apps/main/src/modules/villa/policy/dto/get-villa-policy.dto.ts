@@ -5,10 +5,10 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { VillaPolicyDto } from './villa-policy.dto';
+import { VillaPolicyDto, VillaPolicyPaginationDto } from './villa-policy.dto';
 
 export class GetVillaPolicyPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: VillaPolicyDto[];
+  readonly data!: VillaPolicyPaginationDto[];
 }
 
 export class GetVillaPoliciesSuccessResponse

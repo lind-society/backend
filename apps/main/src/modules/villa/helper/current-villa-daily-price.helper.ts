@@ -2,8 +2,11 @@ import {
   DiscountType,
   VillaPriceRuleSeason,
 } from '@apps/main/database/entities';
-import { VillaWithRelationsDto } from '../dto';
-import { VillaPriceRuleWithRelationsDto } from '../price-rule/dto';
+import { VillaPaginationDto, VillaWithRelationsDto } from '../dto';
+import {
+  RelatedVillaPriceRuleDto,
+  VillaPriceRuleWithRelationsDto,
+} from '../price-rule/dto';
 
 export interface IVillaCurrentDailyPriceDto {
   dailyPrice: number;
@@ -29,8 +32,8 @@ function calculateDiscountedPrice(
 }
 
 export function getVillaCurrentDailyPrice(
-  priceRule: VillaPriceRuleWithRelationsDto,
-  villa: VillaWithRelationsDto,
+  priceRule: VillaPriceRuleWithRelationsDto | RelatedVillaPriceRuleDto,
+  villa: VillaWithRelationsDto | VillaPaginationDto,
 ): IVillaCurrentDailyPriceDto {
   const { season, discount, discountType } = priceRule;
 

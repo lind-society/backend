@@ -12,7 +12,7 @@ import { In, Repository } from 'typeorm';
 import {
   CreateVillaPolicyTypeDto,
   UpdateVillaPolicyTypeDto,
-  VillaPolicyTypeDto,
+  VillaPolicyTypePaginationDto,
   VillaPolicyTypeWithRelationsDto,
 } from './dto';
 
@@ -22,6 +22,84 @@ export class VillaPolicyTypeService {
     @InjectRepository(VillaPolicyType)
     private villaPolicyTypeRepository: Repository<VillaPolicyType>,
   ) {}
+
+  async create(
+    payload: CreateVillaPolicyTypeDto,
+  ): Promise<VillaPolicyTypeWithRelationsDto> {
+    const villaPolicyTypeEntity =
+      this.villaPolicyTypeRepository.create(payload);
+
+    const createdVillaPolicyType = await this.villaPolicyTypeRepository.save(
+      villaPolicyTypeEntity,
+    );
+
+    return VillaPolicyTypeWithRelationsDto.fromEntity(createdVillaPolicyType);
+  }
+
+  async findAll(
+    query: PaginateQuery,
+  ): Promise<PaginateResponseDataProps<VillaPolicyTypePaginationDto[]>> {
+    const paginatedVillaPolicyTypeCategories = await paginate(
+      query,
+      this.villaPolicyTypeRepository,
+      {
+        select: ['id', 'name', 'createdAt'],
+        sortableColumns: ['createdAt', 'name'],
+        defaultSortBy: [['createdAt', 'DESC']],
+        nullSort: 'last',
+        defaultLimit: 10,
+        maxLimit: 100,
+        filterableColumns: {
+          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        },
+        searchableColumns: ['name'],
+      },
+    );
+
+    const villaPolicyTypeCategories = VillaPolicyTypePaginationDto.fromEntities(
+      paginatedVillaPolicyTypeCategories.data,
+    );
+
+    return paginateResponseMapper(
+      paginatedVillaPolicyTypeCategories,
+      villaPolicyTypeCategories,
+    );
+  }
+
+  async findOne(id: string): Promise<VillaPolicyTypeWithRelationsDto> {
+    const villaPolicyType = await this.villaPolicyTypeRepository.findOne({
+      select: {
+        id: true,
+        name: true,
+      },
+      where: {
+        id,
+      },
+    });
+
+    if (!villaPolicyType) {
+      throw new NotFoundException('villa policy type not found');
+    }
+
+    return VillaPolicyTypeWithRelationsDto.fromEntity(villaPolicyType);
+  }
+
+  async update(
+    id: string,
+    payload: UpdateVillaPolicyTypeDto,
+  ): Promise<VillaPolicyTypeWithRelationsDto> {
+    await this.validateExist(id);
+
+    await this.villaPolicyTypeRepository.update(id, payload);
+
+    return await this.findOne(id);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.validateExist(id);
+
+    await this.villaPolicyTypeRepository.delete(id);
+  }
 
   async validateVillaPolicyTypes(
     villaFacilityTypeIds: string[],
@@ -46,62 +124,13 @@ export class VillaPolicyTypeService {
     }
   }
 
-  async create(payload: CreateVillaPolicyTypeDto): Promise<VillaPolicyTypeDto> {
-    const villaPolicyType = this.villaPolicyTypeRepository.create(payload);
-
-    return await this.villaPolicyTypeRepository.save(villaPolicyType);
-  }
-
-  async findAll(
-    query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<VillaPolicyTypeWithRelationsDto[]>> {
-    const paginatedVillaPolicyTypeCategory = await paginate(
-      query,
-      this.villaPolicyTypeRepository,
-      {
-        sortableColumns: ['createdAt', 'name'],
-        defaultSortBy: [['createdAt', 'DESC']],
-        nullSort: 'last',
-        defaultLimit: 10,
-        maxLimit: 100,
-        filterableColumns: {
-          createdAt: [FilterOperator.GTE, FilterOperator.LTE],
-        },
-        searchableColumns: ['name'],
-      },
-    );
-
-    return paginateResponseMapper(paginatedVillaPolicyTypeCategory);
-  }
-
-  async findOne(id: string): Promise<VillaPolicyTypeWithRelationsDto> {
-    const villaPolicyType = await this.villaPolicyTypeRepository.findOne({
-      where: {
-        id,
-      },
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.villaPolicyTypeRepository.exists({
+      where: { id },
     });
 
-    if (!villaPolicyType) {
+    if (!exists) {
       throw new NotFoundException('villa policy type not found');
     }
-
-    return villaPolicyType;
-  }
-
-  async update(
-    id: string,
-    payload: UpdateVillaPolicyTypeDto,
-  ): Promise<VillaPolicyTypeWithRelationsDto> {
-    await this.findOne(id);
-
-    await this.villaPolicyTypeRepository.update(id, payload);
-
-    return await this.findOne(id);
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.findOne(id);
-
-    await this.villaPolicyTypeRepository.delete(id);
   }
 }

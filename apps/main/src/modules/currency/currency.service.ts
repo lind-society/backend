@@ -7,7 +7,12 @@ import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import { PaginateResponseDataProps } from '../shared/dto';
 import { CurrencyConverterService } from './converter/currency-converter.service';
-import { CreateCurrencyDto, CurrencyDto, UpdateCurrencyDto } from './dto';
+import {
+  CreateCurrencyDto,
+  CurrencyDto,
+  CurrencyPaginationDto,
+  UpdateCurrencyDto,
+} from './dto';
 
 @Injectable()
 export class CurrencyService {
@@ -22,16 +27,26 @@ export class CurrencyService {
       this.configService.get<string>('currency.base.code');
   }
   async create(payload: CreateCurrencyDto) {
-    const currency = this.currencyRepository.create(payload);
+    const currencyEntity = this.currencyRepository.create(payload);
 
-    return await this.currencyRepository.save(currency);
+    const createdCurrency = await this.currencyRepository.save(currencyEntity);
+
+    return createdCurrency;
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<CurrencyDto[]>> {
-    const paginatedCurrency = await paginate(query, this.currencyRepository, {
-      select: ['id', 'code', 'name', 'symbol', 'allowDecimal', 'allowRound'],
+  ): Promise<PaginateResponseDataProps<CurrencyPaginationDto[]>> {
+    const paginatedCurrencies = await paginate(query, this.currencyRepository, {
+      select: [
+        'id',
+        'code',
+        'name',
+        'symbol',
+        'allowDecimal',
+        'allowRound',
+        'createdAt',
+      ],
       sortableColumns: ['createdAt', 'code', 'name', 'symbol'],
       defaultSortBy: [['createdAt', 'DESC']],
       nullSort: 'last',
@@ -45,7 +60,11 @@ export class CurrencyService {
       searchableColumns: ['code', 'name', 'symbol'],
     });
 
-    return paginateResponseMapper(paginatedCurrency);
+    const currencies = CurrencyPaginationDto.fromEntities(
+      paginatedCurrencies.data,
+    );
+
+    return paginateResponseMapper(paginatedCurrencies, currencies);
   }
 
   async findOne(
@@ -70,7 +89,7 @@ export class CurrencyService {
       throw new NotFoundException('currency not found');
     }
 
-    return currency;
+    return CurrencyDto.fromEntity(currency);
   }
 
   async update(id: string, payload: UpdateCurrencyDto): Promise<CurrencyDto> {

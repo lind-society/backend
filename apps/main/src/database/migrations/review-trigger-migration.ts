@@ -1,10 +1,10 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Migration1755701799006 implements MigrationInterface {
-    name = 'Migration1755701799006'
+  name = 'Migration1755701799006';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
             CREATE OR REPLACE FUNCTION update_activity_average_rating()
             RETURNS TRIGGER AS $$
             BEGIN
@@ -15,7 +15,7 @@ export class Migration1755701799006 implements MigrationInterface {
                             FROM reviews 
                             WHERE activity_id = NEW.activity_id
                         ),
-                        review_count = (
+                        total_review = (
                             SELECT COUNT(*) 
                             FROM reviews 
                             WHERE activity_id = NEW.activity_id
@@ -26,7 +26,7 @@ export class Migration1755701799006 implements MigrationInterface {
             END;
             $$ LANGUAGE plpgsql;
         `);
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE OR REPLACE FUNCTION update_villa_average_rating()
             RETURNS TRIGGER AS $$
             BEGIN
@@ -37,7 +37,7 @@ export class Migration1755701799006 implements MigrationInterface {
                             FROM reviews 
                             WHERE villa_id = NEW.villa_id
                         ),
-                        review_count = (
+                        total_review = (
                             SELECT COUNT(*) 
                             FROM reviews 
                             WHERE villa_id = NEW.villa_id
@@ -48,25 +48,32 @@ export class Migration1755701799006 implements MigrationInterface {
             END;
             $$ LANGUAGE plpgsql;
         `);
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE TRIGGER trigger_update_activity_average_rating
             AFTER INSERT OR UPDATE OR DELETE ON reviews
             FOR EACH ROW
             EXECUTE FUNCTION update_activity_average_rating();
         `);
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE TRIGGER trigger_update_villa_average_rating
             AFTER INSERT OR UPDATE OR DELETE ON reviews
             FOR EACH ROW
             EXECUTE FUNCTION update_villa_average_rating();
         `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TRIGGER IF EXISTS trigger_update_activity_average_rating ON reviews;`);
-        await queryRunner.query(`DROP TRIGGER IF EXISTS trigger_update_villa_average_rating ON reviews;`);
-        await queryRunner.query(`DROP FUNCTION IF EXISTS update_activity_average_rating();`);
-        await queryRunner.query(`DROP FUNCTION IF EXISTS update_villa_average_rating();`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS trigger_update_activity_average_rating ON reviews;`,
+    );
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS trigger_update_villa_average_rating ON reviews;`,
+    );
+    await queryRunner.query(
+      `DROP FUNCTION IF EXISTS update_activity_average_rating();`,
+    );
+    await queryRunner.query(
+      `DROP FUNCTION IF EXISTS update_villa_average_rating();`,
+    );
+  }
 }

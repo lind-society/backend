@@ -49,6 +49,7 @@ export class PackageService {
             })),
           );
         }
+
         return createdPackage;
       },
     );
@@ -60,6 +61,15 @@ export class PackageService {
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<PackagePaginationDto[]>> {
     const paginatedPackages = await paginate(query, this.packageRepository, {
+      select: [
+        'id',
+        'name',
+        'createdAt',
+
+        'packageBenefits.id',
+        'packageBenefits.benefit.id',
+        'packageBenefits.benefit.title',
+      ],
       sortableColumns: ['createdAt', 'name'],
       defaultSortBy: [['createdAt', 'DESC']],
       nullSort: 'last',
@@ -86,6 +96,17 @@ export class PackageService {
     const repository = this._getRepository(entityManager);
 
     const pkg = await repository.findOne({
+      select: {
+        id: true,
+        name: true,
+        packageBenefits: {
+          id: true,
+          benefit: {
+            id: true,
+            title: true,
+          },
+        },
+      },
       where: {
         id,
       },

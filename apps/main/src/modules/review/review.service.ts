@@ -1,12 +1,9 @@
-import { EntityAction } from '@apps/main/common/enums';
 import { paginateResponseMapper } from '@apps/main/common/helpers';
 import {
-  Activity,
   ActivityBookingStatus,
   Booking,
   BookingType,
   Review,
-  Villa,
   VillaBookingStatus,
 } from '@apps/main/database/entities';
 import {
@@ -17,12 +14,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { DataSource, EntityManager, Repository } from 'typeorm';
-import { ActivityService } from '../activity/activity.service';
 import { PaginateResponseDataProps } from '../shared/dto';
-import { VillaService } from '../villa/villa.service';
 import {
   CreateReviewDto,
-  ReviewDto,
+  ReviewPaginationDto,
   ReviewWithRelationsDto,
   UpdateReviewDto,
 } from './dto';
@@ -33,25 +28,14 @@ export class ReviewService {
     private readonly dataSource: DataSource,
     @InjectRepository(Review)
     private reviewRepository: Repository<Review>,
-    private activityService: ActivityService,
-    private villaService: VillaService,
   ) {}
   async create(payload: CreateReviewDto): Promise<ReviewWithRelationsDto> {
     return this.dataSource.transaction(async (manager) => {
-      const bookingId = payload.activityBookingId ?? payload.villaBookingId;
+      await this._validateBookingStatus(manager, payload.bookingId);
 
-      await this._validateBookingStatus(manager, bookingId);
+      const reviewEntity = manager.create(Review, payload);
 
-      await this._calculateAverageRatingAndTotalReview(
-        manager,
-        EntityAction.Create,
-        payload.activityId,
-        payload.villaId,
-      );
-
-      const review = this.reviewRepository.create(payload);
-
-      const createdReview = await manager.save(Review, review);
+      const createdReview = await manager.save(Review, reviewEntity);
 
       return ReviewWithRelationsDto.fromEntity(createdReview);
     });
@@ -59,8 +43,36 @@ export class ReviewService {
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<ReviewWithRelationsDto[]>> {
-    const paginatedReview = await paginate(query, this.reviewRepository, {
+  ): Promise<PaginateResponseDataProps<ReviewPaginationDto[]>> {
+    const paginatedReviews = await paginate(query, this.reviewRepository, {
+      select: [
+        'id',
+        'rating',
+        'message',
+        'createdAt',
+
+        'booking.id',
+        'booking.bookingDate',
+        'booking.checkInDate',
+        'booking.checkOutDate',
+        'booking.customer.id',
+        'booking.customer.name',
+        'booking.customer.email',
+        'booking.customer.phoneCountryCode',
+        'booking.customer.phoneNumber',
+        'booking.currency.id',
+        'booking.currency.name',
+        'booking.currency.code',
+        'booking.currency.symbol',
+
+        'activity.id',
+        'activity.name',
+        'activity.category.id',
+        'activity.category.name',
+
+        'villa.id',
+        'villa.name',
+      ],
       sortableColumns: ['createdAt', 'rating'],
       defaultSortBy: [['createdAt', 'DESC']],
       nullSort: 'last',
@@ -85,28 +97,58 @@ export class ReviewService {
           currency: true,
         },
         activity: {
-          owner: true,
-          currency: true,
+          category: true,
         },
-        villa: {
-          owner: true,
-          currency: true,
-        },
+        villa: true,
       },
     });
 
-    return paginateResponseMapper(paginatedReview);
+    const reviews = ReviewPaginationDto.fromEntities(paginatedReviews.data);
+
+    return paginateResponseMapper(paginatedReviews, reviews);
   }
 
   async findOne(
     id: string,
     entityManager?: EntityManager,
   ): Promise<ReviewWithRelationsDto> {
-    const repository = entityManager
-      ? entityManager.getRepository(Review)
-      : this.reviewRepository;
+    const repository = this._getRepository(entityManager);
 
     const review = await repository.findOne({
+      select: {
+        id: true,
+        rating: true,
+        message: true,
+        booking: {
+          id: true,
+          bookingDate: true,
+          checkInDate: true,
+          checkOutDate: true,
+          totalGuest: true,
+          customer: {
+            id: true,
+            name: true,
+            email: true,
+            phoneCountryCode: true,
+            phoneNumber: true,
+          },
+          currency: {
+            id: true,
+            name: true,
+            code: true,
+            symbol: true,
+          },
+        },
+        activity: {
+          id: true,
+          name: true,
+          category: { id: true, name: true },
+        },
+        villa: {
+          id: true,
+          name: true,
+        },
+      },
       where: {
         id,
       },
@@ -116,13 +158,9 @@ export class ReviewService {
           currency: true,
         },
         activity: {
-          owner: true,
-          currency: true,
+          category: true,
         },
-        villa: {
-          owner: true,
-          currency: true,
-        },
+        villa: true,
       },
     });
 
@@ -137,35 +175,38 @@ export class ReviewService {
     id: string,
     payload: UpdateReviewDto,
   ): Promise<ReviewWithRelationsDto> {
-    await this.dataSource.transaction(async (manager) => {
-      const initialReview = await this.findOne(id, manager);
+    await this.validateExist(id);
 
-      await manager.update(Review, id, payload);
-
-      await this._calculateAverageRatingAndTotalReview(
-        manager,
-        EntityAction.Update,
-        initialReview.activityId,
-        initialReview.villaId,
-      );
-    });
+    await this.reviewRepository.update(id, payload);
 
     return await this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
-    await this.dataSource.transaction(async (manager) => {
-      const initialReview = await this.findOne(id, manager);
+    await this.validateExist(id);
 
-      await this.reviewRepository.delete(id);
+    await this.reviewRepository.delete(id);
+  }
 
-      await this._calculateAverageRatingAndTotalReview(
-        manager,
-        EntityAction.Delete,
-        initialReview.activityId,
-        initialReview.villaId,
-      );
+  private _getRepository(entityManager?: EntityManager): Repository<Review> {
+    return entityManager
+      ? entityManager.getRepository(Review)
+      : this.reviewRepository;
+  }
+
+  async validateExist(
+    id: string,
+    entityManager?: EntityManager,
+  ): Promise<void> {
+    const repository = this._getRepository(entityManager);
+
+    const exists = await repository.exists({
+      where: { id },
     });
+
+    if (!exists) {
+      throw new NotFoundException('review not found');
+    }
   }
 
   private async _validateBookingStatus(
@@ -204,6 +245,7 @@ export class ReviewService {
     }
   }
 
+  /* Unused (now using database trigger)
   private async _calculateAverageRatingAndTotalReview(
     manager: EntityManager,
     entityAction: string,
@@ -224,11 +266,11 @@ export class ReviewService {
 
       switch (entityAction) {
         case EntityAction.Create:
-          await manager.increment(Activity, activityId, 'total_review', 1);
+          await manager.increment(Activity, activityId, 'totalReview', 1);
           break;
 
         case EntityAction.Delete:
-          await manager.decrement(Activity, activityId, 'total_review', 1);
+          await manager.decrement(Activity, activityId, 'totalReview', 1);
           break;
 
         default:
@@ -261,6 +303,14 @@ export class ReviewService {
           break;
       }
     }
+
+    // usage
+    await this._calculateAverageRatingAndTotalReview(
+        manager,
+        EntityAction.Create,
+        payload.activityId,
+        payload.villaId,
+      );
   }
 
   private _calculateAverageRating(reviews: ReviewDto[]): number {
@@ -272,4 +322,5 @@ export class ReviewService {
         ) / reviews.length
       : 0;
   }
+  */
 }

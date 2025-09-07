@@ -1,3 +1,4 @@
+import { ToDecimal } from '@apps/main/common/decorators';
 import { Activity, Booking, Review, Villa } from '@apps/main/database/entities';
 import {
   ActivityWithRelationsDto,
@@ -40,6 +41,7 @@ export class ReviewDto implements IReviewDto {
   readonly id!: string;
 
   @Expose()
+  @ToDecimal()
   readonly rating!: number;
 
   @Expose()
@@ -125,6 +127,7 @@ export class ReviewPaginationDto implements IReviewPaginationDto {
   readonly id!: string;
 
   @Expose()
+  @ToDecimal()
   readonly rating!: number;
 
   @Expose()
@@ -191,6 +194,7 @@ export class RelatedReviewDto implements IRelatedReviewDto {
   readonly id!: string;
 
   @Expose()
+  @ToDecimal()
   readonly rating!: number;
 
   @Expose()

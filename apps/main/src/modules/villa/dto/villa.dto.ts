@@ -1,4 +1,5 @@
-import { ToHour } from '@apps/main/common/decorators';
+import { ToDecimal, ToHour } from '@apps/main/common/decorators';
+import { generateShortDescription } from '@apps/main/common/helpers';
 import {
   Booking,
   Currency,
@@ -60,14 +61,40 @@ export interface ICurrentVillaPrices {
 }
 
 export class CurrentVillaPrices implements ICurrentVillaPrices {
+  @Expose()
   currentSeason: VillaPriceRuleSeason;
+
+  @Expose()
   currentIsDiscount: boolean;
+
+  @Expose()
   currentDiscountType?: DiscountType;
+
+  @Expose()
+  @ToDecimal(true)
   currentDiscount?: number;
+
+  @Expose()
+  @ToDecimal(true)
   currentDailyPrice?: number;
+
+  @Expose()
+  @ToDecimal(true)
   currentDailyPriceAfterDiscount?: number;
+
+  @Expose()
   currencyId: string;
+
+  @Expose()
   currency?: CurrencyDto;
+
+  static fromEntity(entity: CurrentVillaPrices): CurrentVillaPrices {
+    return plainToInstance(CurrentVillaPrices, entity);
+  }
+
+  static fromEntities(entities: CurrentVillaPrices[]): CurrentVillaPrices[] {
+    return entities.map((entity) => this.fromEntity(entity));
+  }
 }
 
 export interface IVillaDto
@@ -138,33 +165,43 @@ export class VillaDto implements IVillaDto {
   readonly availability!: VillaAvailability;
 
   @Expose()
+  @ToDecimal(true)
   readonly dailyPrice!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly lowSeasonDailyPrice!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly highSeasonDailyPrice!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly peakSeasonDailyPrice!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   dailyPriceAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   lowSeasonDailyPriceAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   highSeasonDailyPriceAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   peakSeasonDailyPriceAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceMonthly!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceYearly!: number | null;
 
   @Expose()
@@ -174,15 +211,19 @@ export class VillaDto implements IVillaDto {
   readonly discountYearlyType!: DiscountType | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly discountMonthly!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly discountYearly!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceMonthlyAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceYearlyAfterDiscount!: number | null;
 
   @Expose()
@@ -236,6 +277,7 @@ export class VillaDto implements IVillaDto {
   readonly floorPlans!: string[] | null;
 
   @Expose()
+  @ToDecimal()
   readonly averageRating!: number;
 
   @Expose()
@@ -323,6 +365,21 @@ export class VillaWithRelationsDto
       ]),
     });
 
+    if (entity.priceRules) {
+      const currentPriceRule = entity.priceRules[0].priceRule;
+
+      dto.currentPrice = {
+        currentSeason: currentPriceRule.season,
+        currentIsDiscount: currentPriceRule.isDiscount,
+        currentDiscountType: currentPriceRule.discountType,
+        currentDiscount: currentPriceRule.discount,
+        currentDailyPrice: entity.dailyPrice,
+        currentDailyPriceAfterDiscount: entity.dailyPriceAfterDiscount,
+        currencyId: currentPriceRule.currencyId,
+        currency: currentPriceRule.currency,
+      };
+    }
+
     if (entity.currency) {
       dto.currency = CurrencyDto.fromEntity(entity.currency);
     }
@@ -397,7 +454,10 @@ export class VillaWithRelationsDto
       priceRules?: VillaPriceRulePivot[];
     })[],
   ): VillaWithRelationsDto[] {
-    return entities.map((entity) => this.fromEntity(entity));
+    return entities.map((entity) => ({
+      ...this.fromEntity(entity),
+      highlight: generateShortDescription(entity.highlight),
+    }));
   }
 }
 
@@ -415,33 +475,43 @@ export class VillaPaginationDto implements IVillaPaginationDto {
   readonly availability!: VillaAvailability;
 
   @Expose()
+  @ToDecimal(true)
   readonly dailyPrice!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly lowSeasonDailyPrice!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly highSeasonDailyPrice!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly peakSeasonDailyPrice!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   dailyPriceAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   lowSeasonDailyPriceAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   highSeasonDailyPriceAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   peakSeasonDailyPriceAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceMonthly!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceYearly!: number | null;
 
   @Expose()
@@ -451,15 +521,19 @@ export class VillaPaginationDto implements IVillaPaginationDto {
   readonly discountYearlyType!: DiscountType | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly discountMonthly!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly discountYearly!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceMonthlyAfterDiscount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceYearlyAfterDiscount!: number | null;
 
   @Expose()
@@ -513,6 +587,7 @@ export class VillaPaginationDto implements IVillaPaginationDto {
   readonly floorPlans!: string[] | null;
 
   @Expose()
+  @ToDecimal()
   readonly averageRating!: number;
 
   @Expose()
@@ -583,6 +658,23 @@ export class VillaPaginationDto implements IVillaPaginationDto {
       ]),
     });
 
+    if (entity.villaPriceRules) {
+      const currentPriceRule = entity.villaPriceRules[0].priceRule;
+
+      const currentPriceRaw = {
+        currentSeason: currentPriceRule.season,
+        currentIsDiscount: currentPriceRule.isDiscount,
+        currentDiscountType: currentPriceRule.discountType,
+        currentDiscount: currentPriceRule.discount,
+        currentDailyPrice: entity.dailyPrice,
+        currentDailyPriceAfterDiscount: entity.dailyPriceAfterDiscount,
+        currencyId: currentPriceRule.currencyId,
+        currency: currentPriceRule.currency,
+      };
+
+      dto.currentPrice = CurrentVillaPrices.fromEntity(currentPriceRaw);
+    }
+
     if (entity.currency) {
       dto.currency = RelatedCurrencyDto.fromEntity(entity.currency);
     }
@@ -625,21 +717,21 @@ export class VillaPaginationDto implements IVillaPaginationDto {
       }));
     }
 
-    if (entity.villaPolicies) {
-      dto.policies = entity.villaPolicies.map(({ id: pivotId, policy }) => ({
-        ...RelatedVillaPolicyDto.fromEntity(policy),
-        pivotId,
-      }));
-    }
+    // if (entity.villaPolicies) {
+    //   dto.policies = entity.villaPolicies.map(({ id: pivotId, policy }) => ({
+    //     ...RelatedVillaPolicyDto.fromEntity(policy),
+    //     pivotId,
+    //   }));
+    // }
 
-    if (entity.villaPriceRules) {
-      dto.priceRules = entity.villaPriceRules.map(
-        ({ id: pivotId, priceRule }) => ({
-          ...RelatedVillaPriceRuleDto.fromEntity(priceRule),
-          pivotId,
-        }),
-      );
-    }
+    // if (entity.villaPriceRules) {
+    //   dto.priceRules = entity.villaPriceRules.map(
+    //     ({ id: pivotId, priceRule }) => ({
+    //       ...RelatedVillaPriceRuleDto.fromEntity(priceRule),
+    //       pivotId,
+    //     }),
+    //   );
+    // }
 
     return dto;
   }
@@ -655,7 +747,10 @@ export class VillaPaginationDto implements IVillaPaginationDto {
       priceRules?: VillaPriceRulePivot[];
     })[],
   ): VillaPaginationDto[] {
-    return entities.map((entity) => this.fromEntity(entity));
+    return entities.map((entity) => ({
+      ...this.fromEntity(entity),
+      highlight: generateShortDescription(entity.highlight),
+    }));
   }
 }
 

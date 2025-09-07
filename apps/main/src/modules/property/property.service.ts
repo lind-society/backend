@@ -17,6 +17,7 @@ import { FeatureService } from '../feature/feature.service';
 import { PaginateResponseDataProps } from '../shared/dto';
 import {
   CreatePropertyFacililtyPivotDto,
+  PropertyPaginationDto,
   UpdatePropertyFacililtyPivotDto,
 } from './dto';
 import { CreatePropertyDto } from './dto/create-property.dto';
@@ -35,8 +36,6 @@ export class PropertyService {
   ) {}
 
   async create(payload: CreatePropertyDto): Promise<PropertyWithRelationsDto> {
-    this._handleDefaultDiscountType(payload);
-
     const { additionals, facilities, features, ...propertyData } = payload;
 
     const createdProperty = await this.datasource.transaction(
@@ -44,10 +43,12 @@ export class PropertyService {
         const convertedBasePricePropertyData =
           await this._convertToBaseCurrency(propertyData);
 
-        const createdProperty = await manager.save(
+        const propertyEntity = manager.create(
           Property,
           convertedBasePricePropertyData,
         );
+
+        const createdProperty = await manager.save(Property, propertyEntity);
 
         if (Array.isArray(additionals) && additionals.length > 0) {
           const createdAdditionals = await manager.save(
@@ -103,8 +104,88 @@ export class PropertyService {
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<PropertyWithRelationsDto[]>> {
-    const paginatedProperties = await paginate(query, this.propertyRepository, {
+  ): Promise<PaginateResponseDataProps<PropertyPaginationDto[]>> {
+    const queryBuilder = this.propertyRepository
+      .createQueryBuilder('property')
+      .leftJoinAndSelect('property.currency', 'currency')
+      .leftJoinAndSelect('property.owner', 'owner')
+      .leftJoinAndSelect('property.propertyAdditionals', 'propertyAdditionals')
+      .leftJoinAndSelect('propertyAdditionals.additional', 'additional')
+      .leftJoinAndSelect('property.propertyFacilities', 'propertyFacilities')
+      .leftJoinAndSelect('propertyFacilities.facility', 'facility')
+      .leftJoinAndSelect('property.propertyFeatures', 'propertyFeatures')
+      .leftJoinAndSelect('propertyFeatures.feature', 'feature')
+      .leftJoinAndSelect('feature.currency', 'featureCurrency')
+      .select([
+        'property.id',
+        'property.name',
+        'property.secondaryName',
+        'property.price',
+        'property.discountType',
+        'property.discount',
+        'property.priceAfterDiscount',
+        'property.highlight',
+        'property.address',
+        'property.country',
+        'property.state',
+        'property.city',
+        'property.postalCode',
+        'property.mapLink',
+        'property.placeNearby',
+        'property.photos',
+        'property.videos',
+        'property.video360s',
+        'property.floorPlans',
+        'property.isFavorite',
+        'property.soldStatus',
+        'property.createdAt',
+
+        'currency.id',
+        'currency.name',
+        'currency.code',
+        'currency.symbol',
+
+        'owner.id',
+        'owner.name',
+        'owner.type',
+        'owner.companyName',
+        'owner.email',
+        'owner.phoneCountryCode',
+        'owner.phoneNumber',
+        'owner.address',
+        'owner.website',
+        'owner.status',
+
+        'propertyAdditionals.id',
+        'additional.id',
+        'additional.name',
+        'additional.type',
+        'additional.photos',
+        'additional.description',
+
+        'propertyFacilities.id',
+        'facility.id',
+        'facility.name',
+        'facility.icon',
+        'facility.type',
+
+        'propertyFeatures.id',
+        'feature.id',
+        'feature.name',
+        'feature.type',
+        'feature.icon',
+        'feature.free',
+        'feature.price',
+        'feature.discountType',
+        'feature.discount',
+        'feature.priceAfterDiscount',
+        'featureCurrency.id',
+        'featureCurrency.name',
+        'featureCurrency.code',
+        'featureCurrency.symbol',
+      ]);
+
+    const paginatedProperties = await paginate(query, queryBuilder, {
       sortableColumns: [
         'isFavorite',
         'createdAt',
@@ -123,26 +204,14 @@ export class PropertyService {
       filterableColumns: {
         currencyId: [FilterOperator.EQ],
         ownerId: [FilterOperator.EQ],
-
         discountType: [FilterOperator.EQ],
         discount: [FilterOperator.EQ, FilterOperator.GTE, FilterOperator.LTE],
         price: [FilterOperator.GTE, FilterOperator.LTE],
         priceAfterDiscount: [FilterOperator.GTE, FilterOperator.LTE],
-
         soldStatus: [FilterOperator.EQ],
         ownershipType: [FilterOperator.EQ],
-        averageRating: [
-          FilterOperator.EQ,
-          FilterOperator.GTE,
-          FilterOperator.LTE,
-        ],
         isFavorite: [FilterOperator.EQ],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE],
-
-        'placeNearby.name': [FilterOperator.ILIKE],
-        'propertyAdditionals.additional.name': [FilterOperator.ILIKE],
-        'propertyFacilities.facility.name': [FilterOperator.ILIKE],
-        'propertyFeatures.feature.name': [FilterOperator.ILIKE],
       },
       searchableColumns: [
         'name',
@@ -154,34 +223,103 @@ export class PropertyService {
         'postalCode',
         'mapLink',
       ],
-      relations: {
-        currency: true,
-        owner: true,
-        propertyAdditionals: { additional: true },
-        propertyFeatures: { feature: { currency: true } },
-        propertyFacilities: { facility: true },
-      },
     });
 
-    const mappedPaginatedProperties = PropertyWithRelationsDto.fromEntities(
+    const properties = PropertyPaginationDto.fromEntities(
       paginatedProperties.data,
     );
 
-    return paginateResponseMapper(
-      paginatedProperties,
-      mappedPaginatedProperties,
-    );
+    return paginateResponseMapper(paginatedProperties, properties);
   }
 
   async findOne(
     id: string,
     entityManager?: EntityManager,
   ): Promise<PropertyWithRelationsDto> {
-    const repository = entityManager
-      ? entityManager.getRepository(Property)
-      : this.propertyRepository;
+    const repository = this._getRepository(entityManager);
 
     const property = await repository.findOne({
+      select: {
+        id: true,
+        name: true,
+        secondaryName: true,
+        price: true,
+        discountType: true,
+        discount: true,
+        priceAfterDiscount: true,
+        ownershipType: true,
+        highlight: true,
+        address: true,
+        country: true,
+        state: true,
+        city: true,
+        postalCode: true,
+        mapLink: true,
+        placeNearby: true,
+        photos: true,
+        videos: true,
+        video360s: true,
+        floorPlans: true,
+        soldStatus: true,
+        isFavorite: true,
+        currency: {
+          id: true,
+          name: true,
+          code: true,
+          symbol: true,
+        },
+        owner: {
+          id: true,
+          name: true,
+          type: true,
+          companyName: true,
+          email: true,
+          phoneCountryCode: true,
+          phoneNumber: true,
+          address: true,
+          website: true,
+          status: true,
+        },
+        propertyAdditionals: {
+          id: true,
+          additional: {
+            id: true,
+            name: true,
+            type: true,
+            photos: true,
+            description: true,
+          },
+        },
+        propertyFacilities: {
+          id: true,
+          facility: {
+            id: true,
+            name: true,
+            icon: true,
+            type: true,
+          },
+        },
+        propertyFeatures: {
+          id: true,
+          feature: {
+            id: true,
+            name: true,
+            type: true,
+            icon: true,
+            free: true,
+            price: true,
+            discountType: true,
+            discount: true,
+            priceAfterDiscount: true,
+            currency: {
+              id: true,
+              name: true,
+              code: true,
+              symbol: true,
+            },
+          },
+        },
+      },
       where: {
         id,
       },
@@ -205,13 +343,11 @@ export class PropertyService {
     id: string,
     payload: UpdatePropertyDto,
   ): Promise<PropertyWithRelationsDto> {
-    this._handleDefaultDiscountType(payload);
+    await this.validateExist(id);
 
     const { additionals, facilities, features, ...propertyData } = payload;
 
     await this.datasource.transaction(async (manager: EntityManager) => {
-      await this.findOne(id, manager);
-
       const updatedProperty = await manager.update(Property, id, propertyData);
 
       if (Array.isArray(additionals)) {
@@ -274,9 +410,25 @@ export class PropertyService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.propertyRepository.delete(id);
+  }
+
+  private _getRepository(entityManager?: EntityManager): Repository<Property> {
+    return entityManager
+      ? entityManager.getRepository(Property)
+      : this.propertyRepository;
+  }
+
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.propertyRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('property not found');
+    }
   }
 
   private async _convertToBaseCurrency(
@@ -297,13 +449,5 @@ export class PropertyService {
             )
           : propertyData.discount,
     };
-  }
-
-  private async _handleDefaultDiscountType(
-    payload: CreatePropertyDto | UpdatePropertyDto,
-  ) {
-    if (payload.discount && !payload.discountType) {
-      payload.discountType = DiscountType.Percentage;
-    }
   }
 }

@@ -49,12 +49,11 @@ export class BookingService {
 
       this._setInitialBookingStatus(payload);
 
-      const createdBookingCustomer = await this.bookingCustomerService.create(
-        payload.customer,
-        true,
-        null,
-        manager,
-      );
+      const createdBookingCustomer =
+        await this.bookingCustomerService.createFromDashboard(
+          payload.customer,
+          manager,
+        );
 
       const { customer, ...bookingPayload } = payload;
 
@@ -235,12 +234,6 @@ export class BookingService {
             id: true,
             name: true,
           },
-          currency: {
-            id: true,
-            name: true,
-            code: true,
-            symbol: true,
-          },
           owner: {
             id: true,
             name: true,
@@ -257,12 +250,6 @@ export class BookingService {
         villa: {
           id: true,
           name: true,
-          currency: {
-            id: true,
-            name: true,
-            code: true,
-            symbol: true,
-          },
           owner: {
             id: true,
             name: true,
@@ -367,10 +354,9 @@ export class BookingService {
 
       if (payload.customer) {
         await this.bookingCustomerService.update(
+          id,
           initialBooking.customerId,
           customerData,
-          true,
-          id,
           manager,
         );
       }

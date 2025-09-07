@@ -13,7 +13,7 @@ import {
   PlaceNearbyDto,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -124,11 +124,33 @@ export class CreateVillaDto {
   @IsEnum(DiscountType, {
     message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
   })
+  @Transform(({ obj }) => {
+    if (
+      obj.discountMonthly !== undefined &&
+      obj.discountMonthly !== null &&
+      !obj.discountMonthlyType
+    ) {
+      return DiscountType.Percentage;
+    }
+
+    return obj.discountMonthlyType;
+  })
   @IsOptional()
   discountMonthlyType?: DiscountType;
 
   @IsEnum(DiscountType, {
     message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
+  @Transform(({ obj }) => {
+    if (
+      obj.discountyearly !== undefined &&
+      obj.discountyearly !== null &&
+      !obj.discountyearlyType
+    ) {
+      return DiscountType.Percentage;
+    }
+
+    return obj.discountyearlyType;
   })
   @IsOptional()
   discountYearlyType?: DiscountType;
@@ -146,7 +168,7 @@ export class CreateVillaDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discountMonthly must be a valid number' },
   )
-  @ValidateDiscountValue('discountMonthlyType', 'priceMonthly', DiscountType)
+  @ValidateDiscountValue('discountMonthlyType', 'priceMonthly')
   @IsOptional()
   readonly discountMonthly?: number;
 
@@ -162,7 +184,7 @@ export class CreateVillaDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discountYearly must be a valid number' },
   )
-  @ValidateDiscountValue('discountYearlyType', 'priceyearly', DiscountType)
+  @ValidateDiscountValue('discountYearlyType', 'priceyearly')
   readonly discountYearly?: number;
 
   @Type(() => Number)

@@ -3,6 +3,18 @@ import { Exclude, Expose, plainToInstance } from 'class-transformer';
 
 export interface ICurrencyDto extends Currency {}
 
+export interface ICurrencyPaginationDto
+  extends Pick<
+    Currency,
+    | 'id'
+    | 'name'
+    | 'code'
+    | 'symbol'
+    | 'allowDecimal'
+    | 'allowRound'
+    | 'createdAt'
+  > {}
+
 export interface IRelatedCurrencyDto
   extends Pick<Currency, 'id' | 'name' | 'code' | 'symbol'> {}
 
@@ -39,6 +51,37 @@ export class CurrencyDto implements ICurrencyDto {
   }
 
   static fromEntities(entities: Currency[]): CurrencyDto[] {
+    return entities.map((entity) => this.fromEntity(entity));
+  }
+}
+
+export class CurrencyPaginationDto implements ICurrencyPaginationDto {
+  @Expose()
+  readonly id!: string;
+
+  @Expose()
+  readonly code!: string;
+
+  @Expose()
+  readonly name!: string;
+
+  @Expose()
+  readonly symbol!: string | null;
+
+  @Expose()
+  readonly allowDecimal!: boolean | null;
+
+  @Expose()
+  readonly allowRound!: boolean | null;
+
+  @Exclude()
+  readonly createdAt!: Date;
+
+  static fromEntity(entity: Currency): CurrencyPaginationDto {
+    return plainToInstance(CurrencyPaginationDto, entity);
+  }
+
+  static fromEntities(entities: Currency[]): CurrencyPaginationDto[] {
     return entities.map((entity) => this.fromEntity(entity));
   }
 }

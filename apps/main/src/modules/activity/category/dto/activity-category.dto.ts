@@ -90,7 +90,7 @@ export class ActivityCategoryPaginationDto
     const dto = plainToInstance(ActivityCategoryPaginationDto, entity);
 
     if (entity.activities) {
-      dto.activities = RelatedActivityDto.fromEntities(entity.activities);
+      dto.activities   = RelatedActivityDto.fromEntities(entity.activities);
     }
 
     return dto;

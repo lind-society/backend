@@ -22,11 +22,18 @@ export class GetBookingPaymentPaginateDto extends PaginateResponseDefaultDataPro
 
 export class GetBookingPaymentsSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<GetBookingPaymentPaginateDto>
+  implements
+    HttpResponseOptions<
+      GetBookingPaymentPaginateDto | BookingPaymentWithRelationsDto[]
+    >
 {
-  readonly data: GetBookingPaymentPaginateDto;
+  readonly data:
+    | GetBookingPaymentPaginateDto
+    | BookingPaymentWithRelationsDto[];
 
-  constructor(data: GetBookingPaymentPaginateDto) {
+  constructor(
+    data: GetBookingPaymentPaginateDto | BookingPaymentWithRelationsDto[],
+  ) {
     super({
       code: HttpStatus.OK,
       message: 'get booking payments success',

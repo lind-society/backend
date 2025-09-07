@@ -20,8 +20,7 @@ export enum VillaPriceRuleSeason {
   Peak_Season = 'peak_season',
 }
 
-@Entity('villa_price_rules')
-export class VillaPriceRule {
+export class BaseVillaPriceRule {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -93,3 +92,6 @@ export class VillaPriceRule {
   })
   deletedAt!: Date | null;
 }
+
+@Entity({ name: 'villa_price_rules' })
+export class VillaPriceRule extends BaseVillaPriceRule {}

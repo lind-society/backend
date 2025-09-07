@@ -1,5 +1,9 @@
-import { Package, PackageBenefit } from '@apps/main/database/entities';
+import {
+  PackageBenefit,
+  PackageBenefitPivot,
+} from '@apps/main/database/entities';
 import { Exclude, Expose, plainToInstance } from 'class-transformer';
+import { omit } from 'lodash';
 import { PackageWithRelationsDto, RelatedPackageDto } from '../../dto';
 
 export interface IPackageBenefitDto
@@ -51,13 +55,20 @@ export class PackageBenefitWithRelationsDto
 
   static fromEntity(
     entity: PackageBenefit & {
-      packages?: Package[];
+      packages?: PackageBenefitPivot[];
     },
   ): PackageBenefitWithRelationsDto {
-    const dto = plainToInstance(PackageBenefitWithRelationsDto, entity);
+    const dto = plainToInstance(PackageBenefitWithRelationsDto, {
+      ...omit(entity, ['packageBenefits']),
+    });
 
-    if (entity.packages) {
-      dto.packages = PackageWithRelationsDto.fromEntities(entity.packages);
+    if (entity.packageBenefits) {
+      dto.packages = entity.packageBenefits.map(
+        ({ id: pivotId, package: pkg }) => ({
+          ...PackageWithRelationsDto.fromEntity(pkg),
+          pivotId,
+        }),
+      );
     }
 
     return dto;
@@ -65,7 +76,7 @@ export class PackageBenefitWithRelationsDto
 
   static fromEntities(
     entities: (PackageBenefit & {
-      packages?: Package[];
+      packages?: PackageBenefitPivot[];
     })[],
   ): PackageBenefitWithRelationsDto[] {
     return entities.map((entity) => this.fromEntity(entity));
@@ -89,13 +100,20 @@ export class PackageBenefitPaginationDto
 
   static fromEntity(
     entity: PackageBenefit & {
-      packages?: Package[];
+      packages?: PackageBenefitPivot[];
     },
   ): PackageBenefitPaginationDto {
-    const dto = plainToInstance(PackageBenefitPaginationDto, entity);
+    const dto = plainToInstance(PackageBenefitPaginationDto, {
+      ...omit(entity, ['packageBenefits']),
+    });
 
-    if (entity.packages) {
-      dto.packages = RelatedPackageDto.fromEntities(entity.packages);
+    if (entity.packageBenefits) {
+      dto.packages = entity.packageBenefits.map(
+        ({ id: pivotId, package: pkg }) => ({
+          ...PackageWithRelationsDto.fromEntity(pkg),
+          pivotId,
+        }),
+      );
     }
 
     return dto;
@@ -103,7 +121,7 @@ export class PackageBenefitPaginationDto
 
   static fromEntities(
     entities: (PackageBenefit & {
-      packages?: Package[];
+      packages?: PackageBenefitPivot[];
     })[],
   ): PackageBenefitPaginationDto[] {
     return entities.map((entity) => this.fromEntity(entity));

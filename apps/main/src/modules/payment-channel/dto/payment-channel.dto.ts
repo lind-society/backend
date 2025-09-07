@@ -1,6 +1,6 @@
 import {
-  BookingChannelType,
   PaymentChannel,
+  PaymentChannelType,
 } from '@apps/main/database/entities';
 import { Exclude, Expose, plainToInstance } from 'class-transformer';
 
@@ -26,7 +26,7 @@ export class PaymentChannelDto implements IPaymentChannelDto {
   readonly description!: string | null;
 
   @Expose()
-  readonly type!: BookingChannelType | null;
+  readonly type!: PaymentChannelType | null;
 
   @Exclude()
   readonly createdAt!: Date;
@@ -62,7 +62,7 @@ export class PaymentChannelPaginationDto
   readonly description!: string | null;
 
   @Expose()
-  readonly type!: BookingChannelType | null;
+  readonly type!: PaymentChannelType | null;
 
   @Exclude()
   readonly createdAt!: Date;
@@ -87,7 +87,7 @@ export class RelatedPaymentChannelDto implements IRelatedPaymentChannelDto {
   readonly code!: string;
 
   @Expose()
-  readonly type!: BookingChannelType | null;
+  readonly type!: PaymentChannelType | null;
 
   static fromEntity(entity: PaymentChannel): PaymentChannelDto {
     return plainToInstance(PaymentChannelDto, entity);

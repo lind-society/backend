@@ -1,5 +1,6 @@
 import { Package, PackageBenefitPivot } from '@apps/main/database/entities';
 import { Exclude, Expose, plainToInstance } from 'class-transformer';
+import { omit } from 'lodash';
 import {
   PackageBenefitWithRelationsDto,
   RelatedPackageBenefitDto,
@@ -61,10 +62,12 @@ export class PackageWithRelationsDto
       benefits?: PackageBenefitPivot[];
     },
   ): PackageWithRelationsDto {
-    const dto = plainToInstance(PackageWithRelationsDto, entity);
+    const dto = plainToInstance(PackageWithRelationsDto, {
+      ...omit(entity, ['packageBenefits']),
+    });
 
-    if (entity.benefits) {
-      dto.benefits = entity.benefits.map(({ id: pivotId, benefit }) => ({
+    if (entity.packageBenefits) {
+      dto.benefits = entity.packageBenefits.map(({ id: pivotId, benefit }) => ({
         ...PackageBenefitWithRelationsDto.fromEntity(benefit),
         pivotId,
       }));
@@ -100,10 +103,12 @@ export class PackagePaginationDto implements IPackagePaginationDto {
       benefits?: PackageBenefitPivot[];
     },
   ): PackagePaginationDto {
-    const dto = plainToInstance(PackagePaginationDto, entity);
+    const dto = plainToInstance(PackagePaginationDto, {
+      ...omit(entity, ['packageBenefits']),
+    });
 
-    if (entity.benefits) {
-      dto.benefits = entity.benefits.map(({ id: pivotId, benefit }) => ({
+    if (entity.packageBenefits) {
+      dto.benefits = entity.packageBenefits.map(({ id: pivotId, benefit }) => ({
         ...RelatedPackageBenefitDto.fromEntity(benefit),
         pivotId,
       }));

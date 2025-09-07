@@ -1,3 +1,5 @@
+import { ToDecimal } from '@apps/main/common/decorators';
+import { generateShortDescription } from '@apps/main/common/helpers';
 import {
   Currency,
   DiscountType,
@@ -78,15 +80,18 @@ export class PropertyDto implements IPropertyDto {
   readonly secondaryName!: string;
 
   @Expose()
+  @ToDecimal()
   readonly price!: number;
 
   @Expose()
   readonly discountType!: DiscountType | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly discount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceAfterDiscount!: number | null;
 
   @Expose()
@@ -242,7 +247,10 @@ export class PropertyWithRelationsDto
       additionals?: PropertyAdditionalPivot[];
     })[],
   ): PropertyWithRelationsDto[] {
-    return entities.map((entity) => this.fromEntity(entity));
+    return entities.map((entity) => ({
+      ...this.fromEntity(entity),
+      highlight: generateShortDescription(entity.highlight),
+    }));
   }
 }
 
@@ -257,15 +265,18 @@ export class PropertyPaginationDto implements IPropertyPaginationDto {
   readonly secondaryName!: string;
 
   @Expose()
+  @ToDecimal()
   readonly price!: number;
 
   @Expose()
   readonly discountType!: DiscountType | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly discount!: number | null;
 
   @Expose()
+  @ToDecimal(true)
   readonly priceAfterDiscount!: number | null;
 
   @Expose()
@@ -402,7 +413,10 @@ export class PropertyPaginationDto implements IPropertyPaginationDto {
       additionals?: PropertyAdditionalPivot[];
     })[],
   ): PropertyPaginationDto[] {
-    return entities.map((entity) => this.fromEntity(entity));
+    return entities.map((entity) => ({
+      ...this.fromEntity(entity),
+      highlight: generateShortDescription(entity.highlight),
+    }));
   }
 }
 

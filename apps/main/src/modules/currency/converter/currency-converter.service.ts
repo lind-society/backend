@@ -7,7 +7,7 @@ import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import {
   ConvertedPriceRequestDto,
-  ConvertedPriceResponsetDto,
+  ConvertedPriceResponseDto,
   CreateCurrencyConverterDto,
   CurrencyConverterDto,
   CurrencyConverterWithRelationsDto,
@@ -20,68 +20,24 @@ export class CurrencyConverterService {
     private currencyConverterRepository: Repository<CurrencyConverter>,
   ) {}
 
-  async getExchangeRate(
-    baseCurrencyId: string,
-    targetCurrencyId: string,
-  ): Promise<number> {
-    const exchangeRate = await this.currencyConverterRepository.findOne({
-      where: {
-        baseCurrencyId: baseCurrencyId,
-        targetCurrencyId: targetCurrencyId,
-      },
-      select: {
-        exchangeRate: true,
-      },
-    });
+  async create(
+    payload: CreateCurrencyConverterDto,
+  ): Promise<CurrencyConverterWithRelationsDto> {
+    const currencyConverterEntity =
+      this.currencyConverterRepository.create(payload);
 
-    return exchangeRate?.exchangeRate;
-  }
+    const createdCurrencyConverter =
+      await this.currencyConverterRepository.save(currencyConverterEntity);
 
-  async convertPriceToBasePrice(
-    payload: ConvertedPriceRequestDto,
-  ): Promise<ConvertedPriceResponsetDto> {
-    const exchangeRate = await this.currencyConverterRepository.findOne({
-      where: {
-        baseCurrencyId: payload.baseCurrencyId,
-        targetCurrencyId: payload.targetCurrencyId,
-      },
-      select: {
-        id: true,
-        exchangeRate: true,
-        baseCurrency: {
-          id: true,
-          code: true,
-          name: true,
-          symbol: true,
-        },
-        targetCurrency: {
-          id: true,
-          code: true,
-          name: true,
-          symbol: true,
-        },
-      },
-      relations: {
-        baseCurrency: true,
-        targetCurrency: true,
-      },
-    });
-
-    return exchangeRate
-      ? this._mapConvertedPrice(payload.basePrice, exchangeRate)
-      : this._mapConvertedPrice(payload.basePrice);
-  }
-
-  async create(payload: CreateCurrencyConverterDto) {
-    const currency = this.currencyConverterRepository.create(payload);
-
-    return await this.currencyConverterRepository.save(currency);
+    return CurrencyConverterWithRelationsDto.fromEntity(
+      createdCurrencyConverter,
+    );
   }
 
   async findAll(
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<CurrencyConverterDto[]>> {
-    const paginatedCurrencyConverter = await paginate(
+    const paginatedCurrencyConverters = await paginate(
       query,
       this.currencyConverterRepository,
       {
@@ -90,12 +46,14 @@ export class CurrencyConverterService {
           'exchangeRate',
           'description',
           'createdAt',
+
           'baseCurrency.id',
           'baseCurrency.code',
           'baseCurrency.name',
           'baseCurrency.symbol',
           'baseCurrency.allowDecimal',
           'baseCurrency.allowRound',
+
           'targetCurrency.id',
           'targetCurrency.code',
           'targetCurrency.name',
@@ -126,26 +84,14 @@ export class CurrencyConverterService {
       },
     );
 
-    const dto = CurrencyConverterWithRelationsDto.fromEntities(
-      paginatedCurrencyConverter.data,
+    const currencyConverters = CurrencyConverterWithRelationsDto.fromEntities(
+      paginatedCurrencyConverters.data,
     );
 
-    return paginateResponseMapper(paginatedCurrencyConverter, dto);
-  }
-
-  async isExist(
-    baseCurrencyId: string,
-    targetCurrencyId: string,
-  ): Promise<Boolean> {
-    const currencyExist = await this.currencyConverterRepository.exists({
-      select: { id: true },
-      where: {
-        baseCurrencyId,
-        targetCurrencyId,
-      },
-    });
-
-    return currencyExist;
+    return paginateResponseMapper(
+      paginatedCurrencyConverters,
+      currencyConverters,
+    );
   }
 
   async findOne(id: string): Promise<CurrencyConverterDto> {
@@ -204,15 +150,82 @@ export class CurrencyConverterService {
     await this.currencyConverterRepository.delete(id);
   }
 
-  _mapConvertedPrice(
+  async validateExist(
+    baseCurrencyId: string,
+    targetCurrencyId: string,
+  ): Promise<Boolean> {
+    const currencyExist = await this.currencyConverterRepository.exists({
+      select: { id: true },
+      where: {
+        baseCurrencyId,
+        targetCurrencyId,
+      },
+    });
+
+    return currencyExist;
+  }
+
+  async getExchangeRate(
+    baseCurrencyId: string,
+    targetCurrencyId: string,
+  ): Promise<number> {
+    const exchangeRate = await this.currencyConverterRepository.findOne({
+      where: {
+        baseCurrencyId: baseCurrencyId,
+        targetCurrencyId: targetCurrencyId,
+      },
+      select: {
+        exchangeRate: true,
+      },
+    });
+
+    return exchangeRate?.exchangeRate;
+  }
+
+  async convertPriceToBasePrice(
+    payload: ConvertedPriceRequestDto,
+  ): Promise<ConvertedPriceResponseDto> {
+    const exchangeRate = await this.currencyConverterRepository.findOne({
+      where: {
+        baseCurrencyId: payload.baseCurrencyId,
+        targetCurrencyId: payload.targetCurrencyId,
+      },
+      select: {
+        id: true,
+        exchangeRate: true,
+        baseCurrency: {
+          id: true,
+          code: true,
+          name: true,
+          symbol: true,
+        },
+        targetCurrency: {
+          id: true,
+          code: true,
+          name: true,
+          symbol: true,
+        },
+      },
+      relations: {
+        baseCurrency: true,
+        targetCurrency: true,
+      },
+    });
+
+    return exchangeRate
+      ? this._mapConvertedPrice(payload.basePrice, exchangeRate)
+      : this._mapConvertedPrice(payload.basePrice);
+  }
+
+  private _mapConvertedPrice(
     price: number,
     convertedPrice?: CurrencyConverter,
-  ): ConvertedPriceResponsetDto {
+  ): ConvertedPriceResponseDto {
     const calculatedPrice = convertedPrice
       ? price * convertedPrice.exchangeRate
       : price;
 
-    const convertedPriceResult: ConvertedPriceResponsetDto = {
+    const convertedPriceResult: ConvertedPriceResponseDto = {
       exchangeRate: convertedPrice?.exchangeRate ?? null,
       initial: {
         price,

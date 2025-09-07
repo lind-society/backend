@@ -4,18 +4,10 @@ import {
   HttpResponseOptions,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { OmitType, PartialType } from '@nestjs/mapped-types';
 import { CreateReviewDto } from './create-review.dto';
 import { ReviewWithRelationsDto } from './review.dto';
 
-export class UpdateReviewDto extends PartialType(
-  OmitType(CreateReviewDto, [
-    'activityBookingId',
-    'villaBookingId',
-    'activityId',
-    'villaId',
-  ] as const),
-) {}
+export class UpdateReviewDto extends CreateReviewDto {}
 
 export class UpdateReviewSuccessResponse
   extends HttpResponseDefaultProps

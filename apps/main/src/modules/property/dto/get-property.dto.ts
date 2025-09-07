@@ -5,10 +5,13 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { PropertyWithRelationsDto } from './property.dto';
+import {
+  PropertyPaginationDto,
+  PropertyWithRelationsDto,
+} from './property.dto';
 
 export class GetPropertyPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: PropertyWithRelationsDto[];
+  readonly data!: PropertyPaginationDto[];
 }
 
 export class GetPropertiesSuccessResponse

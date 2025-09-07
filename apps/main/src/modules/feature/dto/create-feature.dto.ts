@@ -7,7 +7,7 @@ import {
   IconDto,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -53,8 +53,20 @@ export class CreateFeatureDto {
   @IsOptional()
   readonly price?: number;
 
+  @Expose()
   @IsEnum(DiscountType, {
     message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
+  })
+  @Transform(({ obj }) => {
+    if (
+      obj.discount !== undefined &&
+      obj.discount !== null &&
+      !obj.discountType
+    ) {
+      return DiscountType.Percentage;
+    }
+
+    return obj.discountType;
   })
   @IsOptional()
   discountType?: DiscountType;
@@ -68,7 +80,7 @@ export class CreateFeatureDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @ValidateDiscountValue('discountType', 'price', DiscountType)
+  @ValidateDiscountValue('discountType', 'price')
   @IsOptional()
   readonly discount?: number;
 }

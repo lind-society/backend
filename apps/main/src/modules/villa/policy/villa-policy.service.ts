@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import {
   CreateVillaPolicyDto,
   UpdateVillaPolicyDto,
-  VillaPolicyDto,
+  VillaPolicyPaginationDto,
   VillaPolicyWithRelationsDto,
 } from './dto';
 
@@ -19,16 +19,21 @@ export class VillaPolicyService {
     private villaPolicyRepository: Repository<VillaPolicy>,
   ) {}
 
-  async create(payload: CreateVillaPolicyDto): Promise<VillaPolicyDto> {
-    const villaPolicy = this.villaPolicyRepository.create(payload);
+  async create(
+    payload: CreateVillaPolicyDto,
+  ): Promise<VillaPolicyWithRelationsDto> {
+    const villaPolicyEntity = this.villaPolicyRepository.create(payload);
 
-    return await this.villaPolicyRepository.save(villaPolicy);
+    const createdVillaPolicy =
+      await this.villaPolicyRepository.save(villaPolicyEntity);
+
+    return VillaPolicyWithRelationsDto.fromEntity(createdVillaPolicy);
   }
 
   async findAll(
     query: PaginateQuery,
-  ): Promise<PaginateResponseDataProps<VillaPolicyWithRelationsDto[]>> {
-    const paginatedVillaPolicyCategory = await paginate(
+  ): Promise<PaginateResponseDataProps<VillaPolicyPaginationDto[]>> {
+    const paginatedVillaPolicies = await paginate(
       query,
       this.villaPolicyRepository,
       {
@@ -45,7 +50,11 @@ export class VillaPolicyService {
       },
     );
 
-    return paginateResponseMapper(paginatedVillaPolicyCategory);
+    const villaPolicies = VillaPolicyPaginationDto.fromEntities(
+      paginatedVillaPolicies.data,
+    );
+
+    return paginateResponseMapper(paginatedVillaPolicies, villaPolicies);
   }
 
   async findOne(id: string): Promise<VillaPolicyWithRelationsDto> {
@@ -60,17 +69,17 @@ export class VillaPolicyService {
     });
 
     if (!villaPolicy) {
-      throw new NotFoundException('villaPolicy not found');
+      throw new NotFoundException('villa policy not found');
     }
 
-    return villaPolicy;
+    return VillaPolicyWithRelationsDto.fromEntity(villaPolicy);
   }
 
   async update(
     id: string,
     payload: UpdateVillaPolicyDto,
   ): Promise<VillaPolicyWithRelationsDto> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.villaPolicyRepository.update(id, payload);
 
@@ -78,8 +87,18 @@ export class VillaPolicyService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.villaPolicyRepository.delete(id);
+  }
+
+  async validateExist(id: string): Promise<void> {
+    const exists = await this.villaPolicyRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('villa policy not found');
+    }
   }
 }

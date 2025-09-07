@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export enum BookingChannelType {
+export enum PaymentChannelType {
   Card = 'card',
   DebitCard = 'debit_card',
   CreditCard = 'credit_card',
@@ -30,8 +30,8 @@ export class PaymentChannel {
   @Column({ unique: true })
   code!: string;
 
-  @Column({ type: 'enum', enum: BookingChannelType, nullable: true })
-  type!: BookingChannelType | null;
+  @Column({ type: 'enum', enum: PaymentChannelType, nullable: true })
+  type!: PaymentChannelType | null;
 
   @Column({ type: 'text', nullable: true })
   description!: string | null;

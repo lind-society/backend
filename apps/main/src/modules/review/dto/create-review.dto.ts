@@ -35,12 +35,8 @@ export class CreateReviewDto {
   readonly message!: string;
 
   @IsUUID()
-  @IsOptional()
-  readonly activityBookingId?: string;
-
-  @IsUUID()
-  @IsOptional()
-  readonly villaBookingId?: string;
+  @IsNotEmpty()
+  readonly bookingId?: string;
 
   @IsUUID()
   @IsOptional()
@@ -49,19 +45,6 @@ export class CreateReviewDto {
   @IsUUID()
   @IsOptional()
   readonly activityId?: string;
-
-  @ValidateIf((o) => !o.activityBookingId && !o.villaBookingId)
-  @IsNotEmpty({
-    message:
-      'At least one of activityBookingId or villaBookingId must be provided',
-  })
-  readonly _atLeastOneBookingIdRequired?: string;
-
-  @Validate(OnlyOneFieldAllowedConstraint, [
-    'activityBookingId',
-    'villaBookingId',
-  ])
-  readonly _onlyOneBookingIdAllowed?: string;
 
   @ValidateIf((o) => !o.activityId && !o.villaId)
   @IsNotEmpty({

@@ -22,6 +22,7 @@ import { BookingPaymentService } from './booking-payment.service';
 import {
   CreateBookingPaymentDto,
   CreateBookingPaymentSuccessResponse,
+  GetBookingPaymentsSuccessResponse,
   GetBookingPaymentSuccessResponse,
 } from './dto';
 
@@ -40,12 +41,19 @@ export class BookingPaymentController {
     @Body() payload: CreateBookingPaymentDto,
   ) {
     const bookingPayment = await this.bookingPaymentService.create(
-      payload,
-      false,
       bookingId,
+      payload,
     );
 
     return new CreateBookingPaymentSuccessResponse(bookingPayment);
+  }
+
+  @Get()
+  async findByBookingID(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
+    const bookingPayment =
+      await this.bookingPaymentService.findByBookingId(bookingId);
+
+    return new GetBookingPaymentsSuccessResponse(bookingPayment);
   }
 
   @Get(':id')
@@ -54,10 +62,8 @@ export class BookingPaymentController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     const bookingPayment = await this.bookingPaymentService.findOne(
-      id,
-      true,
-      false,
       bookingId,
+      id,
     );
 
     return new GetBookingPaymentSuccessResponse(bookingPayment);

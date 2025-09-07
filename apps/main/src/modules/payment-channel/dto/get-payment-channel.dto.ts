@@ -5,10 +5,13 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { PaymentChannelDto } from './payment-channel.dto';
+import {
+  PaymentChannelDto,
+  PaymentChannelPaginationDto,
+} from './payment-channel.dto';
 
 export class GetPaymentChannelPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: PaymentChannelDto[];
+  readonly data!: PaymentChannelPaginationDto[];
 }
 
 export class GetPaymentChannelsSuccessResponse

@@ -112,10 +112,11 @@ export class PriceConverterInterceptor implements NestInterceptor {
         .map(async (sourceCurrencyId) => {
           const cacheKey = `${sourceCurrencyId}-${baseCurrencyId}`;
           if (!this.conversionCache.has(cacheKey)) {
-            const isAvailable = await this.currencyConverterService.isExist(
-              sourceCurrencyId,
-              baseCurrencyId,
-            );
+            const isAvailable =
+              await this.currencyConverterService.validateExist(
+                sourceCurrencyId,
+                baseCurrencyId,
+              );
             this.conversionCache.set(cacheKey, Boolean(isAvailable));
           }
         });

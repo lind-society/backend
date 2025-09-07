@@ -10,7 +10,7 @@ import {
   PlaceNearbyDto,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -47,11 +47,11 @@ export class CreateActivityDto {
   @IsNotEmpty()
   readonly price!: number;
 
+  @Expose()
   @IsEnum(DiscountType, {
     message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,
   })
   @Transform(({ obj }) => {
-    // Set default discountType to Percentage only if
     if (
       obj.discount !== undefined &&
       obj.discount !== null &&
@@ -74,7 +74,7 @@ export class CreateActivityDto {
     { allowNaN: false, allowInfinity: false },
     { message: 'discount must be a valid number' },
   )
-  @ValidateDiscountValue('discountType', 'price', DiscountType)
+  @ValidateDiscountValue('discountType', 'price')
   @IsOptional()
   readonly discount?: number;
 

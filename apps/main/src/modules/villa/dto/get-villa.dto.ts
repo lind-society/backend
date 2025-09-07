@@ -6,7 +6,7 @@ import {
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
 import { IsEnum, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
-import { VillaWithRelationsDto } from './villa.dto';
+import { VillaPaginationDto, VillaWithRelationsDto } from './villa.dto';
 
 export class GetVillaBestSellerQueryDto {
   @IsEnum(BestSeller, {
@@ -25,7 +25,7 @@ export class GetVillaBestSellerDto {
 }
 
 export class GetVillaPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: VillaWithRelationsDto[];
+  readonly data!: VillaPaginationDto[];
 }
 
 export class GetVillasSuccessResponse

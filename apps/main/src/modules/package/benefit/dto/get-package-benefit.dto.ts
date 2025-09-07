@@ -5,10 +5,14 @@ import {
   PaginateResponseDefaultDataProps,
 } from '@apps/main/modules/shared/dto';
 import { HttpStatus } from '@nestjs/common';
-import { PackageBenefitDto } from './package-benefit.dto';
+import {
+  PackageBenefitDto,
+  PackageBenefitPaginationDto,
+  PackageBenefitWithRelationsDto,
+} from './package-benefit.dto';
 
 export class GetPackageBenefitPaginateDto extends PaginateResponseDefaultDataProps {
-  readonly data!: PackageBenefitDto[];
+  readonly data!: PackageBenefitPaginationDto[];
 }
 
 export class GetPackageBenefitsSuccessResponse
@@ -30,7 +34,7 @@ export class GetPackageBenefitsSuccessResponse
 
 export class GetPackageBenefitSuccessResponse
   extends HttpResponseDefaultProps
-  implements HttpResponseOptions<PackageBenefitDto>
+  implements HttpResponseOptions<PackageBenefitWithRelationsDto>
 {
   readonly data: PackageBenefitDto;
 

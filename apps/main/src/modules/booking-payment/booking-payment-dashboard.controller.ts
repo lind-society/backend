@@ -33,10 +33,8 @@ export class BookingPaymentDashboardController {
 
   @Post()
   async create(@Body() payload: CreateBookingPaymentDto) {
-    const bookingPayment = await this.bookingPaymentService.create(
-      payload,
-      true,
-    );
+    const bookingPayment =
+      await this.bookingPaymentService.createFromDashboard(payload);
 
     return new CreateBookingPaymentSuccessResponse(bookingPayment);
   }
@@ -50,11 +48,8 @@ export class BookingPaymentDashboardController {
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const bookingPayment = await this.bookingPaymentService.findOne(
-      id,
-      true,
-      true,
-    );
+    const bookingPayment =
+      await this.bookingPaymentService.findOneFromDashboard(id);
 
     return new GetBookingPaymentSuccessResponse(bookingPayment);
   }
@@ -64,7 +59,7 @@ export class BookingPaymentDashboardController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBookingPaymentDto: UpdateBookingPaymentDto,
   ) {
-    const bookingPayment = await this.bookingPaymentService.update(
+    const bookingPayment = await this.bookingPaymentService.updateFromDashboard(
       id,
       updateBookingPaymentDto,
     );
@@ -74,7 +69,7 @@ export class BookingPaymentDashboardController {
 
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    await this.bookingPaymentService.remove(id);
+    await this.bookingPaymentService.removeFromDashboard(id);
 
     return new DeleteResponse('delete booking customer success');
   }

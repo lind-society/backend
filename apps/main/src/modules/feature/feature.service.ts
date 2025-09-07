@@ -21,12 +21,11 @@ export class FeatureService {
     private currencyService: CurrencyService,
   ) {}
   async create(payload: CreateFeatureDto): Promise<FeatureWithRelationsDto> {
-    await this._validateRelatedEntities(payload.currencyId);
-
     const convertedBasePriceFeature =
       await this._convertToBaseCurrency(payload);
 
     const feature = this.featureRepository.create(convertedBasePriceFeature);
+
     const createdFeature = await this.featureRepository.save(feature);
 
     return FeatureWithRelationsDto.fromEntity(createdFeature);
@@ -84,12 +83,12 @@ export class FeatureService {
     id: string,
     payload: UpdateFeatureDto,
   ): Promise<FeatureWithRelationsDto> {
-    await this.findOne(id);
+    const initialData = await this.findOne(id);
 
-    await this._validateRelatedEntities(payload.currencyId);
-
-    const convertedBasePriceFeature =
-      await this._convertToBaseCurrency(payload);
+    const convertedBasePriceFeature = await this._convertToBaseCurrency(
+      payload,
+      initialData,
+    );
 
     await this.featureRepository.update(id, convertedBasePriceFeature);
 
@@ -97,28 +96,46 @@ export class FeatureService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
+    await this.validateExist(id);
 
     await this.featureRepository.delete(id);
   }
 
+  async validateExist(id: string) {
+    const exists = await this.featureRepository.exists({
+      where: { id },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('owner not found');
+    }
+  }
+
   private async _convertToBaseCurrency(
     featureData: CreateFeatureDto | UpdateFeatureDto,
+    initialData?: FeatureWithRelationsDto,
   ): Promise<CreateFeatureDto | UpdateFeatureDto> {
+    const currencyId = featureData.currencyId ?? initialData.currencyId;
+    const discountType = featureData.discountType ?? initialData.discountType;
+    const discount = featureData.discount ?? initialData.discount;
+    const price = featureData.price ?? initialData.price;
+
     return {
       ...featureData,
       currencyId: await this.currencyService.findBaseCurrencyId(),
       price: await this.currencyService.convertToBaseCurrency(
-        featureData.currencyId,
-        featureData.price,
+        currencyId,
+        price,
       ),
       discount:
-        featureData.discountType === DiscountType.Fixed
-          ? await this.currencyService.convertToBaseCurrency(
-              featureData.currencyId,
-              featureData.discount,
-            )
-          : featureData.discount,
+        discount != null
+          ? discountType === DiscountType.Fixed
+            ? await this.currencyService.convertToBaseCurrency(
+                currencyId,
+                discount,
+              )
+            : discount
+          : undefined,
     };
   }
 
@@ -133,12 +150,6 @@ export class FeatureService {
   handleDefaultDiscountType(payload: CreateFeatureDto | UpdateFeatureDto) {
     if (payload.discount && !payload.discountType) {
       payload.discountType = DiscountType.Percentage;
-    }
-  }
-
-  private async _validateRelatedEntities(currencyId?: string): Promise<void> {
-    if (currencyId) {
-      await this.currencyService.findOne(currencyId);
     }
   }
 }
