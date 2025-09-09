@@ -10,4 +10,5 @@ export enum WhatsappClientProviders {
 
 export enum StorageClientProvider {
   GCP = 'GCP_CLIENT',
+  MINIO = 'MINIO_CLIENT',
 }

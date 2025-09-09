@@ -2,6 +2,7 @@ import { megabyteToByte } from '@apps/main/common/helpers';
 import { Environment } from '@libs/common/enums';
 import { plainToInstance } from 'class-transformer';
 import {
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -90,6 +91,39 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   GCP_PROJECT_ID!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  MINIO_ENDPOINT!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  MINIO_PORT!: string;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  MINIO_USE_SSL!: boolean;
+
+  @IsString()
+  @IsNotEmpty()
+  MINIO_ACCESS_KEY!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  MINIO_SECRET_KEY!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  MINIO_BUCKET_NAME!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  MINIO_PUBLIC_BASE_URL!: string;
+
+  @IsNumber()
+  @Min(0)
+  @IsNotEmpty()
+  MINIO_PUBLIC_URL_EXPIRY_SECONDS!: number;
 
   @IsString()
   @IsNotEmpty()

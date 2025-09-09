@@ -59,6 +59,7 @@ export class StorageService {
   mapFiles(files: Express.Multer.File[], key: string) {
     const receivedFiles: IReceivedFile[] = files.map((file) => ({
       key,
+      size: file.size,
       file: file.buffer,
       mimeType: file.mimetype,
       originalName: file.originalname,

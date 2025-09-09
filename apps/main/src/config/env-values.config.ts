@@ -24,6 +24,16 @@ export const envValues: EnvironmentVariables = {
   GCP_BUCKET_NAME: process.env.GCP_BUCKET_NAME || '',
   GCP_KEY_FILE_PATH: process.env.GCP_KEY_FILE_PATH || '',
   GCP_PROJECT_ID: process.env.GCP_PROJECT_ID || '',
+  MINIO_ENDPOINT: process.env.MINIO_ENDPOINT || '',
+  MINIO_PORT: process.env.MINIO_PORT || '',
+  MINIO_USE_SSL:
+    (process.env.MINIO_USE_SSL || 'false').toLowerCase() === 'true',
+  MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY || '',
+  MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY || '',
+  MINIO_BUCKET_NAME: process.env.MINIO_BUCKET_NAME || '',
+  MINIO_PUBLIC_BASE_URL: process.env.MINIO_PUBLIC_BASE_URL || '',
+  MINIO_PUBLIC_URL_EXPIRY_SECONDS:
+    parseInt(process.env.MINIO_PUBLIC_URL_EXPIRY_SECONDS || '3600', 10) || 3600,
   JWT_AT_SECRET: process.env.JWT_AT_SECRET || '',
   JWT_RT_SECRET: process.env.JWT_RT_SECRET || '',
   JWT_AT_EXPIRE: process.env.JWT_AT_EXPIRE || '',

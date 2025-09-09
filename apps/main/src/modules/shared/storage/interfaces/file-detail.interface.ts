@@ -4,5 +4,6 @@ export interface IReceivedFile {
   file: Buffer;
   mimeType: string;
   originalName: string;
+  size?: number;
   bucket?: string | null;
 }

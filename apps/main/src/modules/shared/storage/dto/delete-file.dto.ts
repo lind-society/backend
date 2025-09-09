@@ -7,5 +7,5 @@ export class DeleteFileDto {
 
   @IsString()
   @IsOptional()
-  readonly bukcet?: string;
+  readonly bucket?: string;
 }

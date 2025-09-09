@@ -1,1 +1,2 @@
-export * from './gcp-storage.provider';
+export * from './gcp';
+export * from './minio';

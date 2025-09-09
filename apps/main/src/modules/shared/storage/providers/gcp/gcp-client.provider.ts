@@ -6,14 +6,16 @@ import { existsSync } from 'fs';
 export const GCPProvider = {
   provide: StorageClientProvider.GCP,
   useFactory: (configService: ConfigService) => {
-    const keyFilePath = configService.get<string>('gcp.keyFilePath');
+    const keyFilePath = configService.get<string>(
+      'storage.provider.gcp.keyFilePath',
+    );
 
     if (!existsSync(keyFilePath)) {
       throw new Error(`GCP credentials file not found at path: ${keyFilePath}`);
     }
 
     return new Storage({
-      projectId: configService.get<string>('gcp.projectId'),
+      projectId: configService.get<string>('storage.provider.gcp.projectId'),
       keyFilename: keyFilePath,
     });
   },
