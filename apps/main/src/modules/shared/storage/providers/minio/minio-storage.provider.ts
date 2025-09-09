@@ -46,9 +46,11 @@ export class MinIOStorageProvider implements IStorageProvider {
   }
 
   async getFileUrlAsync(payload: GetFileUrlDto): Promise<FileDto> {
+    const objectName = payload.key.split('/').slice(4).join('/');
+
     const publicUrl = await this.minioClient.presignedGetObject(
       this.bucketName,
-      payload.key,
+      objectName,
     );
 
     return {

@@ -48,8 +48,8 @@ export class StorageService {
     };
   }
 
-  getFileUrl(payload: GetFileUrlDto): FileDto {
-    return this.storageProvider.getFileUrl(payload);
+  async getFileUrl(payload: GetFileUrlDto): Promise<FileDto> {
+    return this.storageProvider.getFileUrlAsync(payload);
   }
 
   async deleteFile(payload: DeleteFileDto): Promise<void> {

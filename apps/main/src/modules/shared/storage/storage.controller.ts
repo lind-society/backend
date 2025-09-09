@@ -116,8 +116,8 @@ export class StorageController {
   }
 
   @Get()
-  getFileUrl(@Body() payload: GetFileUrlDto) {
-    const result = this.storageService.getFileUrl(payload);
+  async getFileUrl(@Body() payload: GetFileUrlDto) {
+    const result = await this.storageService.getFileUrl(payload);
 
     return new GetFileUrlSuccessResponse(result);
   }
