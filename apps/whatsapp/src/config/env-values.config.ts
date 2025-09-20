@@ -5,6 +5,7 @@ envConfig();
 
 export const envValues: EnvironmentVariables = {
   NODE_ENV: (process.env.NODE_ENV as Environment) || Environment.Development,
+  CHROME_WS_ENDPOINT: process.env.CHROME_WS_ENDPOINT || '',
   WHATSAPP_MAIN_CLIENT_ID: process.env.WHATSAPP_MAIN_CLIENT_ID || '',
   WHATSAPP_AUTH_STRATEGY: process.env.WHATSAPP_AUTH_STRATEGY || '',
   WHATSAPP_SESSION_PATH: process.env.WHATSAPP_SESSION_PATH || '',

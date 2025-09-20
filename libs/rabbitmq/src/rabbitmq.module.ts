@@ -7,10 +7,8 @@ import {
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { RabbitMqService } from './rabbitmq.service';
-import { DeadLetterHandlerService, MessagePublisherService } from './services';
 
 @Module({
-  providers: [MessagePublisherService, DeadLetterHandlerService],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
@@ -23,6 +21,6 @@ import { DeadLetterHandlerService, MessagePublisherService } from './services';
       load: [rabbitMqConfig],
     }),
   ],
-  exports: [RabbitMqService, MessagePublisherService, DeadLetterHandlerService],
+  exports: [RabbitMqService],
 })
 export class RabbitMqModule {}

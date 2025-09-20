@@ -12,7 +12,7 @@ RUN pnpm install --frozen-lockfile
 # --- Stage 3: Build ---
 FROM base AS build
 WORKDIR /work
-ARG APP_NAME=external-gateway
+ARG APP_NAME=whatsapp
 
 # Copy dependencies
 COPY --from=deps /work/node_modules ./node_modules
@@ -28,14 +28,27 @@ RUN npx nest build ${APP_NAME}
 
 # Verify the build succeeded and show structure
 RUN echo "=== Build completed. Checking output structure ===" && \
-    find dist -name "*.js" -type f | head -20 && \
-    echo "=== Specifically looking for main.js ===" && \
-    find dist -name "main.js" -type f
+  find dist -name "*.js" -type f | head -20 && \
+  echo "=== Specifically looking for main.js ===" && \
+  find dist -name "main.js" -type f
 
 # --- Stage 4: Runtime ---
 FROM node:22-alpine AS runtime
 WORKDIR /app
-ARG APP_NAME=external-gateway
+ARG APP_NAME=whatsapp
+
+RUN apk add --no-cache \
+  dumb-init \
+  chromium \
+  nss \
+  freetype \
+  harfbuzz \
+  ca-certificates \
+  ttf-freefont \
+  json-glib \
+  dbus \
+  udev \
+  xvfb
 
 # Create non-root user
 RUN addgroup -S app && adduser -S app -G app
@@ -48,10 +61,17 @@ RUN pnpm install --prod --frozen-lockfile
 # Copy build output
 COPY --from=build /work/dist ./dist
 
+# Create session directory with proper permissions
+RUN mkdir -p /app/session && chown -R app:app /app/session
+
 # Set ownership and switch to non-root user  
 RUN chown -R app:app .
 USER app
 
-EXPOSE 3000
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD node -e "console.log('Health check passed')" || exit 1
 
-CMD ["node", "dist/apps/external-gateway/apps/external-gateway/src/main.js"]
+ENTRYPOINT ["dumb-init", "--"]
+
+CMD ["node", "dist/apps/whatsapp/apps/whatsapp/src/main.js"]

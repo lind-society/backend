@@ -2,6 +2,7 @@ import { registerAs } from '@nestjs/config';
 import { envValues } from './env-values.config';
 
 const {
+  CHROME_WS_ENDPOINT,
   WHATSAPP_AUTH_STRATEGY,
   WHATSAPP_MAIN_CLIENT_ID,
   WHATSAPP_SESSION_PATH,
@@ -19,6 +20,7 @@ export const whatsappConfig = registerAs('whatsapp', () => ({
     },
   },
   config: {
+    browserWebSocketEndpoint: CHROME_WS_ENDPOINT,
     sessionPath: WHATSAPP_SESSION_PATH,
     browserPathUbuntu: WHATSAPP_BROWSER_EXECUTABLE_PATH_UBUNTU,
     browserPathWindows: WHATSAPP_BROWSER_EXECUTABLE_PATH_WINDOWS,

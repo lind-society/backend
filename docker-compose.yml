@@ -1,0 +1,120 @@
+services:
+  mail-service:
+    build:
+      context: .
+      dockerfile: ./apps/mail/Dockerfile
+      args:
+        APP_NAME: mail
+    container_name: mail-service
+    restart: unless-stopped
+    env_file: ./.env
+    networks:
+      - lind_society_net
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  whatsapp-service:
+    build:
+      context: .
+      dockerfile: ./apps/whatsapp/Dockerfile
+      args:
+        APP_NAME: whatsapp
+    container_name: whatsapp-service
+    restart: unless-stopped
+    env_file: ./.env
+    volumes:
+      - ./whatsapp-session:/app/session
+    networks:
+      - lind_society_net
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  external-gateway:
+    build:
+      context: .
+      dockerfile: ./apps/external-gateway/Dockerfile
+      args:
+        APP_NAME: external-gateway
+    container_name: external-gateway
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - '3001:3000'
+    networks:
+      - lind_society_net
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  main:
+    build:
+      context: .
+      dockerfile: ./apps/main/Dockerfile
+      args:
+        APP_NAME: main
+    container_name: main
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - '3000:3000'
+    networks:
+      - lind_society_net
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    hostname: rabbitmq
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - lind_society_net
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    env_file: ./.env
+    volumes:
+      - minio_data:/data
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    healthcheck:
+      test: ['CMD-SHELL', 'mc ready local']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - lind_society_net
+
+# --- Volumes & Networks ---
+volumes:
+  minio_data:
+    driver: local
+
+networks:
+  lind_society_net:
+    driver: bridge

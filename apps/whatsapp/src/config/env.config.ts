@@ -18,6 +18,10 @@ export class EnvironmentVariables {
   NODE_ENV?: Environment | null;
 
   @IsString()
+  @IsOptional()
+  CHROME_WS_ENDPOINT!: string;
+
+  @IsString()
   @IsNotEmpty()
   WHATSAPP_MAIN_CLIENT_ID!: string;
 

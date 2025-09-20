@@ -12,7 +12,7 @@ RUN pnpm install --frozen-lockfile
 # --- Stage 3: Build ---
 FROM base AS build
 WORKDIR /work
-ARG APP_NAME=external-gateway
+ARG APP_NAME=main
 
 # Copy dependencies
 COPY --from=deps /work/node_modules ./node_modules
@@ -35,7 +35,7 @@ RUN echo "=== Build completed. Checking output structure ===" && \
 # --- Stage 4: Runtime ---
 FROM node:22-alpine AS runtime
 WORKDIR /app
-ARG APP_NAME=external-gateway
+ARG APP_NAME=main
 
 # Create non-root user
 RUN addgroup -S app && adduser -S app -G app
@@ -54,4 +54,4 @@ USER app
 
 EXPOSE 3000
 
-CMD ["node", "dist/apps/external-gateway/apps/external-gateway/src/main.js"]
+CMD ["node", "dist/apps/main/apps/main/src/main.js"]
