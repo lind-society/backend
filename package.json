@@ -62,7 +62,7 @@
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "minio": "^8.0.5",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.0.2",
     "nest-winston": "^1.10.2",
     "nestjs-paginate": "^11.0.1",
     "nodemailer": "^7.0.2",
