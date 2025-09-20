@@ -6,6 +6,8 @@ NestJS Monorepo with RabbitMQ, MinIO, and PostgreSQL.
 
 - Docker & Docker Compose
 - Node.js 22+ (for local development)
+- PostgreSQL database (not included in docker-compose, must be provided separately)  
+  > 💡 If you are running PostgreSQL on the same host machine as Docker, use `host.docker.internal` as the DB host inside your `.env`.
 
 ## Quick Start
 
