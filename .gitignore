@@ -60,6 +60,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /.wwebjs_cache
 /whatsapp-session
 /backup
-/apps/main/assets
 /draft.json
 /apps/main/src/database/seeders
