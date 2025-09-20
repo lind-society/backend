@@ -48,10 +48,14 @@ RUN pnpm install --prod --frozen-lockfile
 # Copy build output
 COPY --from=build /work/dist ./dist
 
+# Copy entrypoint script
+COPY ./apps/main/entrypoint.sh /app/dist/apps/main/apps/main/entrypoint.sh
+RUN chmod +x /app/dist/apps/main/apps/main/entrypoint.sh
+
 # Set ownership and switch to non-root user  
 RUN chown -R app:app .
 USER app
 
 EXPOSE 3000
 
-CMD ["node", "dist/apps/main/apps/main/src/main.js"]
+CMD ["dist/apps/main/apps/main/entrypoint.sh"]
