@@ -6,15 +6,15 @@ echo "Starting main application startup process..."
 run_migrations() {
     echo "Running database migrations..."
     
-    npx typeorm migration:run -d dist/apps/main/apps/main/src/database/data-source.js
+    npx typeorm migration:run -d /app/dist/apps/main/apps/main/src/database/data-source.js
     
     echo "Migrations completed successfully!"
 }
 
 # Function to start the application
 start_app() {
-    echo "🌟 Starting the main application..."
-    exec node dist/apps/main/apps/main/src/main.js
+    echo "Starting the main application..."
+    exec node /app/dist/apps/main/apps/main/src/main.js
 }
 
 # Main execution

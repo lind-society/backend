@@ -50,6 +50,7 @@ COPY --from=build /work/dist ./dist
 
 # Copy entrypoint script
 COPY ./apps/main/entrypoint.sh /app/dist/apps/main/apps/main/entrypoint.sh
+RUN sed -i 's/\r$//' /app/dist/apps/main/apps/main/entrypoint.sh
 RUN chmod +x /app/dist/apps/main/apps/main/entrypoint.sh
 
 # Set ownership and switch to non-root user  
@@ -58,4 +59,4 @@ USER app
 
 EXPOSE 3000
 
-CMD ["dist/apps/main/apps/main/entrypoint.sh"]
+CMD ["sh", "./dist/apps/main/apps/main/entrypoint.sh"]

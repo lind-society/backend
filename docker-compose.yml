@@ -83,10 +83,11 @@ services:
       - '5672:5672'
       - '15672:15672'
     healthcheck:
-      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
+      test: ['CMD-SHELL', 'rabbitmq-diagnostics check_port_connectivity && rabbitmq-diagnostics check_virtual_hosts']
       interval: 10s
-      timeout: 5s
-      retries: 10
+      timeout: 10s
+      retries: 15
+      start_period: 30s  
     networks:
       - lind_society_net
 
