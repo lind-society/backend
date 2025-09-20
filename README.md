@@ -91,3 +91,9 @@ Key variables in `.env`:
 - RabbitMQ configuration
 - MinIO credentials
 - Service-specific configurations
+
+### To-Dos
+
+1. Adjust the currency converter interceptor
+2. Implement a worker or scheduled cron job to update currency converters
+3. Set up CI/CD pipeline
