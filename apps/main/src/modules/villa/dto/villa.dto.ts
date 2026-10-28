@@ -365,10 +365,14 @@ export class VillaWithRelationsDto
       ]),
     });
 
-    if (entity.priceRules) {
-      const currentPriceRule = entity.priceRules[0].priceRule;
+    // read from `villaPriceRules` (the relation the service actually loads), not
+    // the `priceRules` alias in the param type which nothing ever populates —
+    // currentPrice used to be permanently undefined on every detail response.
+    // Guard on the resolved rule, not on the array: an empty array is truthy.
+    const currentPriceRule = entity.villaPriceRules?.[0]?.priceRule;
 
-      dto.currentPrice = {
+    if (currentPriceRule) {
+      dto.currentPrice = CurrentVillaPrices.fromEntity({
         currentSeason: currentPriceRule.season,
         currentIsDiscount: currentPriceRule.isDiscount,
         currentDiscountType: currentPriceRule.discountType,
@@ -377,7 +381,7 @@ export class VillaWithRelationsDto
         currentDailyPriceAfterDiscount: entity.dailyPriceAfterDiscount,
         currencyId: currentPriceRule.currencyId,
         currency: currentPriceRule.currency,
-      };
+      });
     }
 
     if (entity.currency) {
@@ -658,9 +662,11 @@ export class VillaPaginationDto implements IVillaPaginationDto {
       ]),
     });
 
-    if (entity.villaPriceRules) {
-      const currentPriceRule = entity.villaPriceRules[0].priceRule;
+    // guard on length, not truthiness: an empty array is truthy, so a villa
+    // with no price rules used to throw here and 500 the whole list endpoint
+    const currentPriceRule = entity.villaPriceRules?.[0]?.priceRule;
 
+    if (currentPriceRule) {
       const currentPriceRaw = {
         currentSeason: currentPriceRule.season,
         currentIsDiscount: currentPriceRule.isDiscount,
@@ -717,21 +723,23 @@ export class VillaPaginationDto implements IVillaPaginationDto {
       }));
     }
 
-    // if (entity.villaPolicies) {
-    //   dto.policies = entity.villaPolicies.map(({ id: pivotId, policy }) => ({
-    //     ...RelatedVillaPolicyDto.fromEntity(policy),
-    //     pivotId,
-    //   }));
-    // }
+    // the list query already joins and selects both relations, so mapping them
+    // costs no extra query — leaving it out only dropped fields the DTO declares
+    if (entity.villaPolicies) {
+      dto.policies = entity.villaPolicies.map(({ id: pivotId, policy }) => ({
+        ...RelatedVillaPolicyDto.fromEntity(policy),
+        pivotId,
+      }));
+    }
 
-    // if (entity.villaPriceRules) {
-    //   dto.priceRules = entity.villaPriceRules.map(
-    //     ({ id: pivotId, priceRule }) => ({
-    //       ...RelatedVillaPriceRuleDto.fromEntity(priceRule),
-    //       pivotId,
-    //     }),
-    //   );
-    // }
+    if (entity.villaPriceRules) {
+      dto.priceRules = entity.villaPriceRules.map(
+        ({ id: pivotId, priceRule }) => ({
+          ...RelatedVillaPriceRuleDto.fromEntity(priceRule),
+          pivotId,
+        }),
+      );
+    }
 
     return dto;
   }

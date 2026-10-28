@@ -53,6 +53,34 @@ export class BookingPaymentRefundService {
     );
   }
 
+  /**
+   * Looks a refund up by the gateway's own id.
+   *
+   * Refund webhooks are delivered at-least-once, and the callback handler adds
+   * to `refundedAmount` rather than setting it, so a redelivery that is not
+   * recognised records the same money twice.
+   */
+  async findByGatewayReferenceId(
+    paymentRefundRequestReferenceId: string,
+    entityManager?: EntityManager,
+  ): Promise<BookingPaymentRefundDto | null> {
+    if (!paymentRefundRequestReferenceId) {
+      return null;
+    }
+
+    const repository = entityManager
+      ? entityManager.getRepository(BookingPaymentRefund)
+      : this.bookingPaymentRefundRepository;
+
+    const existing = await repository.findOne({
+      where: { paymentRefundRequestReferenceId },
+    });
+
+    return existing
+      ? BookingPaymentRefundWithRelationsDto.fromEntity(existing)
+      : null;
+  }
+
   async findAll(
     query: PaginateQuery,
   ): Promise<PaginateResponseDataProps<BookingPaymentRefundPaginationDto[]>> {
@@ -72,24 +100,27 @@ export class BookingPaymentRefundService {
           'currency.code',
           'currency.symbol',
 
-          'payments.id',
-          'payments.paymentMethod',
-          'payments.paymentChannel',
-          'payments.failureStage',
-          'payments.failureReason',
-          'payments.refundedAmount',
-          'payments.refundedReason',
-          'payments.refundedAt',
-          'payments.cancelledReason',
-          'payments.cancelledAt',
-          'payments.amount',
-          'payments.paidAt',
-          'payments.status',
+          // the relation on the entity is `bookingPayment`, not `payments` —
+          // selecting an alias that no relation declares made nestjs-paginate
+          // emit "missing FROM-clause entry for table __root_currency_rel"
+          'bookingPayment.id',
+          'bookingPayment.paymentMethod',
+          'bookingPayment.paymentChannel',
+          'bookingPayment.failureStage',
+          'bookingPayment.failureReason',
+          'bookingPayment.refundedAmount',
+          'bookingPayment.refundedReason',
+          'bookingPayment.refundedAt',
+          'bookingPayment.cancelledReason',
+          'bookingPayment.cancelledAt',
+          'bookingPayment.amount',
+          'bookingPayment.paidAt',
+          'bookingPayment.status',
 
-          'payments.currency.id',
-          'payments.currency.name',
-          'payments.currency.code',
-          'payments.currency.symbol',
+          'bookingPayment.currency.id',
+          'bookingPayment.currency.name',
+          'bookingPayment.currency.code',
+          'bookingPayment.currency.symbol',
         ],
         sortableColumns: ['createdAt', 'status'],
         defaultSortBy: [['createdAt', 'DESC']],
@@ -101,8 +132,13 @@ export class BookingPaymentRefundService {
           createdAt: [FilterOperator.GTE, FilterOperator.LTE],
         },
         searchableColumns: ['status', 'reason'],
+        // every alias used in `select` must be joined here, otherwise the
+        // generated SQL references a table it never added to the FROM clause
         relations: {
-          bookingPayment: true,
+          currency: true,
+          bookingPayment: {
+            currency: true,
+          },
         },
       },
     );

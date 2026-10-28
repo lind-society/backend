@@ -124,6 +124,9 @@ export class PropertyService {
         'property.discountType',
         'property.discount',
         'property.priceAfterDiscount',
+        // was missing from this whitelist, so the column was filterable and
+        // sortable but never returned to clients
+        'property.ownershipType',
         'property.highlight',
         'property.address',
         'property.country',
@@ -212,6 +215,10 @@ export class PropertyService {
         ownershipType: [FilterOperator.EQ],
         isFavorite: [FilterOperator.EQ],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        // Villas already support this (villa.service.ts) — properties have
+        // the same propertyFacilities relation but never had the filter
+        // wired up, so the Buy results page had no way to filter by amenity.
+        'propertyFacilities.facility.name': [FilterOperator.ILIKE],
       },
       searchableColumns: [
         'name',

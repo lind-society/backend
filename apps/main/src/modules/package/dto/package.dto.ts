@@ -1,4 +1,5 @@
 import { Package, PackageBenefitPivot } from '@apps/main/database/entities';
+import { ToDecimal } from '@apps/main/common/decorators';
 import { Exclude, Expose, plainToInstance } from 'class-transformer';
 import { omit } from 'lodash';
 import {
@@ -13,10 +14,7 @@ export interface IPackageWithRelationsDto extends IPackageDto {
 }
 
 export interface IPackagePaginationDto
-  extends Omit<
-    Package,
-    'description' | 'updatedAt' | 'deletedAt' | 'packageBenefits'
-  > {
+  extends Omit<Package, 'updatedAt' | 'deletedAt' | 'packageBenefits'> {
   benefits?: RelatedPackageBenefitDto[];
 }
 
@@ -31,6 +29,10 @@ export class PackageDto implements IPackageDto {
 
   @Expose()
   readonly description!: string | null;
+
+  @Expose()
+  @ToDecimal(true)
+  readonly commissionPercentage!: number | null;
 
   @Exclude()
   readonly createdAt!: Date;
@@ -91,6 +93,13 @@ export class PackagePaginationDto implements IPackagePaginationDto {
 
   @Expose()
   readonly name!: string;
+
+  @Expose()
+  readonly description!: string | null;
+
+  @Expose()
+  @ToDecimal(true)
+  readonly commissionPercentage!: number | null;
 
   @Exclude()
   readonly createdAt!: Date;

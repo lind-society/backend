@@ -87,6 +87,10 @@ export class ActivityDto implements IActivityDto {
   @ToDecimal(true)
   readonly priceAfterDiscount!: number | null;
 
+  /** e.g. "session", "person", "hour" — shown on the public site as "/{priceUnit}". */
+  @Expose()
+  readonly priceUnit!: string | null;
+
   @Expose()
   readonly duration!: ActivityDuration;
 
@@ -260,6 +264,10 @@ export class ActivityPaginationDto implements IActivityPaginationDto {
   @Expose()
   @ToDecimal(true)
   readonly priceAfterDiscount!: number | null;
+
+  /** e.g. "session", "person", "hour" — shown on the public site as "/{priceUnit}". */
+  @Expose()
+  readonly priceUnit!: string | null;
 
   @Expose()
   readonly duration!: ActivityDuration;

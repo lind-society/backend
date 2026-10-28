@@ -122,7 +122,9 @@ export class BlogPaginationDto implements IBlogPaginationDto {
   @Expose()
   readonly content!: string;
 
-  @Exclude()
+  // exposed (unlike the other pagination DTOs) because a blog listing is
+  // chronological — the published date is part of the card, not metadata
+  @Expose()
   readonly createdAt!: Date;
 
   @Expose()

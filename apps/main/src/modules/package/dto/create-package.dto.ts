@@ -8,8 +8,11 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { CreatePackageBenefitPivotDto } from './create-package-benefit-pivot.dto';
@@ -23,6 +26,13 @@ export class CreatePackageDto {
   @IsString()
   @IsOptional()
   readonly description?: string;
+
+  /** e.g. 8 = "8% of rental revenue". Shown on the public pricing page. */
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  @IsOptional()
+  readonly commissionPercentage?: number;
 
   @IsArray()
   @ValidateNested({ each: true })

@@ -76,6 +76,16 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   FE_PRODUCTION!: string;
 
+  /**
+   * The admin dashboard's origin. It only ever needs to be allowed through
+   * CORS — guest-facing links are built from the FE_* URLs above, and must
+   * never point at the dashboard. Optional so existing deployments keep
+   * booting; when unset the dashboard simply is not whitelisted.
+   */
+  @IsString()
+  @IsOptional()
+  FE_ADMIN?: string;
+
   @IsString()
   @IsNotEmpty()
   STORAGE_PROVIDER!: string;
@@ -124,6 +134,34 @@ export class EnvironmentVariables {
   @Min(0)
   @IsNotEmpty()
   MINIO_PUBLIC_URL_EXPIRY_SECONDS!: number;
+
+  // S3-compatible provider (used for Cloudflare R2 — R2 speaks the S3 API).
+  // Unlike MinIO through a Cloudflare quick tunnel, R2's public URL (a custom
+  // domain or the account's r2.dev subdomain) doesn't change on every
+  // restart, so URLs baked in at upload time stay valid.
+  @IsString()
+  @IsNotEmpty()
+  S3_ENDPOINT!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  S3_REGION!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  S3_ACCESS_KEY_ID!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  S3_SECRET_ACCESS_KEY!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  S3_BUCKET_NAME!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  S3_PUBLIC_BASE_URL!: string;
 
   @IsString()
   @IsNotEmpty()

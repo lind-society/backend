@@ -1,3 +1,4 @@
+export * from './booking-status-changed-event.dto';
 export * from './booking.dto';
 export * from './create-booking.dto';
 export * from './get-booking.dto';

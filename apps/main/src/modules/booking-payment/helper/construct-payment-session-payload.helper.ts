@@ -1,3 +1,4 @@
+import { constructFrontendUrl } from '@apps/main/common/helpers';
 import { BookingType } from '@apps/main/database/entities';
 import { BookingWithRelationsDto } from '../../booking/dto';
 import { CreatePaymentSessionDto } from '../../payment/dto';
@@ -12,13 +13,23 @@ import {
 import { constructPaymentCustomer } from './construct-payment-customer-payload.helper';
 import { constructBookingItemDescription } from './construct-shared-payment-field.helper';
 
-const frontendBaseUrl = process.env.FE_PRODUCTION;
-
+/**
+ * @param amountDue what the guest is being charged, taken from the stored
+ *   booking payment rather than the booking total so a part payment is not
+ *   silently re-billed in full.
+ */
 export function constructPaymentSessionPayload(
   bookingPaymentId: string,
   payload: CreatePaymentSessionDto,
   bookingDetail: BookingWithRelationsDto,
+  amountDue: number,
+  bookingLink?: string | null,
 ): CreatePaymentSessionDto {
+  const frontendBaseUrl = constructFrontendUrl();
+  // The guest has no account, so their tokenised link is the only page they can
+  // be sent back to after the card flow.
+  const returnUrl = bookingLink ?? frontendBaseUrl;
+
   return {
     ...payload,
     referenceId: bookingPaymentId,
@@ -28,7 +39,7 @@ export function constructPaymentSessionPayload(
     ),
     sessionType: payload.sessionType ?? PaymentAvailableSessionType.Pay,
     currency: PaymentAvailableCurrency.IDR,
-    amount: Number(bookingDetail.totalAmount),
+    amount: amountDue,
     mode: PaymentAvailableSessionMode.CardsSessionJS,
     captureMethod:
       payload.captureMethod ?? PaymentAvailableCaptureMethod.Automatic,
@@ -51,7 +62,7 @@ export function constructPaymentSessionPayload(
           bookingDetail.type === BookingType.Activity
             ? bookingDetail.activity.name
             : bookingDetail.villa.name,
-        netUnitAmount: Number(bookingDetail.totalAmount),
+        netUnitAmount: amountDue,
         quantity: 1,
         url:
           bookingDetail.type === BookingType.Activity
@@ -73,11 +84,11 @@ export function constructPaymentSessionPayload(
         description: constructBookingItemDescription(bookingDetail),
       },
     ],
-    successReturnUrl: `${frontendBaseUrl}/bookings/${bookingDetail.id}`,
-    cancelReturnUrl: `${frontendBaseUrl}/bookings/${bookingDetail.id}`,
+    successReturnUrl: returnUrl,
+    cancelReturnUrl: returnUrl,
     cardsSessionJS: {
-      successReturnUrl: `${frontendBaseUrl}/bookings/${bookingDetail.id}`,
-      failureReturnUrl: `${frontendBaseUrl}/bookings/${bookingDetail.id}`,
+      successReturnUrl: returnUrl,
+      failureReturnUrl: returnUrl,
     },
   };
 }

@@ -53,7 +53,9 @@ export enum VillaBookingStatus {
   Negotiation = 'negotiation',
   WaitingForPayment = 'waiting_for_payment',
   Booked = 'booked',
-  CheckedIn = 'checked_n',
+  // matches the `checked_in` label in the bookings_status_enum type; the
+  // previous 'checked_n' was a typo that Postgres rejected outright
+  CheckedIn = 'checked_in',
   Done = 'done',
   Canceled = 'canceled',
 }
@@ -110,6 +112,37 @@ export class Booking {
 
   @Column({ name: 'review_id', type: 'uuid', nullable: true })
   reviewId!: string | null;
+
+  // Secret that backs the public "book inform" link. The customer never logs
+  // in, so this token is the only thing standing between a stranger and the
+  // booking; `select: false` keeps it out of every query that does not ask for
+  // it by name, so it can never leak through a response DTO by accident.
+  @Column({
+    name: 'access_token',
+    type: 'varchar',
+    length: 64,
+    nullable: true,
+    unique: true,
+    select: false,
+  })
+  accessToken!: string | null;
+
+  @Column({ name: 'access_expires_at', type: 'timestamptz', nullable: true })
+  accessExpiresAt!: Date | null;
+
+  // Why the booking was closed (owner unavailable, customer declined the
+  // alternative villa, …). Kept separate from the payment-level
+  // `cancelled_reason` which is owned by the payment gateway flow.
+  @Column({ name: 'closed_reason', type: 'text', nullable: true })
+  closedReason!: string | null;
+
+  // WhatsApp delivery is fire-and-forget, so these stamps are the only way an
+  // admin can tell whether the inquiry actually reached anyone.
+  @Column({ name: 'customer_notified_at', type: 'timestamptz', nullable: true })
+  customerNotifiedAt!: Date | null;
+
+  @Column({ name: 'owner_notified_at', type: 'timestamptz', nullable: true })
+  ownerNotifiedAt!: Date | null;
 
   @OneToOne(() => Review, (review) => review.booking, {
     nullable: true,

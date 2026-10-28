@@ -115,10 +115,13 @@ export class FeatureService {
     featureData: CreateFeatureDto | UpdateFeatureDto,
     initialData?: FeatureWithRelationsDto,
   ): Promise<CreateFeatureDto | UpdateFeatureDto> {
-    const currencyId = featureData.currencyId ?? initialData.currencyId;
-    const discountType = featureData.discountType ?? initialData.discountType;
-    const discount = featureData.discount ?? initialData.discount;
-    const price = featureData.price ?? initialData.price;
+    // initialData is optional (convertFeaturesToBaseCurrency omits it), so it
+    // must be accessed defensively — dereferencing it unconditionally threw a
+    // 500 whenever a feature had no discountType, e.g. a free facility.
+    const currencyId = featureData.currencyId ?? initialData?.currencyId;
+    const discountType = featureData.discountType ?? initialData?.discountType;
+    const discount = featureData.discount ?? initialData?.discount;
+    const price = featureData.price ?? initialData?.price;
 
     return {
       ...featureData,

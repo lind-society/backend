@@ -7,8 +7,11 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards';
+import { BookingAccessGuard } from '../booking/guards';
 import {
   CancelPaymentRequestSuccessResponse,
   CancelPaymentSessionSuccessResponse,
@@ -20,12 +23,18 @@ import {
 import { CreatePaymentRefundDto } from '../payment/dto/refund';
 import { BookingPaymentService } from './booking-payment.service';
 import {
-  CreateBookingPaymentDto,
   CreateBookingPaymentSuccessResponse,
   GetBookingPaymentsSuccessResponse,
   GetBookingPaymentSuccessResponse,
+  StartBookingPaymentDto,
 } from './dto';
 
+/**
+ * Payment endpoints scoped to a single booking. Reachable either by an
+ * authenticated admin or by the guest holding that booking's link token — see
+ * `BookingAccessGuard`.
+ */
+@UseGuards(BookingAccessGuard)
 @UseInterceptors(PriceConverterInterceptor)
 @HalEmbedded(
   { name: 'customer', path: 'booking-customers' },
@@ -38,7 +47,7 @@ export class BookingPaymentController {
   @Post()
   async create(
     @Param('bookingId', ParseUUIDPipe) bookingId: string,
-    @Body() payload: CreateBookingPaymentDto,
+    @Body() payload: StartBookingPaymentDto,
   ) {
     const bookingPayment = await this.bookingPaymentService.create(
       bookingId,
@@ -127,6 +136,9 @@ export class BookingPaymentController {
     return new CancelPaymentSessionSuccessResponse(result);
   }
 
+  // Refunds move money back out, so a booking link is not enough — this route
+  // additionally demands an authenticated admin.
+  @UseGuards(JwtAuthGuard)
   @Post(':id/pay/refund')
   async refund(
     @Param('bookingId', ParseUUIDPipe) bookingId: string,

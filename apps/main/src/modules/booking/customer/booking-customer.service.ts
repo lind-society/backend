@@ -198,7 +198,9 @@ export class BookingCustomerService {
 
     await repository.update(id, payload);
 
-    return await this.findOne(id, bookingId);
+    // findOne takes (bookingId, id) — the arguments used to be passed the other
+    // way round, which made every successful update fail its own read-back.
+    return await this.findOne(bookingId, id, entityManager);
   }
 
   async remove(bookingId: string, id: string) {

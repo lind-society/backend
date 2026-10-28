@@ -63,6 +63,21 @@ export class WhatsappService {
     }
   }
 
+  /** Link state for the admin dashboard, including the pairing QR. */
+  async getConnectionState() {
+    return this.whatsappProvider.getConnectionState();
+  }
+
+  async logout() {
+    try {
+      await this.whatsappProvider.logout();
+      return { status: 'logged_out' };
+    } catch (error) {
+      this.logger.error(`Failed to log out: ${error.message}`);
+      return { status: 'error', error: error.message };
+    }
+  }
+
   async healthCheck() {
     return {
       status: this.whatsappProvider.isConnected() ? 'ok' : 'unavailable',

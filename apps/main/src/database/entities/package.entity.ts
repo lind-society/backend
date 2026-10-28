@@ -20,6 +20,16 @@ export class Package {
   @Column({ nullable: true })
   description!: string | null;
 
+  /** Shown on the public "manage your property" pricing page, e.g. 8.00 = "8% of rental revenue". */
+  @Column({
+    name: 'commission_percentage',
+    type: 'numeric',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  commissionPercentage!: number | null;
+
   @OneToMany(
     () => PackageBenefitPivot,
     (packageBenefitPivot) => packageBenefitPivot.package,

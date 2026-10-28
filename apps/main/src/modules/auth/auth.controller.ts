@@ -20,6 +20,7 @@ import { JwtAuthGuard, JwtRefreshGuard, LocalAuthGuard } from './guards';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('register')
   async register(@Body() payload: CreateAdminDto) {
     const result = await this.authService.register(payload);

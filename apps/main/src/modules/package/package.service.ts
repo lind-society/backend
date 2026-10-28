@@ -64,6 +64,8 @@ export class PackageService {
       select: [
         'id',
         'name',
+        'description',
+        'commissionPercentage',
         'createdAt',
 
         'packageBenefits.id',
@@ -99,6 +101,8 @@ export class PackageService {
       select: {
         id: true,
         name: true,
+        description: true,
+        commissionPercentage: true,
         packageBenefits: {
           id: true,
           benefit: {

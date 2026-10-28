@@ -59,6 +59,8 @@ export interface IBookingPaginationDto
     | 'activityId'
     | 'villaId'
     | 'reviewId'
+    // The link secret has no place in a list payload.
+    | 'accessToken'
   > {
   currency?: RelatedCurrencyDto;
   customer?: RelatedBookingCustomerDto;
@@ -126,6 +128,24 @@ export class BookingDto implements IBookingDto {
   @Expose()
   readonly reviewId!: string | null;
 
+  // Never serialised: this is the secret behind the public booking link. It is
+  // handed to the customer once, through `bookingLink` on the create response
+  // and through WhatsApp — never as part of a normal booking payload.
+  @Exclude()
+  readonly accessToken!: string | null;
+
+  @Expose()
+  readonly accessExpiresAt!: Date | null;
+
+  @Expose()
+  readonly closedReason!: string | null;
+
+  @Expose()
+  readonly customerNotifiedAt!: Date | null;
+
+  @Expose()
+  readonly ownerNotifiedAt!: Date | null;
+
   @Exclude()
   readonly createdAt!: Date;
 
@@ -165,6 +185,13 @@ export class BookingWithRelationsDto
 
   @Expose()
   review?: ReviewWithRelationsDto;
+
+  /**
+   * Only populated on the create response, so the guest's browser can jump
+   * straight to the book-inform page without waiting for the WhatsApp message.
+   */
+  @Expose()
+  bookingLink?: string;
 
   static fromEntity(
     entity: Booking & {
@@ -272,6 +299,20 @@ export class BookingPaginationDto implements IBookingPaginationDto {
 
   @Expose()
   readonly status!: ActivityBookingStatus | VillaBookingStatus | null;
+
+  @Expose()
+  readonly accessExpiresAt!: Date | null;
+
+  @Expose()
+  readonly closedReason!: string | null;
+
+  // Lets the dashboard show at a glance whether the automatic WhatsApp actually
+  // went out for an inquiry.
+  @Expose()
+  readonly customerNotifiedAt!: Date | null;
+
+  @Expose()
+  readonly ownerNotifiedAt!: Date | null;
 
   @Exclude()
   readonly createdAt!: Date;

@@ -28,7 +28,7 @@ import {
   { name: 'activityBookings', path: 'bookings/activities' },
   { name: 'villaBookings', path: 'bookings/villas' },
 )
-@Controller('booking-payment refunds')
+@Controller('booking-payment-refunds')
 export class BookingPaymentRefundDashboardController {
   constructor(
     private bookingPaymentRefundService: BookingPaymentRefundService,

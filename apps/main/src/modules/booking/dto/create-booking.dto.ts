@@ -1,3 +1,4 @@
+import { IsDateAfter } from '@apps/main/common/decorators';
 import { DefaultHttpStatus } from '@apps/main/common/enums';
 import {
   ActivityBookingStatus,
@@ -126,29 +127,37 @@ export class CreateBookingDto {
   @IsNotEmpty()
   readonly totalGuest!: number;
 
+  /**
+   * Accepted for backwards compatibility but ignored on create: the server
+   * always re-prices the booking from the property's own rates. Only an admin
+   * update can override the amount, to record a negotiated price.
+   */
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0, { message: 'minimum total amount is 0' })
-  @IsNotEmpty()
-  readonly totalAmount!: number;
+  @IsOptional()
+  readonly totalAmount?: number;
 
-  @ValidateIf((o) => o.bookingType === BookingType.Activity)
+  @ValidateIf((o) => o.type === BookingType.Activity)
   @Type(() => Date)
   @IsDate({ message: 'booking date must be a valid date' })
   @IsNotEmpty()
   @IsRequiredForBookingType(BookingType.Activity)
   readonly bookingDate!: Date;
 
-  @ValidateIf((o) => o.bookingType === BookingType.Villa)
+  @ValidateIf((o) => o.type === BookingType.Villa)
   @Type(() => Date)
   @IsDate({ message: 'check in date must be a valid date' })
   @IsNotEmpty() // only if booking type villa, eitherwise nullable
   @IsRequiredForBookingType(BookingType.Villa)
   readonly checkInDate!: Date;
 
-  @ValidateIf((o) => o.bookingType === BookingType.Villa)
+  @ValidateIf((o) => o.type === BookingType.Villa)
   @Type(() => Date)
-  @IsDate({ message: 'check in date must be a valid date' })
+  @IsDate({ message: 'check out date must be a valid date' })
+  @IsDateAfter('checkInDate', {
+    message: 'check out date must be after check in date',
+  })
   @IsNotEmpty() // only if booking type villa, eitherwise nullable
   @IsRequiredForBookingType(BookingType.Villa)
   readonly checkOutDate!: Date;
@@ -157,21 +166,26 @@ export class CreateBookingDto {
   @IsOptional()
   status?: ActivityBookingStatus | VillaBookingStatus;
 
+  /**
+   * Ignored on create — the booking is always stored in the currency of the
+   * villa or activity being booked, so the amount and the currency can never
+   * drift apart.
+   */
   @IsUUID()
-  @IsNotEmpty()
-  readonly currencyId!: string;
+  @IsOptional()
+  readonly currencyId?: string;
 
   @IsUUID()
   @IsOptional()
   readonly customerId?: string;
 
-  @ValidateIf((o) => o.bookingType === BookingType.Activity)
+  @ValidateIf((o) => o.type === BookingType.Activity)
   @IsUUID()
   @IsNotEmpty()
   @IsRequiredForBookingType(BookingType.Activity)
   readonly activityId?: string;
 
-  @ValidateIf((o) => o.bookingType === BookingType.Villa)
+  @ValidateIf((o) => o.type === BookingType.Villa)
   @IsUUID()
   @IsNotEmpty()
   @IsRequiredForBookingType(BookingType.Villa)

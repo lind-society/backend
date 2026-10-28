@@ -38,6 +38,19 @@ export class SearchService {
     `;
     const tables = ['activities', 'properties', 'villas'];
 
+    /**
+     * Discriminator emitted as the `type` column, per source table.
+     *
+     * Explicit map rather than `table.slice(0, -1)`: that naive de-pluralisation
+     * produced "activitie" and "propertie" for the -ies plurals, which clients
+     * then failed to match against.
+     */
+    const typeByTable: Record<string, string> = {
+      activities: 'activity',
+      properties: 'property',
+      villas: 'villa',
+    };
+
     const availableFilters: (keyof GetSearchEntitiesQueryDto)[] = [
       'name',
       'highlight',
@@ -93,7 +106,7 @@ export class SearchService {
         conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
       queryParts.push(
-        `SELECT ${field}, '${table.slice(0, -1)}' AS type FROM ${table} ${whereClause}`,
+        `SELECT ${field}, '${typeByTable[table]}' AS type FROM ${table} ${whereClause}`,
       );
 
       countParts.push(`SELECT COUNT(*) FROM ${table} ${whereClause}`);

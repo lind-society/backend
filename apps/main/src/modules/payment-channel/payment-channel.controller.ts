@@ -8,8 +8,10 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import {
   CreatePaymentChannelDto,
@@ -21,6 +23,7 @@ import {
 } from './dto';
 import { PaymentChannelService } from './payment-channel.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('payment-channels')
 export class PaymentChannelController {
   constructor(private readonly paymentChannelService: PaymentChannelService) {}

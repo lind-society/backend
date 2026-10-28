@@ -43,7 +43,9 @@ import { SearchModule } from './modules/search/search.module';
 import { AxiosModule } from './modules/shared/axios/axios.module';
 import { RegionModule } from './modules/shared/region/region.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
+import { VillaDailyRateModule } from './modules/villa/daily-rate/villa-daily-rate.module';
 import { VillaModule } from './modules/villa/villa.module';
+import { WhatsappAdminModule } from './modules/whatsapp/whatsapp.module';
 
 @Module({
   imports: [
@@ -99,7 +101,9 @@ import { VillaModule } from './modules/villa/villa.module';
     PropertyModule,
     OwnerModule,
     RegionModule,
+    VillaDailyRateModule,
     VillaModule,
+    WhatsappAdminModule,
     ReviewModule,
     PackageModule,
     SearchModule,

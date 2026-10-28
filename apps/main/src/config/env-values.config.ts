@@ -18,7 +18,11 @@ export const envValues: EnvironmentVariables = {
   DB_NAME: process.env.DB_NAME || '',
   FE_DEVELOPMENT: process.env.FE_DEVELOPMENT || '',
   FE_STAGING: process.env.FE_STAGING || '',
-  FE_PRODUCTION: process.env.FE_DEVELOPMENT || '',
+  // Was reading FE_DEVELOPMENT — a copy-paste that made production serve the
+  // development URL, so guest booking links pointed at the wrong host and the
+  // real production origin was missing from the CORS whitelist.
+  FE_PRODUCTION: process.env.FE_PRODUCTION || '',
+  FE_ADMIN: process.env.FE_ADMIN || '',
   STORAGE_PROVIDER:
     (process.env.STORAGE_PROVIDER as StorageProvider) || StorageProvider.GCP,
   GCP_BUCKET_NAME: process.env.GCP_BUCKET_NAME || '',
@@ -34,6 +38,12 @@ export const envValues: EnvironmentVariables = {
   MINIO_PUBLIC_BASE_URL: process.env.MINIO_PUBLIC_BASE_URL || '',
   MINIO_PUBLIC_URL_EXPIRY_SECONDS:
     parseInt(process.env.MINIO_PUBLIC_URL_EXPIRY_SECONDS || '3600', 10) || 3600,
+  S3_ENDPOINT: process.env.S3_ENDPOINT || '',
+  S3_REGION: process.env.S3_REGION || 'auto',
+  S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || '',
+  S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || '',
+  S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || '',
+  S3_PUBLIC_BASE_URL: process.env.S3_PUBLIC_BASE_URL || '',
   JWT_AT_SECRET: process.env.JWT_AT_SECRET || '',
   JWT_RT_SECRET: process.env.JWT_RT_SECRET || '',
   JWT_AT_EXPIRE: process.env.JWT_AT_EXPIRE || '',

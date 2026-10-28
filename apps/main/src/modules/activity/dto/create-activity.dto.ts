@@ -47,6 +47,11 @@ export class CreateActivityDto {
   @IsNotEmpty()
   readonly price!: number;
 
+  /** e.g. "session", "person", "hour" — shown on the public site as "/{priceUnit}". */
+  @IsString()
+  @IsOptional()
+  readonly priceUnit?: string;
+
   @Expose()
   @IsEnum(DiscountType, {
     message: `discount type must be one of: ${Object.values(DiscountType).join(', ')}`,

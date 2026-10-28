@@ -56,9 +56,15 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+# Graphify knowledge graph (generated)
+/graphify-out
+
 # Confidental files
 /.wwebjs_cache
 /whatsapp-session
 /backup
 /draft.json
 /apps/main/src/database/seeders
+# Postman environment: may hold real tokens when generated with --with-secrets.
+# The collection itself is safe to commit; this file is not.
+postman/*.postman_environment.json

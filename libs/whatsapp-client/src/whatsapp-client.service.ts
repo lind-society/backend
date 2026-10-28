@@ -3,8 +3,10 @@ import { ClientProxy } from '@nestjs/microservices';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import {
   SEND_WHATSAPP_MESSAGE,
+  WHATSAPP_CONNECTION_STATE,
   WHATSAPP_FORCE_RECONNECT,
   WHATSAPP_HEALTH_CHECK,
+  WHATSAPP_LOGOUT,
   WHATSAPP_SERVICE,
 } from './constant';
 import { SendMessageDto } from './dto';
@@ -146,6 +148,50 @@ export class WhatsappClientService implements OnModuleInit {
       errorMessage.includes('not ready') ||
       errorMessage.includes('not connected')
     );
+  }
+
+  /**
+   * Link state for the admin dashboard.
+   *
+   * Returns a synthetic `service_down` state rather than throwing when the
+   * microservice is unreachable — from the admin's point of view "the WhatsApp
+   * service is not running" is a status to display, not an error page.
+   */
+  async getConnectionState(): Promise<Record<string, unknown>> {
+    try {
+      return await firstValueFrom(
+        this.client.send(WHATSAPP_CONNECTION_STATE, {}).pipe(timeout(10000)),
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Could not read WhatsApp connection state: ${error.message}`,
+      );
+
+      return {
+        status: 'service_down',
+        qrImage: null,
+        qrIssuedAt: null,
+        linkedNumber: null,
+        linkedName: null,
+        lastReadyAt: null,
+        lastDisconnectedAt: null,
+        lastDisconnectReason: error.message,
+        retries: 0,
+        maxRetries: 0,
+      };
+    }
+  }
+
+  /** Unlink the handset so the next initialisation issues a fresh QR. */
+  async logout(): Promise<{ status: string; error?: string }> {
+    try {
+      return await firstValueFrom(
+        this.client.send(WHATSAPP_LOGOUT, {}).pipe(timeout(20000)),
+      );
+    } catch (error) {
+      this.logger.error(`WhatsApp logout failed: ${error.message}`);
+      return { status: 'error', error: error.message };
+    }
   }
 
   // Method to force reconnect of WhatsApp service

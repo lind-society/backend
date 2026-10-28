@@ -1,5 +1,5 @@
 import { StorageClientProvider } from '@libs/common/enums';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from 'minio';
 import { DeleteFileDto, FileDto, GetFileUrlDto } from '../../dto';
@@ -8,6 +8,7 @@ import { IStorageProvider } from '../../interfaces/storage.interface';
 
 @Injectable()
 export class MinIOStorageProvider implements IStorageProvider {
+  private readonly logger = new Logger(MinIOStorageProvider.name);
   private bucketName: string;
   private publicBaseUrl: string;
   private publicUrlexpirySeconds: number;
@@ -23,6 +24,50 @@ export class MinIOStorageProvider implements IStorageProvider {
       'storage.provider.minio.publicBaseUrl',
     );
     this.publicUrlexpirySeconds;
+  }
+
+  /**
+   * `getFileUrl` (used at upload time) bakes a plain, unsigned URL straight
+   * into every villa/activity/etc record — there is no per-request signing,
+   * so the bucket itself must allow anonymous GetObject or every photo 403s
+   * for anyone who didn't upload it. This used to be a manual, undocumented
+   * step (`mc anonymous set download`); a wiped or freshly-cloned MinIO data
+   * dir silently broke every image with no error until someone thought to
+   * check the bucket policy. Called from StorageFactory on every boot —
+   * cheap, idempotent, and self-healing if the policy is ever reset by hand.
+   * (Can't be a NestJS `OnModuleInit` hook: this class is constructed with a
+   * plain `new`, not registered as its own provider, so Nest never sees it
+   * to invoke lifecycle hooks on.)
+   */
+  async ensureBucketProvisioned(): Promise<void> {
+    try {
+      const exists = await this.minioClient.bucketExists(this.bucketName);
+      if (!exists) {
+        await this.minioClient.makeBucket(this.bucketName);
+        this.logger.log(`Created MinIO bucket "${this.bucketName}"`);
+      }
+
+      const publicReadPolicy = {
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Effect: 'Allow',
+            Principal: { AWS: ['*'] },
+            Action: ['s3:GetObject'],
+            Resource: [`arn:aws:s3:::${this.bucketName}/*`],
+          },
+        ],
+      };
+
+      await this.minioClient.setBucketPolicy(
+        this.bucketName,
+        JSON.stringify(publicReadPolicy),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to provision MinIO bucket "${this.bucketName}" — uploaded files may 403 until this is fixed: ${error.message}`,
+      );
+    }
   }
 
   async uploadFile(payload: IReceivedFile): Promise<FileDto> {

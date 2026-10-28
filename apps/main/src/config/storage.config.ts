@@ -12,6 +12,12 @@ const {
   MINIO_SECRET_KEY,
   MINIO_BUCKET_NAME,
   MINIO_PUBLIC_BASE_URL,
+  S3_ENDPOINT,
+  S3_REGION,
+  S3_ACCESS_KEY_ID,
+  S3_SECRET_ACCESS_KEY,
+  S3_BUCKET_NAME,
+  S3_PUBLIC_BASE_URL,
   STORAGE_PROVIDER,
 } = envValues;
 
@@ -31,6 +37,14 @@ export const storageConfig = registerAs('storage', () => ({
       secretKey: MINIO_SECRET_KEY,
       bucketName: MINIO_BUCKET_NAME,
       publicBaseUrl: MINIO_PUBLIC_BASE_URL,
+    },
+    s3: {
+      endpoint: S3_ENDPOINT,
+      region: S3_REGION,
+      accessKeyId: S3_ACCESS_KEY_ID,
+      secretAccessKey: S3_SECRET_ACCESS_KEY,
+      bucketName: S3_BUCKET_NAME,
+      publicBaseUrl: S3_PUBLIC_BASE_URL,
     },
   },
 }));

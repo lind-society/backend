@@ -13,6 +13,18 @@ import {
   TotalBookingPerYearDto,
 } from './dto';
 
+/**
+ * Format a Date as `YYYY-MM-DD` in the server's local timezone.
+ *
+ * The range helpers build boundaries with `new Date(year, month, day)`, i.e. in
+ * local time. Reporting those back with `toISOString()` shifted them by the UTC
+ * offset — in WIB (UTC+7), the range for August was reported as starting
+ * 2026-07-31. `sv-SE` yields ISO-shaped output without that shift, and matches
+ * what getBookingYearly already does.
+ */
+const toLocalDateString = (date: Date): string =>
+  date.toLocaleDateString('sv-SE');
+
 @Injectable()
 export class BookingStatisticService {
   constructor(
@@ -35,7 +47,7 @@ export class BookingStatisticService {
     );
 
     return {
-      date: endDate.toISOString().split('T')[0],
+      date: toLocalDateString(endDate),
       total: totalBooking,
     };
   }
@@ -54,8 +66,8 @@ export class BookingStatisticService {
     );
 
     return {
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
+      startDate: toLocalDateString(startDate),
+      endDate: toLocalDateString(endDate),
       total: totalBooking,
     };
   }
@@ -107,8 +119,8 @@ export class BookingStatisticService {
     );
 
     return {
-      startDate: generatedStartDate.toISOString().split('T')[0],
-      endDate: generatedEndDate.toISOString().split('T')[0],
+      startDate: toLocalDateString(generatedStartDate),
+      endDate: toLocalDateString(generatedEndDate),
       total: totalBooking,
     };
   }

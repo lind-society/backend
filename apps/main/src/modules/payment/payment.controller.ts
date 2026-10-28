@@ -1,5 +1,14 @@
-import { SkipHal } from '@apps/main/common/decorators';
-import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
+import { Public, SkipHal } from '@apps/main/common/decorators';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards';
 import {
   CreatePaymentRefundDto,
   CreatePaymentRequestDto,
@@ -10,10 +19,27 @@ import {
 import { PaymentService } from './payment.service';
 import {
   XenditPaymentRequestCallbackDto,
+  XenditPaymentSessionCallbackDto,
   XenditPaymentTokenCallbackDto,
 } from './strategies/xendit/dto';
 import { XenditPaymentRefundCallbackDto } from './strategies/xendit/dto/refund';
 
+/**
+ * The raw gateway surface: it talks to the provider directly, with no booking
+ * to scope it. Refunds, captures and cancellations all move real money, and the
+ * read routes return the payer's name, email and phone, so the whole controller
+ * demands an authenticated admin.
+ *
+ * The exceptions are the four callbacks the gateway itself posts to. They carry
+ * no session and cannot carry one — they are opened with `@Public()` and
+ * authenticated instead by the `x-callback-token` shared secret, checked inside
+ * the strategy.
+ *
+ * Guests never reach any of this. Their payments go through
+ * `bookings/:bookingId/payments`, which scopes every action to one booking and
+ * accepts their link token.
+ */
+@UseGuards(JwtAuthGuard)
 @SkipHal()
 @Controller('payments')
 export class PaymentController {
@@ -58,6 +84,7 @@ export class PaymentController {
     return result;
   }
 
+  @Public()
   @Post('request/callback')
   async paymentRequestCallback(
     @Headers('x-callback-token') webhookVerificationToken: string,
@@ -75,6 +102,7 @@ export class PaymentController {
     return await this.paymentService.createPaymentRefund(payload);
   }
 
+  @Public()
   @Post('refund/callback')
   async paymentRefundCallback(
     @Headers('x-callback-token') webhookVerificationToken: string,
@@ -102,12 +130,16 @@ export class PaymentController {
     return await this.paymentService.cancelPaymentSession(paymentSessionId);
   }
 
+  // A session callback is not a payment-request callback: it carries the card
+  // session's own shape, and routing it through the payment-request mapper read
+  // the wrong fields off it.
+  @Public()
   @Post('session/callback')
   async paymentSessionCallback(
     @Headers('x-callback-token') webhookVerificationToken: string,
-    @Body() payload: XenditPaymentRequestCallbackDto,
+    @Body() payload: XenditPaymentSessionCallbackDto,
   ) {
-    await this.paymentService.receivePaymentRequestCallback(
+    await this.paymentService.receivePaymentSessionCallback(
       webhookVerificationToken,
       payload,
     );
@@ -145,6 +177,7 @@ export class PaymentController {
     return await this.paymentService.cancelPaymentToken(paymentTokenId);
   }
 
+  @Public()
   @Post('token/callback')
   async paymentTokenCallback(
     @Headers('x-callback-token') webhookVerificationToken: string,

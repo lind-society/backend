@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Migration1755701799006 implements MigrationInterface {
-  name = 'Migration1755701799006';
+export class Migration1757274398937 implements MigrationInterface {
+  name = 'Migration1757274398937';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -48,6 +48,12 @@ export class Migration1755701799006 implements MigrationInterface {
             END;
             $$ LANGUAGE plpgsql;
         `);
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS trigger_update_activity_average_rating ON reviews;`,
+    );
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS trigger_update_villa_average_rating ON reviews;`,
+    );
     await queryRunner.query(`
             CREATE TRIGGER trigger_update_activity_average_rating
             AFTER INSERT OR UPDATE OR DELETE ON reviews

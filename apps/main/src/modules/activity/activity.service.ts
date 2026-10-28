@@ -60,6 +60,7 @@ export class ActivityService {
           'name',
           'secondaryName',
           'price',
+          'priceUnit',
           'discountType',
           'discount',
           'priceAfterDiscount',
@@ -210,6 +211,7 @@ export class ActivityService {
         name: true,
         secondaryName: true,
         price: true,
+        priceUnit: true,
         discountType: true,
         discount: true,
         priceAfterDiscount: true,
@@ -319,7 +321,9 @@ export class ActivityService {
       .leftJoinAndSelect('activity.currency', 'currency')
       .leftJoinAndSelect('activity.owner', 'owner')
       .leftJoinAndSelect('activity.reviews', 'reviews')
-      .leftJoinAndSelect('reviews.activityBooking', 'activityBooking')
+      // the Review entity's relation is `booking`; `activityBooking` is only
+      // the alias used further down in this query
+      .leftJoinAndSelect('reviews.booking', 'activityBooking')
       .leftJoinAndSelect('activityBooking.customer', 'customer')
       .leftJoin('activity.bookings', 'booking', 'booking.status = :completed', {
         completed: ActivityBookingStatus.Completed,
@@ -374,10 +378,13 @@ export class ActivityService {
     activityData: CreateActivityDto | UpdateActivityDto,
     initialData?: ActivityWithRelationsDto,
   ): Promise<CreateActivityDto | UpdateActivityDto> {
-    const currencyId = activityData.currencyId ?? initialData.currencyId;
-    const discountType = activityData.discountType ?? initialData.discountType;
-    const discount = activityData.discount ?? initialData.discount;
-    const price = activityData.price ?? initialData.price;
+    // initialData is optional (create passes nothing), so it must be accessed
+    // defensively — dereferencing it unconditionally threw a 500 whenever an
+    // activity was created without a discount.
+    const currencyId = activityData.currencyId ?? initialData?.currencyId;
+    const discountType = activityData.discountType ?? initialData?.discountType;
+    const discount = activityData.discount ?? initialData?.discount;
+    const price = activityData.price ?? initialData?.price;
 
     return {
       ...activityData,

@@ -10,6 +10,7 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse,
 } from 'axios';
+import { timingSafeEqual } from 'node:crypto';
 import {
   CreatePaymentRequestDto,
   CreatePaymentTokenDto,
@@ -78,6 +79,8 @@ import {
 } from './helper/dto-mapper/payment-token';
 import { mapXenditToGenericPaymentTokenCallbackDto } from './helper/dto-mapper/payment-token/xendit-payment-token-callback-dto.mapper';
 
+const XENDIT_REQUEST_TIMEOUT_MS = 15_000;
+
 @Injectable()
 export class XenditStrategy implements IPaymentStrategy {
   private xenditBaseUrl: string;
@@ -117,6 +120,9 @@ export class XenditStrategy implements IPaymentStrategy {
         'api-version': this.xenditApiVersion,
         'Content-Type': 'application/json',
       },
+      // Without this a stalled gateway connection holds our request open for as
+      // long as the socket lives, and a guest waiting to pay sees nothing.
+      timeout: XENDIT_REQUEST_TIMEOUT_MS,
     };
   }
 
@@ -294,9 +300,22 @@ export class XenditStrategy implements IPaymentStrategy {
   }
 
   async capturePayment(paymentId: string): Promise<PaymentDto> {
+    // Capture requires the amount to take, which may be less than the amount
+    // authorised. We always take the full authorisation, so it is read back
+    // from the payment rather than accepted from a caller — nobody upstream is
+    // in a position to decide how much of a guest's card hold to draw down.
+    // https://docs.xendit.co/apidocs/capture-payment
+    const payment = await this.getPaymentDetail(paymentId);
+
+    if (!payment?.requestAmount) {
+      throw new NotFoundException(
+        `payment ${paymentId} has no amount to capture`,
+      );
+    }
+
     const response: AxiosResponse<XenditPaymentDto> = await axios.post(
       `${this.xenditBaseUrl}/v3/payments/${paymentId}/capture`,
-      {},
+      { capture_amount: payment.requestAmount },
       this.axiosConfig,
     );
 
@@ -374,8 +393,11 @@ export class XenditStrategy implements IPaymentStrategy {
   }
 
   async cancelPaymentToken(paymentTokenId: string): Promise<PaymentTokenDto> {
+    // POST /v3/payment_tokens/{id}/cancel — without the trailing segment this
+    // is not a cancellation at all.
+    // https://docs.xendit.co/apidocs/cancel-payment-token
     const response: AxiosResponse<XenditPaymentTokenDto> = await axios.post(
-      `${this.xenditBaseUrl}/v3/payment_tokens/${paymentTokenId}`,
+      `${this.xenditBaseUrl}/v3/payment_tokens/${paymentTokenId}/cancel`,
       {},
       this.axiosConfig,
     );
@@ -405,11 +427,25 @@ export class XenditStrategy implements IPaymentStrategy {
     );
   }
 
+  /**
+   * The callbacks are the one part of this surface reachable without a session,
+   * so this shared secret is all that stands between the gateway's word and our
+   * booking records. Compared in constant time, and length-checked first
+   * because `timingSafeEqual` throws on a length mismatch.
+   */
   _validateWebhookVerificationToken(
     action: string,
     callbackToken: string,
   ): void {
-    if (callbackToken !== this.xenditWebhookVerificationToken) {
+    const expected = Buffer.from(this.xenditWebhookVerificationToken ?? '');
+    const received = Buffer.from(callbackToken ?? '');
+
+    const valid =
+      expected.length > 0 &&
+      expected.length === received.length &&
+      timingSafeEqual(expected, received);
+
+    if (!valid) {
       throw new ForbiddenException(
         `${action} rejected, invalid callback token`,
       );

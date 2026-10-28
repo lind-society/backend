@@ -53,6 +53,10 @@ export class BaseActivity {
   })
   price!: number;
 
+  /** e.g. "session", "person", "hour". Null on older rows — the public site falls back to "session". */
+  @Column({ name: 'price_unit', length: 50, nullable: true })
+  priceUnit!: string | null;
+
   @Column({
     name: 'price_after_discount',
     type: 'decimal',

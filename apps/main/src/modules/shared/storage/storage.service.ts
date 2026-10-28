@@ -1,12 +1,12 @@
 import { sanitizeString } from '@apps/main/common/helpers';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import {
   DeleteFileDto,
   FileDto,
   GetFileUrlDto,
   UploadFilesResponseDto,
 } from './dto';
-import { IReceivedFile, IStorageProvider } from './interfaces';
+import { IObjectStream, IReceivedFile, IStorageProvider } from './interfaces';
 
 @Injectable()
 export class StorageService {
@@ -54,6 +54,16 @@ export class StorageService {
 
   async deleteFile(payload: DeleteFileDto): Promise<void> {
     await this.storageProvider.deleteFile(payload);
+  }
+
+  async getFileStream(key: string): Promise<IObjectStream> {
+    if (!this.storageProvider.getFileStream) {
+      throw new NotImplementedException(
+        'the active storage provider does not support streaming files through the app',
+      );
+    }
+
+    return this.storageProvider.getFileStream(key);
   }
 
   mapFiles(files: Express.Multer.File[], key: string) {

@@ -1,4 +1,4 @@
-import { HalEmbedded, Public } from '@apps/main/common/decorators';
+import { HalEmbedded } from '@apps/main/common/decorators';
 import {
   Body,
   Controller,
@@ -6,7 +6,9 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
+import { BookingAccessGuard } from '../guards';
 import { BookingCustomerService } from './booking-customer.service';
 import {
   GetBookingCustomersSuccessResponse,
@@ -15,6 +17,13 @@ import {
   UpdateBookingCustomerSuccessResponse,
 } from './dto';
 
+/**
+ * Guest contact details for one booking. Readable and editable either by an
+ * admin or by the guest holding that booking's link — never by the public: the
+ * previous `@Public()` here handed out a name, email and phone number to anyone
+ * who could guess a booking id.
+ */
+@UseGuards(BookingAccessGuard)
 @HalEmbedded(
   { name: 'activityBookings', path: 'bookings/activities' },
   { name: 'villaBookings', path: 'bookings/villas' },
@@ -25,7 +34,6 @@ export class BookingCustomerController {
     private readonly bookingCustomerService: BookingCustomerService,
   ) {}
 
-  @Public()
   @Get()
   async findByBookingId(@Param('bookingId', ParseUUIDPipe) bookingId: string) {
     const bookingCustomer =
@@ -34,7 +42,6 @@ export class BookingCustomerController {
     return new GetBookingCustomersSuccessResponse(bookingCustomer);
   }
 
-  @Public()
   @Get(':id')
   async findOne(
     @Param('bookingId', ParseUUIDPipe) bookingId: string,

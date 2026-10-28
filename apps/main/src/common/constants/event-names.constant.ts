@@ -3,6 +3,7 @@ export const UPDATED_PRICE_RULE = 'price-rule.updated';
 export const DELETED_PRICE_RULE = 'price-rule.deleted';
 
 export const CREATED_BOOKING = 'booking.created';
+export const CHANGED_BOOKING_STATUS = 'booking.status.changed';
 export const UPDATED_BOOKING_PAYMENT = 'booking.payment.updated';
 
 export const CREATED_PAYMENT_REQUEST = 'payment.request.created';

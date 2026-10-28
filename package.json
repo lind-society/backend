@@ -8,10 +8,11 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
+    "postman": "node scripts/generate-postman-collection.mjs",
     "start": "nest start main",
     "start:dev": "nest start main --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/apps/main/main",
+    "start:prod": "cross-env TS_NODE_BASEURL=./dist/apps/main node -r tsconfig-paths/register dist/apps/main/apps/main/src/main.js",
     "start:external-gateway": "nest start external-gateway",
     "start:external-gateway:dev": "nest start external-gateway --watch",
     "start:mail": "nest start mail",
@@ -24,6 +25,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/main/test/jest-e2e.json",
+    "test:booking-flow": "node scripts/e2e-booking-flow.mjs",
     "typeorm": "pnpm build && npx typeorm",
     "migration:run": "pnpm typeorm migration:run -d dist/apps/main/apps/main/src/database/data-source.js",
     "migration:generate": "pnpm typeorm migration:generate -d dist/apps/main/apps/main/src/database/data-source.js apps/main/src/database/migrations/migration",
@@ -31,9 +33,13 @@
     "migration:revert": "pnpm typeorm migration:revert -d dist/apps/main/apps/main/src/database/data-source.js",
     "migration:show": "pnpm typeorm migration:show -d dist/apps/main/apps/main/src/database/data-source.js",
     "migration:reset": "pnpm typeorm schema:drop -d dist/apps/main/apps/main/src/database/data-source.js",
-    "migration:init-seed": "node dist/apps/main/apps/main/src/database/seeders/init.seeder.js"
+    "migration:init-seed": "node dist/apps/main/apps/main/src/database/seeders/init.seeder.js",
+    "start:whatsapp:prod": "cross-env TS_NODE_BASEURL=./dist/apps/whatsapp node -r tsconfig-paths/register dist/apps/whatsapp/apps/whatsapp/src/main.js",
+    "start:mail:prod": "cross-env TS_NODE_BASEURL=./dist/apps/mail node -r tsconfig-paths/register dist/apps/mail/apps/mail/src/main.js",
+    "start:external-gateway:prod": "cross-env TS_NODE_BASEURL=./dist/apps/external-gateway node -r tsconfig-paths/register dist/apps/external-gateway/apps/external-gateway/src/main.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1116.0",
     "@google-cloud/storage": "^7.15.2",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^4.0.0",
@@ -69,11 +75,12 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pg": "^8.13.3",
+    "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "typeorm": "^0.3.20",
-    "whatsapp-web.js": "^1.34.1"
+    "whatsapp-web.js": "^1.34.7"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.4",
@@ -91,10 +98,12 @@
     "@types/node": "^22.13.5",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
+    "@types/qrcode": "^1.5.6",
     "@types/qrcode-terminal": "^0.12.2",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
     "@typescript-eslint/parser": "^8.24.1",
+    "cross-env": "^10.1.0",
     "eslint": "^9.21.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.3",
@@ -134,6 +143,15 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
+      "^@apps/main(|/.*)$": "<rootDir>/apps/main/src/$1",
+      "^@apps/external-gateway(|/.*)$": "<rootDir>/apps/external-gateway/src/$1",
+      "^@apps/whatsapp(|/.*)$": "<rootDir>/apps/whatsapp/src/$1",
+      "^@apps/mail(|/.*)$": "<rootDir>/apps/mail/src/$1",
+      "^@libs/common(|/.*)$": "<rootDir>/libs/common/$1",
+      "^@libs/config(|/.*)$": "<rootDir>/libs/config/$1",
+      "^@libs/rabbitmq(|/.*)$": "<rootDir>/libs/rabbitmq/src/$1",
+      "^@libs/whatsapp-client(|/.*)$": "<rootDir>/libs/whatsapp-client/src/$1",
+      "^@libs/mail-client(|/.*)$": "<rootDir>/libs/mail-client/src/$1",
       "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
       "^@app/config(|/.*)$": "<rootDir>/libs/config/src/$1",
       "^@app/logger(|/.*)$": "<rootDir>/libs/logger/src/$1",

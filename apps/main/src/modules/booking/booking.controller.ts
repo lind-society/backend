@@ -1,4 +1,3 @@
-import { Public } from '@apps/main/common/decorators';
 import {
   Body,
   Controller,
@@ -8,8 +7,10 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { JwtAuthGuard } from '../auth/guards';
 import { DeleteResponse } from '../shared/dto/custom-responses';
 import { BookingService } from './booking.service';
 import {
@@ -21,6 +22,15 @@ import {
   UpdateBookingSuccessResponse,
 } from './dto';
 
+/**
+ * Dashboard-only. Guests reach their own booking through
+ * `BookingPublicController`, and create one through
+ * `POST /villas/:id/book` / `POST /activities/:id/book`.
+ *
+ * Nothing here is public: listing bookings exposes every guest's name, email and
+ * phone number, and the update route decides whether a booking is payable.
+ */
+@UseGuards(JwtAuthGuard)
 @Controller('bookings')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
@@ -32,7 +42,6 @@ export class BookingController {
     return new CreateBookingSuccessResponse(booking, payload.type);
   }
 
-  @Public()
   @Get()
   async findAll(@Paginate() query: PaginateQuery) {
     const bookings = await this.bookingService.findAll(query);
@@ -40,7 +49,6 @@ export class BookingController {
     return new GetBookingsSuccessResponse(bookings);
   }
 
-  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const booking = await this.bookingService.findOne(id);

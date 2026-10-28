@@ -1,4 +1,7 @@
-import { CREATED_BOOKING } from '@apps/main/common/constants';
+import {
+  CHANGED_BOOKING_STATUS,
+  CREATED_BOOKING,
+} from '@apps/main/common/constants';
 import {
   generateTodayDateRange,
   paginateResponseMapper,
@@ -13,6 +16,7 @@ import {
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -27,9 +31,27 @@ import {
   CreateBookingDto,
   UpdateBookingDto,
 } from './dto';
+import { BookingStatusChangedEventDto } from './dto/booking-status-changed-event.dto';
+import { BookingAccessService } from './helper/booking-access.service';
+import { BookingAvailabilityService } from './helper/booking-availability.service';
+import { BookingPriceService } from './helper/booking-price.service';
+import {
+  assertBookingStatusTransition,
+  OCCUPYING_VILLA_BOOKING_STATUSES,
+} from './helper/booking-status.helper';
+
+/** Writable view of an update payload — the DTO itself is all `readonly`. */
+type MutableBookingUpdate = {
+  -readonly [K in keyof Omit<UpdateBookingDto, 'customer'>]?: Omit<
+    UpdateBookingDto,
+    'customer'
+  >[K];
+};
 
 @Injectable()
 export class BookingService {
+  private readonly logger = new Logger(BookingService.name);
+
   constructor(
     private eventEmitter: EventEmitter2,
     @InjectDataSource()
@@ -39,35 +61,69 @@ export class BookingService {
     @InjectRepository(Booking)
     private bookingRepository: Repository<Booking>,
     private bookingCustomerService: BookingCustomerService,
+    private bookingAccessService: BookingAccessService,
+    private bookingAvailabilityService: BookingAvailabilityService,
+    private bookingPriceService: BookingPriceService,
   ) {}
 
   async create(payload: CreateBookingDto): Promise<BookingWithRelationsDto> {
-    return await this.datasource.transaction(async (manager: EntityManager) => {
-      if (payload.type === BookingType.Activity) {
-        await this._checkActivityAvailability(payload.activityId, manager);
-      }
+    const accessToken = this.bookingAccessService.generateAccessToken();
 
-      this._setInitialBookingStatus(payload);
+    const createdBooking = await this.datasource.transaction(
+      async (manager: EntityManager) => {
+        if (payload.type === BookingType.Activity) {
+          await this._checkActivityAvailability(payload.activityId, manager);
+        } else {
+          // An inquiry does not reserve the dates, but there is no point
+          // accepting one for dates the villa is already committed to.
+          await this.bookingAvailabilityService.assertVillaAvailable(
+            payload.villaId,
+            payload.checkInDate,
+            payload.checkOutDate,
+            undefined,
+            manager,
+          );
+        }
 
-      const createdBookingCustomer =
-        await this.bookingCustomerService.createFromDashboard(
-          payload.customer,
-          manager,
-        );
+        this._setInitialBookingStatus(payload);
 
-      const { customer, ...bookingPayload } = payload;
+        // The amount and currency the browser sent are display values. They
+        // decide how much the gateway collects and whether a booking counts as
+        // paid, so they are always recomputed from the property's own prices.
+        const pricing = await this._priceBooking(payload, manager);
 
-      const bookingEntity = manager.create(Booking, {
-        ...bookingPayload,
-        customerId: createdBookingCustomer.id,
-      });
+        const createdBookingCustomer =
+          await this.bookingCustomerService.createFromDashboard(
+            payload.customer,
+            manager,
+          );
 
-      const createdBooking = await manager.save(bookingEntity);
+        const { customer, ...bookingPayload } = payload;
 
-      await this.eventEmitter.emitAsync(CREATED_BOOKING, createdBooking.id);
+        const bookingEntity = manager.create(Booking, {
+          ...bookingPayload,
+          totalAmount: pricing.totalAmount,
+          currencyId: pricing.currencyId,
+          customerId: createdBookingCustomer.id,
+          accessToken,
+          accessExpiresAt:
+            this.bookingAccessService.resolveAccessExpiry(bookingPayload),
+        });
 
-      return BookingWithRelationsDto.fromEntity(createdBooking);
-    });
+        return await manager.save(bookingEntity);
+      },
+    );
+
+    // Emitted only after the transaction commits: the listeners re-read the
+    // booking over their own connection and would not see an uncommitted row.
+    await this.eventEmitter.emitAsync(CREATED_BOOKING, createdBooking.id);
+
+    const bookingDto = BookingWithRelationsDto.fromEntity(createdBooking);
+
+    bookingDto.bookingLink =
+      this.bookingAccessService.buildBookingLink(accessToken);
+
+    return bookingDto;
   }
 
   async findAll(
@@ -84,6 +140,10 @@ export class BookingService {
         'checkOutDate',
         'status',
         'createdAt',
+        'accessExpiresAt',
+        'closedReason',
+        'customerNotifiedAt',
+        'ownerNotifiedAt',
 
         'customer.id',
         'customer.name',
@@ -214,6 +274,10 @@ export class BookingService {
         checkInDate: true,
         checkOutDate: true,
         status: true,
+        accessExpiresAt: true,
+        closedReason: true,
+        customerNotifiedAt: true,
+        ownerNotifiedAt: true,
         customer: {
           id: true,
           name: true,
@@ -227,9 +291,19 @@ export class BookingService {
           code: true,
           symbol: true,
         },
+        // The location/map fields below are what the WhatsApp templates and the
+        // public book-inform page render; without them they would print
+        // "undefined" to the customer.
         activity: {
           id: true,
           name: true,
+          secondaryName: true,
+          address: true,
+          city: true,
+          state: true,
+          country: true,
+          mapLink: true,
+          photos: true,
           category: {
             id: true,
             name: true,
@@ -250,6 +324,13 @@ export class BookingService {
         villa: {
           id: true,
           name: true,
+          secondaryName: true,
+          address: true,
+          city: true,
+          state: true,
+          country: true,
+          mapLink: true,
+          photos: true,
           owner: {
             id: true,
             name: true,
@@ -333,10 +414,18 @@ export class BookingService {
   ): Promise<BookingWithRelationsDto> {
     await this.validateExist(id);
 
+    let statusChangedEvent: BookingStatusChangedEventDto | null = null;
+
     const transactionTask = async (manager: EntityManager) => {
       const initialBooking = await this.findOne(id, manager);
 
-      const { customer: customerData, ...bookingData } = payload;
+      const { customer: customerData, ...restPayload } = payload;
+
+      // The DTO fields are readonly; this update needs to overwrite the amount
+      // and currency when the villa is swapped mid-negotiation.
+      const bookingData = { ...restPayload } as MutableBookingUpdate;
+
+      this._validateBookingTypeUnchanged(initialBooking, bookingData);
 
       if (
         initialBooking.type === BookingType.Activity &&
@@ -350,24 +439,62 @@ export class BookingService {
 
       if (payload.status) {
         this._validateUpdateStatus(payload.status, initialBooking.type);
+
+        assertBookingStatusTransition(
+          initialBooking.type,
+          initialBooking.status,
+          payload.status,
+        );
       }
 
+      // Villa or dates moved during negotiation: re-price and re-check the
+      // calendar so a swapped villa can never keep the old villa's amount.
+      await this._applyVillaChangeEffects(
+        initialBooking,
+        payload,
+        bookingData,
+        manager,
+      );
+
       if (payload.customer) {
+        // `initialBooking` comes from this class's own findOne() below, whose
+        // TypeORM `select` only projects the `customer` relation (id, name,
+        // etc.) — the scalar `customerId` FK column is never selected, so it
+        // was always undefined here and every booking-customer edit 400'd
+        // with "booking customer id is required". The relation's own id is
+        // the same value and is guaranteed to be loaded.
         await this.bookingCustomerService.update(
           id,
-          initialBooking.customerId,
+          initialBooking.customer.id,
           customerData,
           manager,
         );
       }
 
       await manager.update(Booking, id, bookingData);
+
+      if (payload.status && payload.status !== initialBooking.status) {
+        statusChangedEvent = {
+          bookingId: id,
+          bookingType: initialBooking.type,
+          previousStatus: initialBooking.status,
+          currentStatus: payload.status,
+          closedReason: bookingData.closedReason ?? null,
+        };
+      }
     };
 
     if (entityManager) {
       await transactionTask(entityManager);
     } else {
       await this.datasource.transaction(transactionTask);
+    }
+
+    if (statusChangedEvent) {
+      await this.eventEmitter.emitAsync(
+        CHANGED_BOOKING_STATUS,
+        statusChangedEvent,
+      );
     }
 
     return await this.findOne(id, entityManager);
@@ -496,6 +623,152 @@ export class BookingService {
     }
   }
 
+  /**
+   * Prices a booking from the property's own rates. Never trusts the amount or
+   * currency supplied by the caller.
+   */
+  private async _priceBooking(
+    payload: CreateBookingDto,
+    manager: EntityManager,
+  ) {
+    if (payload.type === BookingType.Activity) {
+      return await this.bookingPriceService.calculateActivityBooking(
+        payload.activityId,
+        manager,
+      );
+    }
+
+    return await this.bookingPriceService.calculateVillaBooking(
+      payload.villaId,
+      payload.checkInDate,
+      payload.checkOutDate,
+      manager,
+    );
+  }
+
+  /**
+   * A booking cannot change species. Allowing it would leave both `villa_id`
+   * and `activity_id` populated (or neither) and quietly break every downstream
+   * branch that switches on `type`.
+   */
+  private _validateBookingTypeUnchanged(
+    initialBooking: BookingWithRelationsDto,
+    bookingData: MutableBookingUpdate,
+  ): void {
+    if (bookingData.type && bookingData.type !== initialBooking.type) {
+      throw new BadRequestException(
+        `booking type cannot be changed from ${initialBooking.type} to ${bookingData.type}, create a new booking instead`,
+      );
+    }
+
+    if (
+      initialBooking.type === BookingType.Villa &&
+      bookingData.activityId != null
+    ) {
+      throw new BadRequestException(
+        'cannot set an activity on a villa booking',
+      );
+    }
+
+    if (
+      initialBooking.type === BookingType.Activity &&
+      bookingData.villaId != null
+    ) {
+      throw new BadRequestException(
+        'cannot set a villa on an activity booking',
+      );
+    }
+  }
+
+  /**
+   * Keeps a villa booking coherent when the admin swaps the villa or shifts the
+   * dates during negotiation:
+   *
+   * - re-prices against the new villa/date range, unless the admin sent an
+   *   explicit `totalAmount` (a negotiated price wins over the rate card);
+   * - re-points the currency at the new villa;
+   * - re-checks the calendar whenever the booking is, or is about to become,
+   *   an occupying booking.
+   */
+  private async _applyVillaChangeEffects(
+    initialBooking: BookingWithRelationsDto,
+    payload: UpdateBookingDto,
+    bookingData: MutableBookingUpdate,
+    manager: EntityManager,
+  ): Promise<void> {
+    if (initialBooking.type !== BookingType.Villa) {
+      return;
+    }
+
+    const targetVillaId = payload.villaId ?? initialBooking.villaId;
+    const targetCheckIn = payload.checkInDate ?? initialBooking.checkInDate;
+    const targetCheckOut = payload.checkOutDate ?? initialBooking.checkOutDate;
+    const targetStatus = (payload.status ??
+      initialBooking.status) as VillaBookingStatus;
+
+    const bookingChanged =
+      this._hasChanged(payload.villaId, initialBooking.villaId) ||
+      this._hasDateChanged(payload.checkInDate, initialBooking.checkInDate) ||
+      this._hasDateChanged(payload.checkOutDate, initialBooking.checkOutDate);
+
+    if (bookingChanged && targetVillaId && targetCheckIn && targetCheckOut) {
+      const pricing = await this.bookingPriceService.calculateVillaBooking(
+        targetVillaId,
+        targetCheckIn,
+        targetCheckOut,
+        manager,
+      );
+
+      bookingData.currencyId = pricing.currencyId;
+
+      if (payload.totalAmount === undefined || payload.totalAmount === null) {
+        bookingData.totalAmount = pricing.totalAmount;
+      } else {
+        this.logger.log(
+          `booking ${initialBooking.id} kept a negotiated amount of ${payload.totalAmount} instead of the calculated ${pricing.totalAmount}`,
+        );
+      }
+    }
+
+    const willOccupyCalendar =
+      OCCUPYING_VILLA_BOOKING_STATUSES.includes(targetStatus);
+
+    if (
+      willOccupyCalendar &&
+      (bookingChanged || Boolean(payload.status)) &&
+      targetVillaId &&
+      targetCheckIn &&
+      targetCheckOut
+    ) {
+      await this.bookingAvailabilityService.assertVillaAvailable(
+        targetVillaId,
+        targetCheckIn,
+        targetCheckOut,
+        initialBooking.id,
+        manager,
+      );
+    }
+  }
+
+  private _hasChanged(next: string | undefined, current: string | null) {
+    return next !== undefined && next !== null && next !== current;
+  }
+
+  private _hasDateChanged(
+    next: Date | undefined,
+    current: Date | string | null,
+  ) {
+    if (next === undefined || next === null) {
+      return false;
+    }
+
+    if (!current) {
+      return true;
+    }
+
+    return new Date(next).getTime() !== new Date(current).getTime();
+  }
+
   private _setInitialBookingStatus(payload: CreateBookingDto): void {
     if (payload.type === BookingType.Activity) {
       payload.status = ActivityBookingStatus.Pending;
@@ -528,8 +801,12 @@ export class BookingService {
       ).includes(status)
     ) {
       throw new BadRequestException(
+        // `BookingType.Activity ? …` was always truthy (it is the string
+        // 'activity'), so villa bookings were told to use the activity statuses
         `Invalid status for booking type ${initialBookingType}, status must be one of: ${Object.values(
-          BookingType.Activity ? ActivityBookingStatus : VillaBookingStatus,
+          initialBookingType === BookingType.Activity
+            ? ActivityBookingStatus
+            : VillaBookingStatus,
         ).join(', ')} for ${initialBookingType} bookings`,
       );
     }

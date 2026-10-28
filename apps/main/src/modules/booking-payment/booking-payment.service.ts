@@ -12,7 +12,14 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { EntityManager, FindOneOptions, Repository } from 'typeorm';
+import { BookingWithRelationsDto } from '../booking/dto';
+import { BookingAccessService } from '../booking/helper/booking-access.service';
 import { BookingHelperService } from '../booking/helper/booking-helper.service';
+import {
+  FINALIZED_BOOKING_STATUSES,
+  isBookingOpenForPayment,
+  isClosedBookingStatus,
+} from '../booking/helper/booking-status.helper';
 import {
   CreatePaymentRequestDto,
   CreatePaymentSessionDto,
@@ -31,6 +38,7 @@ import {
   BookingPaymentPaginationDto,
   BookingPaymentWithRelationsDto,
   CreateBookingPaymentDto,
+  StartBookingPaymentDto,
   UpdateBookingPaymentDto,
 } from './dto';
 import {
@@ -61,6 +69,12 @@ export class BookingPaymentService {
       refundedAt: true,
       cancelledAt: true,
       paidAt: true,
+      // Both foreign keys are declared on the DTO and read by callers — most
+      // importantly the gateway callback, which uses `bookingId` to move the
+      // booking to `booked`. Leaving them out of the select makes them
+      // `undefined` at runtime with nothing failing until that update runs.
+      bookingId: true,
+      currencyId: true,
       currency: {
         id: true,
         name: true,
@@ -114,12 +128,13 @@ export class BookingPaymentService {
     @InjectRepository(BookingPayment)
     private bookingPaymentRepository: Repository<BookingPayment>,
     private bookingHelperService: BookingHelperService,
+    private bookingAccessService: BookingAccessService,
     private paymentService: PaymentService,
   ) {}
 
   async create(
     bookingId: string,
-    payload: CreateBookingPaymentDto,
+    payload: StartBookingPaymentDto,
     entityManager?: EntityManager,
   ): Promise<BookingPaymentWithRelationsDto> {
     await this._validateRelationsExist(bookingId, null, true, entityManager);
@@ -129,15 +144,33 @@ export class BookingPaymentService {
       entityManager,
     );
 
+    // This route is reachable by the guest holding the booking link, so both
+    // the booking's readiness and the amount have to be decided here rather
+    // than taken from the request.
+    this._validateBookingIsPayable(booking, true);
+
     this._validateBookingPaymentsStatusAndAmount(
       booking.totalAmount,
       booking.payments,
     );
 
+    const amount = this._resolveOutstandingAmount(booking);
+
+    if (payload.amount != null && Number(payload.amount) !== amount) {
+      throw new BadRequestException(
+        `payment amount must be the outstanding balance of ${amount}`,
+      );
+    }
+
     const repository = this._getRepository(entityManager);
 
+    // Listed field by field rather than spread: everything a caller may set is
+    // named here, so widening `StartBookingPaymentDto` later cannot quietly
+    // widen what a guest can write into the record.
     const bookingPaymentEntity = repository.create({
-      ...payload,
+      paymentMethod: payload.paymentMethod,
+      paymentChannel: payload.paymentChannel,
+      amount,
       status: BookingPaymentAvailableStatus.Pending,
       bookingId: bookingId,
       currencyId: booking.currencyId,
@@ -301,6 +334,11 @@ export class BookingPaymentService {
       payload.bookingId,
     );
 
+    // Admin-only route: an admin may still record a payment while a booking is
+    // being set up, so this only blocks bookings that are closed or already
+    // settled — but the amount stays their call.
+    this._validateBookingIsPayable(booking, false);
+
     this._validateBookingPaymentsStatusAndAmount(
       booking.totalAmount,
       booking.payments,
@@ -385,10 +423,23 @@ export class BookingPaymentService {
       entityManager,
     );
 
+    // Reachable with nothing but the booking link, so neither the readiness of
+    // the booking nor the amount can be taken from the request.
+    this._validateBookingIsPayable(booking, true);
+
+    const bookingPayment = await this.findOne(bookingId, id, entityManager);
+
+    const bookingLink = await this.bookingAccessService.findBookingLink(
+      bookingId,
+      entityManager,
+    );
+
     const paymentRequestPayload = constructPaymentRequestPayload(
       id,
       payload,
       booking,
+      Number(bookingPayment.amount),
+      bookingLink,
     );
 
     const paymentRequest = await this.paymentService.createPaymentRequest(
@@ -431,10 +482,21 @@ export class BookingPaymentService {
       entityManager,
     );
 
+    this._validateBookingIsPayable(booking, true);
+
+    const bookingPayment = await this.findOne(bookingId, id, entityManager);
+
+    const bookingLink = await this.bookingAccessService.findBookingLink(
+      bookingId,
+      entityManager,
+    );
+
     const paymentRequestPayload = constructPaymentSessionPayload(
       id,
       payload,
       booking,
+      Number(bookingPayment.amount),
+      bookingLink,
     );
 
     const paymentRequest = await this.paymentService.createPaymentSession(
@@ -655,11 +717,71 @@ export class BookingPaymentService {
 
     if (!isCreateAction) {
       if (!id) {
-        throw new BadRequestException('booking customer id is required');
+        throw new BadRequestException('booking payment id is required');
       }
 
       await this._validateExists(id);
+
+      // The payment id has to belong to the booking in the route. Without this
+      // check, anyone able to reach one booking could drive the payments of
+      // another simply by pairing their own booking id with a foreign payment
+      // id — including refunds and cancellations.
+      const belongsToBooking = await this._getRepository(entityManager).exists({
+        where: { id, bookingId },
+      });
+
+      if (!belongsToBooking) {
+        throw new NotFoundException('booking payment not found');
+      }
     }
+  }
+
+  /**
+   * A booking is only payable while it is actually waiting for money.
+   *
+   * `strict` is used on the guest-facing route: the customer may only pay once
+   * the admin has confirmed availability and parked the booking at
+   * `waiting_for_payment` (activities: `pending`). The dashboard route uses the
+   * lenient form, which only rules out bookings that are closed or already
+   * settled.
+   */
+  private _validateBookingIsPayable(
+    booking: BookingWithRelationsDto,
+    strict: boolean,
+  ): void {
+    if (isClosedBookingStatus(booking.status)) {
+      throw new BadRequestException(
+        'failed to create payment, this booking has been closed',
+      );
+    }
+
+    if (FINALIZED_BOOKING_STATUSES.includes(booking.status)) {
+      throw new BadRequestException(
+        `failed to create payment, booking is already ${booking.status}`,
+      );
+    }
+
+    if (strict && !isBookingOpenForPayment(booking.type, booking.status)) {
+      throw new BadRequestException(
+        `failed to create payment, booking is not open for payment yet (current status: ${booking.status})`,
+      );
+    }
+  }
+
+  /**
+   * What is still owed on the booking. Anything already paid or authorised is
+   * deducted so a retry after a partial payment asks for the remainder only.
+   */
+  private _resolveOutstandingAmount(booking: BookingWithRelationsDto): number {
+    const settled = (booking.payments ?? [])
+      .filter(
+        (payment) =>
+          payment.status === BookingPaymentAvailableStatus.Paid ||
+          payment.status === BookingPaymentAvailableStatus.Authorized,
+      )
+      .reduce((sum, payment) => sum + Number(payment.amount), 0);
+
+    return Math.max(Number(booking.totalAmount) - settled, 0);
   }
 
   private _validateBookingPaymentsStatusAndAmount(

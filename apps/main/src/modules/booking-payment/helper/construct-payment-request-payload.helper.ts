@@ -1,4 +1,7 @@
-import { constructPhoneNumber } from '@apps/main/common/helpers';
+import {
+  constructFrontendUrl,
+  constructPhoneNumber,
+} from '@apps/main/common/helpers';
 import { BookingType } from '@apps/main/database/entities';
 import { BookingWithRelationsDto } from '../../booking/dto';
 import { CreatePaymentRequestDto } from '../../payment/dto';
@@ -15,22 +18,42 @@ import {
   constructPaymentCode,
 } from './construct-shared-payment-field.helper';
 
-const frontendBaseUrl = process.env.FE_PRODUCTION;
+/**
+ * Where the gateway sends the guest back after a redirect-based payment.
+ *
+ * It has to be the tokenised booking link: the guest has no account, so
+ * `/booking/<token>` is the only page they can open, and it is where they can
+ * watch the payment land. Falls back to the site root when the link cannot be
+ * resolved, which is still better than a URL nobody can open.
+ */
+function resolveReturnUrl(bookingLink?: string | null): string {
+  return bookingLink ?? constructFrontendUrl();
+}
 
+/**
+ * @param amountDue what the guest is being charged. Decided by the caller from
+ *   the stored booking payment — never from the request body. This route is
+ *   reachable by anyone holding the booking link, so a client-supplied
+ *   `requestAmount` would let a guest bill themselves any figure they liked and
+ *   still have the gateway confirm the booking.
+ */
 export function constructPaymentRequestPayload(
   bookingPaymentId: string,
   payload: CreatePaymentRequestDto,
   bookingDetail: BookingWithRelationsDto,
+  amountDue: number,
+  bookingLink?: string | null,
 ): CreatePaymentRequestDto {
+  const returnUrl = resolveReturnUrl(bookingLink);
+  const frontendBaseUrl = constructFrontendUrl();
+
   return {
     ...payload,
     referenceId: bookingPaymentId,
     type: payload.type ?? PaymentAvailableType.Pay,
     country: payload.country ?? PaymentAvailableCountry.Indonesia,
     currency: payload.currency ?? PaymentAvailableCurrency.IDR,
-    requestAmount: payload.requestAmount
-      ? Number(payload.requestAmount)
-      : Number(bookingDetail.totalAmount),
+    requestAmount: amountDue,
     captureMethod:
       payload.captureMethod ?? PaymentAvailableCaptureMethod.Automatic,
     channelProperties: {
@@ -38,14 +61,14 @@ export function constructPaymentRequestPayload(
       payerName: bookingDetail.customer.name,
       payerEmail: bookingDetail.customer.email,
       paymentCode: constructPaymentCode(bookingDetail.type),
-      successReturnUrl: `${frontendBaseUrl}/bookings/${bookingDetail.id}`,
-      failureReturnUrl: `${frontendBaseUrl}/bookings/${bookingDetail.id}`,
-      cancelReturnUrl: `${frontendBaseUrl}/bookings/${bookingDetail.id}`,
-      pendingReturnUrl: `${frontendBaseUrl}/bookings/${bookingDetail.id}`,
+      successReturnUrl: returnUrl,
+      failureReturnUrl: returnUrl,
+      cancelReturnUrl: returnUrl,
+      pendingReturnUrl: returnUrl,
       expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour expiration
-      suggestedAmount: payload.channelProperties?.suggestedAmount
-        ? String(payload.channelProperties?.suggestedAmount)
-        : String(bookingDetail.totalAmount),
+      // Same rule as the amount itself: a "suggested" figure the payer can act
+      // on is not the client's to choose.
+      suggestedAmount: String(amountDue),
       displayName: bookingDetail.customer.name,
       accountEmail: bookingDetail.customer.email,
       accountMobileNumber: constructPhoneNumber(
@@ -66,7 +89,7 @@ export function constructPaymentRequestPayload(
           bookingDetail.type === BookingType.Activity
             ? bookingDetail.activity.name
             : bookingDetail.villa.name,
-        netUnitAmount: Number(bookingDetail.totalAmount),
+        netUnitAmount: amountDue,
         quantity: 1,
         url:
           bookingDetail.type === BookingType.Activity

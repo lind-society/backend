@@ -739,7 +739,9 @@ export class VillaService {
       .leftJoinAndSelect('villa.currency', 'currency')
       .leftJoinAndSelect('villa.owner', 'owner')
       .leftJoinAndSelect('villa.reviews', 'reviews')
-      .leftJoinAndSelect('reviews.villaBooking', 'villaBooking')
+      // the Review entity's relation is `booking`; `villaBooking` is only the
+      // alias used further down in this query
+      .leftJoinAndSelect('reviews.booking', 'villaBooking')
       .leftJoinAndSelect('villaBooking.customer', 'customer')
       .leftJoinAndSelect('villa.villaFacilities', 'additionals')
       .leftJoinAndSelect('villa.villaFeatures', 'facilities')
@@ -979,19 +981,27 @@ export class VillaService {
     currentDate: Date,
     villaPriceRules: VillaPriceRulePivot[],
   ): VillaPriceRulePivot[] {
-    villaPriceRules
-      .filter((rule) => {
-        const startDate = new Date(rule.priceRule.startDate);
+    // `.filter().sort()` returns a new array; the previous version threw that
+    // result away and returned the untouched input, so a rule that had not
+    // started yet was still reported as the villa's current price.
+    // The window also has to be closed on both ends and honour isActive —
+    // otherwise an expired or disabled rule keeps driving the price.
+    return villaPriceRules
+      .filter(({ priceRule }) => {
+        if (!priceRule?.isActive) {
+          return false;
+        }
 
-        return currentDate >= startDate;
+        const startDate = new Date(priceRule.startDate);
+        const endDate = new Date(priceRule.endDate);
+
+        return currentDate >= startDate && currentDate <= endDate;
       })
       .sort(
         (a, b) =>
           new Date(b.priceRule.startDate).getTime() -
           new Date(a.priceRule.startDate).getTime(),
       );
-
-    return villaPriceRules;
   }
 
   // Booking

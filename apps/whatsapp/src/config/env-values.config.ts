@@ -13,4 +13,5 @@ export const envValues: EnvironmentVariables = {
     process.env.WHATSAPP_BROWSER_EXECUTABLE_PATH_UBUNTU || '',
   WHATSAPP_BROWSER_EXECUTABLE_PATH_WINDOWS:
     process.env.WHATSAPP_BROWSER_EXECUTABLE_PATH_WINDOWS || '',
+  WHATSAPP_WEB_VERSION: process.env.WHATSAPP_WEB_VERSION || '',
 };

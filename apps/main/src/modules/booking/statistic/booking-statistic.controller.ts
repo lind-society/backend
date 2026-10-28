@@ -1,5 +1,6 @@
 import { SkipHal } from '@apps/main/common/decorators';
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../../auth/guards';
 import { BookingStatisticService } from './booking-statistic.service';
 import {
   GetBookingDailySuccessResponse,
@@ -13,6 +14,8 @@ import {
   GetBookingYearlyQueryDto,
 } from './dto/get-booking-statistic.dto';
 
+// Revenue and booking volume — dashboard figures, not public ones.
+@UseGuards(JwtAuthGuard)
 @SkipHal()
 @Controller('bookings/statistics')
 export class BookingStatisticController {

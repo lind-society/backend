@@ -40,6 +40,15 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   WHATSAPP_BROWSER_EXECUTABLE_PATH_WINDOWS!: string;
+
+  /**
+   * WhatsApp Web build to pin to, e.g. `2.3000.1044534801-alpha`. Optional:
+   * leave it blank to track whatever WhatsApp serves, at the cost of the client
+   * silently hanging whenever Meta changes the page out from under the library.
+   */
+  @IsString()
+  @IsOptional()
+  WHATSAPP_WEB_VERSION?: string;
 }
 
 export function envConfig(options?: DotenvConfigOptions) {
