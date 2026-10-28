@@ -1,0 +1,159 @@
+# Production stack for the VPS. Deployed by .github/workflows/deploy.yml;
+# reads ./.env, which lives only on the server.
+#
+# Every app container is independent: a crashed whatsapp or mail service never
+# takes the API down, and redeploying the apps never recreates postgres —
+# its data sits in the named `postgres_data` volume.
+#
+# Host ports bind to 127.0.0.1 only; the host's nginx is the public entry
+# point (Docker-published ports would otherwise bypass ufw).
+name: lind-backend
+
+x-app: &app
+  image: lind-backend:latest
+  # Built locally by the `migrate` service below, never pulled.
+  pull_policy: never
+  restart: unless-stopped
+  env_file: ./.env
+  networks: [lind_net]
+  logging:
+    driver: json-file
+    options: { max-size: '20m', max-file: '5' }
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [lind_net]
+    mem_limit: 2g
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD-SHELL', 'rabbitmq-diagnostics -q check_port_connectivity']
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+    networks: [lind_net]
+    mem_limit: 1g
+
+  # S3-compatible object storage. (MinIO no longer publishes public images.)
+  # Files are never served from here directly: the API proxies them at
+  # /api/v1/storages/files, so this container needs no public port.
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.97
+    restart: unless-stopped
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        cat > /tmp/s3.json <<EOF
+        {"identities":[{"name":"lind","credentials":[{"accessKey":"$$S3_ACCESS_KEY_ID","secretKey":"$$S3_SECRET_ACCESS_KEY"}],"actions":["Admin","Read","Write","List","Tagging"]}]}
+        EOF
+        exec weed server -dir=/data -ip=seaweedfs -ip.bind=0.0.0.0 -volume.max=0           -master.volumeSizeLimitMB=1024 -s3 -s3.port=8333 -s3.config=/tmp/s3.json
+    environment:
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+    volumes:
+      - storage_data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1:9333/cluster/status && wget -q -O /dev/null http://127.0.0.1:8333/healthz']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    networks: [lind_net]
+    mem_limit: 1g
+
+  # Creates the bucket on first boot; a no-op afterwards.
+  storage-init:
+    image: chrislusf/seaweedfs:3.97
+    depends_on:
+      seaweedfs: { condition: service_healthy }
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - echo "s3.bucket.create -name $$S3_BUCKET_NAME" | weed shell -master=seaweedfs:9333
+    environment:
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+    networks: [lind_net]
+
+  migrate:
+    <<: *app
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    restart: 'no'
+    command: ['migrate']
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  main:
+    <<: *app
+    command: ['main']
+    ports: ['127.0.0.1:18082:3000']
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      rabbitmq: { condition: service_healthy }
+      storage-init: { condition: service_completed_successfully }
+    healthcheck:
+      # Any HTTP answer (even 404) means the server is up; only a refused
+      # connection fails.
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3000/api/v1').then(() => process.exit(0), () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    mem_limit: 1536m
+
+  external-gateway:
+    <<: *app
+    command: ['external-gateway']
+    ports: ['127.0.0.1:18083:3002']
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+    mem_limit: 768m
+
+  mail:
+    <<: *app
+    command: ['mail']
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+    mem_limit: 512m
+
+  whatsapp:
+    <<: *app
+    command: ['whatsapp']
+    volumes:
+      - whatsapp_session:/app/session
+    shm_size: 512m
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+    mem_limit: 2g
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  storage_data:
+  whatsapp_session:
+
+networks:
+  lind_net:
+    name: lind_net
