@@ -1,0 +1,29 @@
+# Template for the systemd units that make the Docker stacks show up in
+# Cockpit's Services page next to the other sites. Installed with __DIR__ and
+# __DESC__ filled in as:
+#   app-lind-society-api.service    (backend)
+#   app-lind-society-admin.service  (frontend)
+#   app-lind-society-web.service    (frontend-user)
+#
+# Runs `docker compose up` attached: the unit is active only while the stack
+# is, and container logs land in the journal (visible in Cockpit). Stopping or
+# restarting the unit stops or restarts the containers. Deploys still go
+# through deploy.sh, which rebuilds the images; this unit never builds.
+[Unit]
+Description=__DESC__
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/lind-society/__DIR__
+ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml up --no-build --no-color
+ExecStop=/usr/bin/docker compose -f docker-compose.prod.yml stop
+Restart=always
+RestartSec=10
+TimeoutStartSec=0
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target
