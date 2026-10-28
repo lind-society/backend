@@ -141,6 +141,8 @@ services:
   whatsapp:
     <<: *app
     command: ['whatsapp']
+    # Stable hostname: Chromium ties its profile lock to it (see deploy/start.sh).
+    hostname: whatsapp
     volumes:
       - whatsapp_session:/app/session
     shm_size: 512m
