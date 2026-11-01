@@ -21,7 +21,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import * as compression from 'compression';
+import compression from 'compression';
 import { ExternalGatewayModule } from './external-gateway.module';
 
 async function bootstrap() {

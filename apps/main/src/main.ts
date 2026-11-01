@@ -16,7 +16,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { MicroserviceOptions } from '@nestjs/microservices';
-import * as compression from 'compression';
+import compression from 'compression';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters';
 

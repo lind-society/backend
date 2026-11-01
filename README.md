@@ -1,101 +1,47 @@
 # Lind Society Backend
 
-NestJS Monorepo with RabbitMQ, MinIO, and PostgreSQL.
+NestJS monorepo (Node 24, pnpm) with four apps that share one Docker image:
 
-## Prerequisites
+| App                | Port | Role                                          |
+| ------------------ | ---- | --------------------------------------------- |
+| `main`             | 4782 | REST API, database, storage                   |
+| `external-gateway` | 4783 | API for partner sites                         |
+| `mail`             | -    | RabbitMQ consumer that sends email            |
+| `whatsapp`         | -    | RabbitMQ consumer driving WhatsApp Web        |
 
-- Docker & Docker Compose
-- Node.js 22+ (for local development)
-- PostgreSQL database (not included in docker-compose, must be provided separately)  
-  > 💡 If you are running PostgreSQL on the same host machine as Docker, use `host.docker.internal` as the DB host inside your `.env`.
+Infrastructure: PostgreSQL (your own, not in the compose file), RabbitMQ and an
+S3-compatible store (SeaweedFS).
 
-## Quick Start
+## Run everything with Docker
 
-1. **Clone and setup**
-
-   ```bash
-   git clone <repository>
-   cd lind-society
-   cp .env.example .env
-   ```
-
-2. **Configure environment**
-   Edit `.env` with your database and service configurations.
-
-3. **Run services**
-
-   ```bash
-   make dev    # Development mode
-   # or
-   make prod   # Production mode
-   ```
-
-4. **Access services**
-   - Main API: http://localhost:3000
-   - External Gateway: http://localhost:3001
-   - RabbitMQ Management: http://localhost:15672
-   - MinIO Console: http://localhost:9001
-
-## Available Commands
+From the repository root (one level up), which also starts both frontends:
 
 ```bash
-make init                   # run and Build all services
-make build                  # Build all services
-make up                     # Start services
-make down                   # Stop services
-make restart                # Restart services
-
-make dev                    # Run app in development mode
-make prod                   # Run app in production mode
-
-make migrate                # Run database migrations
-make db-seed                # Run database seeder
-
-make logs                   # View all logs
-make logs-<container name>  # View specific service logs (example : logs-main)
-
-make clean                  # Remove containers and volumes
-make clean-reset-all        # Remove containers and volumes
-
-make status                 # Check service status
+cp backend/.env.example backend/.env   # then replace the CHANGE_ME values
+docker compose up -d --build
 ```
 
-## Services
+API: http://localhost:4782/api/v1. Migrations run automatically through the
+`migrate` service before `main` starts.
 
-- **main** - Main API service (port 3000)
-- **external-gateway** - External gateway (port 3001)
-- **mail-service** - Email service
-- **whatsapp-service** - WhatsApp service
-
-## dependencies
-
-- **rabbitmq** - Message broker
-- **minio** - Object storage
-
-## Development
+## Local development
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Start specific service
-docker compose up main -d
-
-# View logs
-make logs-main
+pnpm start:dev          # main, with watch
+pnpm test               # jest
+pnpm migration:run      # needs a reachable database
+pnpm admin:create --email admin@lind.test --password Admin12345
+pnpm seed:demo --identifier admin@lind.test --password Admin12345   # demo content
 ```
 
-## Environment Variables
+Environment variables are documented in `.env.example`.
 
-Key variables in `.env`:
+## Notes
 
-- Database connection settings
-- RabbitMQ configuration
-- MinIO credentials
-- Service-specific configurations
-
-### To-Dos
-
-1. Adjust the currency converter interceptor
-2. Implement a worker or scheduled cron job to update currency converters
-3. Set up CI/CD pipeline
+- `deploy/` holds the production image (`Dockerfile`), the container entry
+  point (`start.sh`) and the VPS scripts.
+- `nest build` copies assets (`country-code.json`, mail templates) through the
+  `assets` entries in `nest-cli.json`.
+- TypeORM is on 0.3.x. TypeORM 1.x removes APIs used here
+  (`loadRelationCountAndMap`, array `select`), so upgrading it is a separate task.

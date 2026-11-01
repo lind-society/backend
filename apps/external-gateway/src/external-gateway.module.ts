@@ -16,10 +16,6 @@ import { WhatsappGatewayController } from './modules/whatsapp';
       isGlobal: true,
       envFilePath: envPaths[process.env.NODE_ENV || 'development'],
       validate: validateEnv,
-      validationOptions: {
-        allowUnknown: false,
-        abortEarly: true,
-      },
       load: [appConfig, clientWhitelistConfig],
     }),
     ThrottlerModule.forRoot({

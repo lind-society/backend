@@ -76,7 +76,7 @@ const args = parseArgs(process.argv.slice(2));
 
 const API = (
   args.api ??
-  `http://localhost:${env.MAIN_PORT || 3000}/api/${env.API_VERSION || 'v1'}`
+  `http://localhost:${env.MAIN_PORT || 4782}/api/${env.API_VERSION || 'v1'}`
 ).replace(/\/$/, '');
 
 const IDENTIFIER = args.identifier ?? process.env.ADMIN_IDENTIFIER;

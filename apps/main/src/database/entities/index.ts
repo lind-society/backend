@@ -35,3 +35,4 @@ export * from './villa-price-rule-pivot.entity';
 export * from './villa-daily-rate.entity';
 export * from './villa-price-rule.entity';
 export * from './villa.entity';
+export * from './inquiry.entity';

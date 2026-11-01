@@ -8,7 +8,7 @@
  */
 import { readFileSync } from 'node:fs';
 
-const API = process.env.API_URL ?? 'http://localhost:3000/api/v1';
+const API = process.env.API_URL ?? 'http://localhost:4782/api/v1';
 
 const arg = (name) => {
   const i = process.argv.indexOf(`--${name}`);

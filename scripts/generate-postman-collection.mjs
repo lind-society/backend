@@ -564,7 +564,7 @@ for (const [appName, appConfig] of Object.entries(APPS)) {
   });
 
   folders.push({
-    name: appName === 'main' ? 'Main API (:3000)' : 'External Gateway (:3002)',
+    name: appName === 'main' ? 'Main API (:4782)' : 'External Gateway (:4783)',
     item: items,
   });
 }
@@ -649,8 +649,8 @@ const collection = {
   },
   item: folders,
   variable: [
-    { key: 'baseUrl', value: 'http://localhost:3000' },
-    { key: 'gatewayUrl', value: 'http://localhost:3002' },
+    { key: 'baseUrl', value: 'http://localhost:4782' },
+    { key: 'gatewayUrl', value: 'http://localhost:4783' },
     { key: 'apiVersion', value: 'v1' },
     { key: 'adminIdentifier', value: 'admin' },
     { key: 'adminPassword', value: '' },
@@ -706,10 +706,10 @@ const environment = {
   id: 'f1e2d3c4-b5a6-4978-8a9b-0c1d2e3f4a5b',
   name: 'Lind Society — local',
   values: [
-    { key: 'baseUrl', value: `http://${host}:${env.MAIN_PORT || 3000}`, type: 'default', enabled: true },
+    { key: 'baseUrl', value: `http://${host}:${env.MAIN_PORT || 4782}`, type: 'default', enabled: true },
     {
       key: 'gatewayUrl',
-      value: `http://${host}:${env.EXTERNAL_GATEWAY_PORT || 3002}`,
+      value: `http://${host}:${env.EXTERNAL_GATEWAY_PORT || 4783}`,
       type: 'default',
       enabled: true,
     },

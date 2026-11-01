@@ -14,10 +14,6 @@ import { MailService } from './mail.service';
       isGlobal: true,
       envFilePath: envPaths[process.env.NODE_ENV || 'development'],
       validate: validateEnv,
-      validationOptions: {
-        allowUnknown: false,
-        abortEarly: true,
-      },
       load: [mailConfig],
     }),
     MailerModule.forRootAsync({

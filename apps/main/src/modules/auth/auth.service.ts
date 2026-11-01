@@ -1,7 +1,7 @@
 import { IJwtPayload, IJwtTokens } from '@apps/main/common/interfaces';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AdminService } from '../admin/admin.service';
 import { AdminPayloadDto, CreateAdminDto } from '../admin/dto';
@@ -92,7 +92,9 @@ export class AuthService {
 
     const refreshToken = await this.jwtService.signAsync(jwtPayload, {
       secret: this.configService.get<string>('jwt.refreshToken.secret'),
-      expiresIn: this.configService.get<string>('jwt.refreshToken.expire'),
+      expiresIn: this.configService.get<string>(
+        'jwt.refreshToken.expire',
+      ) as JwtSignOptions['expiresIn'],
     });
 
     return refreshToken;

@@ -14,10 +14,6 @@ import { RabbitMqService } from './rabbitmq.service';
       isGlobal: true,
       envFilePath: envPaths[process.env.NODE_ENV || 'development'],
       validate: validateEnv(LibEnvironmentVariables),
-      validationOptions: {
-        allowUnknown: false,
-        abortEarly: true,
-      },
       load: [rabbitMqConfig],
     }),
   ],

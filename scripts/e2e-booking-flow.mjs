@@ -14,7 +14,7 @@
  *   --skip-payment              stop after the owner's reply
  *   --customer-email <email>    guest email (default: throwaway @lind.test)
  *   --customer-phone <number>   guest phone without country code
- *   --api http://localhost:3000/api/v1
+ *   --api http://localhost:4782/api/v1
  *
  * The owner's reply is injected onto the same RabbitMQ queue the WhatsApp
  * microservice publishes to, so it exercises the real listener rather than
@@ -79,7 +79,7 @@ const args = parseArgs(process.argv.slice(2));
 const API = (
   args.api ??
   process.env.API_BASE_URL ??
-  `http://localhost:${env.MAIN_PORT || 3000}/api/${env.API_VERSION || 'v1'}`
+  `http://localhost:${env.MAIN_PORT || 4782}/api/${env.API_VERSION || 'v1'}`
 ).replace(/\/$/, '');
 
 const RABBITMQ_URL =

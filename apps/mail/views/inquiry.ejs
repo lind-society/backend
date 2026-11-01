@@ -1,0 +1,54 @@
+<%
+  /*
+   * Internal notification: a visitor left a message on the public site.
+   * Plain nested tables and inline styles so it survives Outlook and Gmail.
+   * Every field reads through `locals` with a fallback and is HTML-escaped when printed.
+   */
+
+  const PRIMARY = '#2E5153';
+  const TEXT = '#192B2B';
+  const MUTED = '#5B6B6F';
+  const BORDER = '#DCE7E3';
+  const FONT = "'Segoe UI',-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif";
+
+  const value = (v) => (v === undefined || v === null || v === '' ? '-' : String(v));
+  const label = (v) => value(v).replace(/_/g, ' ');
+  const meta = locals.metadata && typeof locals.metadata === 'object' ? locals.metadata : {};
+
+  const rows = [
+    ['Type', label(locals.type)],
+    ['Name', value(locals.name)],
+    ['Email', value(locals.email)],
+    ['Phone', value(locals.phone)],
+    ['About', value(locals.referenceName)],
+  ].concat(Object.keys(meta).map((key) => [key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' '), value(meta[key])]));
+%>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F8F6;padding:24px 0;font-family:<%= FONT %>;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border:1px solid <%= BORDER %>;border-radius:8px;">
+        <tr>
+          <td style="background:<%= PRIMARY %>;color:#FFFFFF;padding:18px 24px;font-size:18px;font-weight:600;">
+            New inquiry from <%= value(locals.name) %>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 24px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              <% rows.forEach(function (row) { %>
+              <tr>
+                <td style="padding:6px 0;width:140px;color:<%= MUTED %>;font-size:13px;text-transform:capitalize;vertical-align:top;"><%= row[0] %></td>
+                <td style="padding:6px 0;color:<%= TEXT %>;font-size:14px;vertical-align:top;"><%= row[1] %></td>
+              </tr>
+              <% }) %>
+            </table>
+            <% if (locals.message) { %>
+            <div style="margin-top:16px;padding:14px;background:#F4F8F6;border-radius:6px;color:<%= TEXT %>;font-size:14px;line-height:1.6;white-space:pre-wrap;"><%= locals.message %></div>
+            <% } %>
+            <p style="margin:20px 0 0;color:<%= MUTED %>;font-size:12px;">Reply directly to <%= value(locals.email) %>. The full history is in the admin Inquiries page.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

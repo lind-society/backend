@@ -76,7 +76,7 @@
       ]
     },
     {
-      "name": "Main API (:3000)",
+      "name": "Main API (:4782)",
       "item": [
         {
           "name": "Activity Category",
@@ -7499,7 +7499,7 @@
       ]
     },
     {
-      "name": "External Gateway (:3002)",
+      "name": "External Gateway (:4783)",
       "item": [
         {
           "name": "Mail Gateway",
@@ -7589,11 +7589,11 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3000"
+      "value": "http://localhost:4782"
     },
     {
       "key": "gatewayUrl",
-      "value": "http://localhost:3002"
+      "value": "http://localhost:4783"
     },
     {
       "key": "apiVersion",

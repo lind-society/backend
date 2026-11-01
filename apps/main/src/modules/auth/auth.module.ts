@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
 import { AdminModule } from '../admin/admin.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -16,7 +16,9 @@ import { JwtAtStrategy, JwtRtStrategy, LocalStrategy } from './strategies';
         return {
           secret: configService.get<string>('jwt.accessToken.secret'),
           signOptions: {
-            expiresIn: configService.get<string>('jwt.accessToken.expire'),
+            expiresIn: configService.get<string>(
+              'jwt.accessToken.expire',
+            ) as JwtSignOptions['expiresIn'],
           },
         };
       },

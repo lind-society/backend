@@ -35,6 +35,7 @@ import { CurrencyModule } from './modules/currency/currency.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { OwnerModule } from './modules/owner/owner.module';
 import { PackageModule } from './modules/package/package.module';
+import { InquiryModule } from './modules/inquiry/inquiry.module';
 import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { PropertyModule } from './modules/property/property.module';
@@ -53,10 +54,6 @@ import { WhatsappAdminModule } from './modules/whatsapp/whatsapp.module';
       isGlobal: true,
       envFilePath: envPaths[process.env.NODE_ENV || 'development'],
       validate: validateEnv,
-      validationOptions: {
-        allowUnknown: false,
-        abortEarly: true,
-      },
       load: [
         appConfig,
         currencyConfig,
@@ -108,6 +105,7 @@ import { WhatsappAdminModule } from './modules/whatsapp/whatsapp.module';
     PackageModule,
     SearchModule,
     PaymentModule,
+    InquiryModule,
     PaymentChannelModule,
   ],
   controllers: [AppController],

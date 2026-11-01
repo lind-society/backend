@@ -17,7 +17,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/lind-society/__DIR__
+WorkingDirectory=/opt/lind_society/__DIR__/current
 ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml up --no-build --no-color
 ExecStop=/usr/bin/docker compose -f docker-compose.prod.yml stop
 Restart=always

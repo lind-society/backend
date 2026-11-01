@@ -108,7 +108,8 @@ services:
   main:
     <<: *app
     command: ['main']
-    ports: ['127.0.0.1:18082:3000']
+    environment: { MAIN_PORT: '4782' }
+    ports: ['127.0.0.1:18082:4782']
     depends_on:
       migrate: { condition: service_completed_successfully }
       rabbitmq: { condition: service_healthy }
@@ -116,7 +117,7 @@ services:
     healthcheck:
       # Any HTTP answer (even 404) means the server is up; only a refused
       # connection fails.
-      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3000/api/v1').then(() => process.exit(0), () => process.exit(1))"]
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:4782/api/v1').then(() => process.exit(0), () => process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -126,7 +127,8 @@ services:
   external-gateway:
     <<: *app
     command: ['external-gateway']
-    ports: ['127.0.0.1:18083:3002']
+    environment: { EXTERNAL_GATEWAY_PORT: '4783' }
+    ports: ['127.0.0.1:18083:4783']
     depends_on:
       rabbitmq: { condition: service_healthy }
     mem_limit: 768m

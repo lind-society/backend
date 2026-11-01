@@ -1,11 +1,11 @@
 # One image for all four backend apps (main, external-gateway, mail, whatsapp);
 # each compose service picks its entry point. A single build keeps deploys fast
 # and guarantees every service runs the same commit.
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 WORKDIR /app
 # whatsapp-web.js uses the system chromium below, not puppeteer's own download.
 ENV PUPPETEER_SKIP_DOWNLOAD=true
-RUN corepack enable && corepack prepare pnpm@10.12.1 --activate
+RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 
 FROM base AS build
 # .npmrc is left out on purpose: its use-node-version would make pnpm download
