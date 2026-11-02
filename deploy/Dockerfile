@@ -26,6 +26,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY package.json tsconfig.json tsconfig.base.json ./
 COPY deploy/start.sh ./start.sh
+COPY scripts ./scripts
 RUN sed -i 's/\r$//' start.sh && chmod +x start.sh \
     && mkdir -p /app/session && chown -R node:node /app/session
 USER node

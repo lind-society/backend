@@ -37,6 +37,32 @@ pnpm seed:demo --identifier admin@lind.test --password Admin12345   # demo conte
 
 Environment variables are documented in `.env.example`.
 
+## Production: first data
+
+Migrations run by themselves on every deploy (the `migrate` service). Data does
+not: a new production database is empty.
+
+1. Deploy the backend (push to `main` or run the Deploy workflow).
+2. Create the first admin, on the server:
+   ```bash
+   cd /opt/lind_society/backend/current
+   docker compose -f docker-compose.prod.yml run --rm --entrypoint node migrate \
+     scripts/create-admin.mjs --email you@example.com --password 'StrongPass1'
+   ```
+3. Log in to the admin and add the real content.
+4. Optional, demo content only: run the seeder from your own computer against
+   the live API (it uploads the sample photos from `../frontend-user/public/images`):
+   ```bash
+   cd backend
+   API_URL=http://185.196.21.56:4782/api/v1 pnpm seed:demo \
+     --identifier you@example.com --password 'StrongPass1'
+   ```
+   It is safe to re-run; existing names are skipped. Do not seed a real shop
+   with demo villas.
+
+Take a database dump before a deploy that adds a migration:
+`/etc/cron.daily/lind-db-backup`.
+
 ## Notes
 
 - `deploy/` holds the production image (`Dockerfile`), the container entry
