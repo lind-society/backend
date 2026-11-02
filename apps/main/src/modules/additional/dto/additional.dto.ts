@@ -155,34 +155,6 @@ export class AdditionalPaginationDto implements IAdditionalPaginationDto {
     return dto;
   }
 
-  // static fromEntity(
-  //   entity: Additional & {
-  //     properties?: PropertyAdditionalPivot[];
-  //     villas?: VillaAdditionalPivot[];
-  //   },
-  // ): AdditionalPaginationDto {
-  //   const dto = plainToInstance(AdditionalPaginationDto, entity);
-
-  //   if (entity.properties) {
-  //     dto.properties = entity.propertyAdditionals.map(
-  //       ({ id: pivotId, property }) => ({
-  //         pivotId,
-  //         id: property.id,
-  //         name: property.name,
-  //       }),
-  //     );
-  //   }
-
-  //   if (entity.villas) {
-  //     dto.villas = entity.villaAdditionals.map(({ id: pivotId, villa }) => ({
-  //       pivotId,
-  //       id: villa.id,
-  //       name: villa.name,
-  //     }));
-  //   }
-
-  //   return dto;
-  // }
 
   static fromEntities(
     entities: (Additional & {

@@ -182,15 +182,6 @@ export class PaymentService implements IPaymentStrategy {
     this.paymentStrategy = this.paymentStrategyFactory.createStrategy(provider);
   }
 
-  // deprecated
-
-  // async createInvoiceWithProvider(
-  //   provider: PaymentGatewayProvider,
-  //   payload: CreatePaymentInvoiceDto,
-  // ): Promise<PaymentInvoiceDto> {
-  //   const strategy = this.paymentStrategyFactory.createStrategy(provider);
-  //   return await strategy.createInvoice(payload);
-  // }
 
   /* Invoice
   async createInvoice(

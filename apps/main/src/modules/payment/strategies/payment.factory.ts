@@ -21,24 +21,3 @@ export class PaymentStrategyFactory {
   }
 }
 
-// export const PaymentGatewayFactory: Provider = {
-//   provide: MainProvider.PaymentGateway,
-//   useFactory: (
-//     configService: ConfigService,
-//     xenditStrategy: XenditStrategy,
-//   ) => {
-//     const paymentGatewayProvider = configService.get<string>(
-//       'payment.gateway.provider.name',
-//     );
-
-//     switch (paymentGatewayProvider) {
-//       case PaymentGatewayProvider.Xendit:
-//         return xenditStrategy;
-//       default:
-//         throw new InternalServerErrorException(
-//           'Invalid Payment Gateway Provider',
-//         );
-//     }
-//   },
-//   inject: [XenditStrategy],
-// };

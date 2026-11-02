@@ -26,17 +26,5 @@ export class XenditExceptionFilter implements ExceptionFilter {
       }),
     );
 
-    // Default Handling for other errors
-    // return response.status(status).json(
-    //   new HttpResponse({
-    //     code: status,
-    //     data: null,
-    //     message: exception.message || 'Something went wrong',
-    //     status:
-    //       status >= 400 && status < 500
-    //         ? DefaultHttpStatus.Fail
-    //         : DefaultHttpStatus.Error,
-    //   }),
-    // );
   }
 }
