@@ -1,4 +1,4 @@
-import { CONTINENTS } from '@apps/main/common/constants';
+import { CONTINENTS, GEONAMES_COUNTRIES } from '@apps/main/common/constants';
 import { extractLatLngFromGoogleMapsUrl } from '@apps/main/common/helpers';
 import {
   BadRequestException,
@@ -101,7 +101,11 @@ export class GlobalRegionService {
           `${this.globalPostalCodeBaseUrl}/postalCodeSearchJSON?placename=${level.value}&adminCode1=${provinceCode}&username=${this.geonamesApiUsername}`,
         );
 
-        this._assertGeoNamesResponse(result, 'postalCodes', 'load postal codes');
+        this._assertGeoNamesResponse(
+          result,
+          'postalCodes',
+          'load postal codes',
+        );
 
         if (result.postalCodes.length > 0) {
           return this._mapPostalCodeToPayload(result);

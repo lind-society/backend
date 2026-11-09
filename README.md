@@ -61,12 +61,13 @@ not: a new production database is empty.
    with demo villas.
 
 Take a database dump before a deploy that adds a migration:
-`/etc/cron.daily/lind-db-backup`.
+`/etc/cron.daily/lind-society-backup`.
 
 ## Notes
 
 - `deploy/` holds the production image (`Dockerfile`), the container entry
-  point (`start.sh`) and the VPS scripts.
+  point (`start.sh`). The server scripts, nginx config and systemd units live in
+  the project root `deploy/` folder (see `deploy/DEPLOY.md`).
 - `nest build` copies assets (`country-code.json`, mail templates) through the
   `assets` entries in `nest-cli.json`.
 - TypeORM is on 0.3.x. TypeORM 1.x removes APIs used here
