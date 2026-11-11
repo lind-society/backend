@@ -133,15 +133,22 @@ export class CreateActivityDto {
   @IsNotEmpty()
   readonly closingHour!: string;
 
+  // A permanent activity has no date window, so its dates are not required.
+  @ValidateIf(
+    (dto: CreateActivityDto) => dto.duration !== ActivityDuration.Permanent,
+  )
   @Type(() => Date)
   @IsDate({ message: 'start date must be a valid date' })
   @IsNotEmpty()
-  readonly startDate!: Date;
+  readonly startDate?: Date;
 
+  @ValidateIf(
+    (dto: CreateActivityDto) => dto.duration !== ActivityDuration.Permanent,
+  )
   @Type(() => Date)
   @IsDate({ message: 'end date must be a valid date' })
   @IsNotEmpty()
-  readonly endDate!: Date;
+  readonly endDate?: Date;
 
   @Type(() => Number)
   @IsNumber(

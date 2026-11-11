@@ -10,8 +10,6 @@ import { ConfigService } from '@nestjs/config';
 import { AxiosService } from '../../axios/axios.service';
 import {
   CoordinateDto,
-  GlobalCountryGeoNamesDetailDto,
-  GlobalCountryGeoNamesDto,
   GlobalPostalCodeDetailDto,
   GlobalPostalCodeDto,
   GlobalPostalCodePayloadDto,
@@ -44,22 +42,19 @@ export class GlobalRegionService {
     return CONTINENTS;
   }
 
+  // Served from the bundled GeoNames list: the web service's shared demo account
+  // is over quota, which left the admin's country dropdown empty.
   async getCountry(continendCode: string) {
-    try {
-      const data = await this.axiosService.get<GlobalCountryGeoNamesDto>(
-        `${this.globalRegionBaseUrl}/countryInfoJSON?username=${this.geonamesApiUsername}`,
-      );
+    const countries = continendCode
+      ? GEONAMES_COUNTRIES.filter(
+          (country) => country.continent === continendCode,
+        )
+      : GEONAMES_COUNTRIES;
 
-      this._assertGeoNamesResponse(data, 'geonames', 'load countries');
-
-      const filteredCountries = continendCode
-        ? data.geonames.filter((country) => country.continent === continendCode)
-        : data.geonames;
-
-      return this._mapCountryToPayload(filteredCountries);
-    } catch (error) {
-      throw error;
-    }
+    return countries.map((country) => ({
+      id: country.geonameId,
+      name: country.countryName,
+    })) as GlobalRegionPayloadDto[];
   }
 
   // method for getting data that are related of a geoname id
@@ -184,15 +179,6 @@ export class GlobalRegionService {
         `failed to ${action}, the region provider returned an unexpected response`,
       );
     }
-  }
-
-  private _mapCountryToPayload<T extends GlobalCountryGeoNamesDetailDto[]>(
-    data: T,
-  ): GlobalRegionPayloadDto[] {
-    return data.map((item: GlobalCountryGeoNamesDetailDto) => ({
-      id: item.geonameId,
-      name: item.countryName,
-    })) as GlobalRegionPayloadDto[];
   }
 
   private _mapRegionToPayload<T extends GlobalRegionDto>(
