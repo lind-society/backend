@@ -97,19 +97,18 @@ export class CurrentVillaPrices implements ICurrentVillaPrices {
   }
 }
 
-export interface IVillaDto
-  extends Omit<
-    Villa,
-    | 'currency'
-    | 'owner'
-    | 'villaFacilities'
-    | 'villaFeatures'
-    | 'villaAdditionals'
-    | 'villaPolicies'
-    | 'villaPriceRules'
-    | 'bookings'
-    | 'reviews'
-  > {}
+export interface IVillaDto extends Omit<
+  Villa,
+  | 'currency'
+  | 'owner'
+  | 'villaFacilities'
+  | 'villaFeatures'
+  | 'villaAdditionals'
+  | 'villaPolicies'
+  | 'villaPriceRules'
+  | 'bookings'
+  | 'reviews'
+> {}
 
 export interface IVillaWithRelationsDto extends IVillaDto {
   currency?: CurrencyDto;
@@ -123,21 +122,20 @@ export interface IVillaWithRelationsDto extends IVillaDto {
   priceRules?: VillaPriceRuleWithRelationsDto[];
 }
 
-export interface IVillaPaginationDto
-  extends Omit<
-    Villa,
-    | 'updatedAt'
-    | 'deletedAt'
-    | 'currency'
-    | 'owner'
-    | 'villaFacilities'
-    | 'villaFeatures'
-    | 'villaAdditionals'
-    | 'villaPolicies'
-    | 'villaPriceRules'
-    | 'bookings'
-    | 'reviews'
-  > {
+export interface IVillaPaginationDto extends Omit<
+  Villa,
+  | 'updatedAt'
+  | 'deletedAt'
+  | 'currency'
+  | 'owner'
+  | 'villaFacilities'
+  | 'villaFeatures'
+  | 'villaAdditionals'
+  | 'villaPolicies'
+  | 'villaPriceRules'
+  | 'bookings'
+  | 'reviews'
+> {
   currency?: RelatedCurrencyDto;
   owner?: RelatedOwnerDto;
   bookings?: RelatedBookingDto[];
@@ -275,6 +273,12 @@ export class VillaDto implements IVillaDto {
 
   @Expose()
   readonly floorPlans!: string[] | null;
+
+  @Expose()
+  readonly whatsIncluded!: string[] | null;
+
+  @Expose()
+  readonly goodToKnow!: string[] | null;
 
   @Expose()
   @ToDecimal()
@@ -589,6 +593,12 @@ export class VillaPaginationDto implements IVillaPaginationDto {
 
   @Expose()
   readonly floorPlans!: string[] | null;
+
+  @Expose()
+  readonly whatsIncluded!: string[] | null;
+
+  @Expose()
+  readonly goodToKnow!: string[] | null;
 
   @Expose()
   @ToDecimal()

@@ -269,6 +269,16 @@ export class CreateVillaDto {
   @IsOptional()
   readonly floorPlans?: string[];
 
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  readonly whatsIncluded?: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  readonly goodToKnow?: string[];
+
   @IsBoolean()
   @IsOptional()
   readonly isFavorite?: boolean;

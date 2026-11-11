@@ -264,6 +264,13 @@ export class Villa {
   @Column({ name: 'floor_plans', type: 'text', array: true, nullable: true })
   floorPlans!: string[] | null;
 
+  // Highlights tab: bullet lists, one entry per line in the admin.
+  @Column({ name: 'whats_included', type: 'text', array: true, nullable: true })
+  whatsIncluded!: string[] | null;
+
+  @Column({ name: 'good_to_know', type: 'text', array: true, nullable: true })
+  goodToKnow!: string[] | null;
+
   @Column({
     name: 'average_rating',
     type: 'decimal',
